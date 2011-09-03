@@ -12,8 +12,6 @@ void CHNMain(void)
 {
 	IO_CLI();
 
-	IO_STI();
-
 	TextMode_Clear_Screen();
 	Error_Set_Enable_Display_TextMode(true);
 
@@ -31,14 +29,20 @@ void CHNMain(void)
 	TextMode_Put_String("\tInitialising IDT...\n", white);
 	Initialise_InterruptDescriptorTable();
 
-	TextMode_Put_String("\tInitialising PIT...\n", white);
+	TextMode_Put_String("\tInitialising PIC...\n", white);
 	Initialise_ProgrammableInterruptController();
+
+	TextMode_Put_String("\tInitialising PIT...\n", white);
+	Initialise_ProgrammableIntervalTimer();
+
+	TextMode_Put_String("\tInitialising Keyboard...\n", white);
+	Initialise_Keyboard();
 
 	TextMode_Put_String("\tHardware Initialising Phase End.\n", white);
 
-	CHNOS_Set_SystemPhase(1);
+	IO_STI();
 
-	INT_3();
+	CHNOS_Set_SystemPhase(1);
 
 	for (;;) {
 		IO_HLT();

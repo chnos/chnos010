@@ -99,6 +99,12 @@
 	GLOBAL	_asm_CPU_ExceptionHandler1f
 	EXTERN	_CPU_ExceptionHandler1f
 
+	GLOBAL	_asm_InterruptHandler20
+	EXTERN	_InterruptHandler20
+
+	GLOBAL	_asm_InterruptHandler21
+	EXTERN	_InterruptHandler21
+
 	GLOBAL	_asm_InterruptHandler27
 	EXTERN	_InterruptHandler27
 
@@ -610,6 +616,38 @@ _asm_CPU_ExceptionHandler1f:
 	mov	ds,ax
 	mov	es,ax
 	call	_CPU_ExceptionHandler1f
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_InterruptHandler20:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_InterruptHandler20
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_InterruptHandler21:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_InterruptHandler21
 	pop	eax
 	popad
 	pop	ds

@@ -131,7 +131,7 @@ void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 #define ERROR_CPU_EXCEPTION_1E		0x0000001e
 #define ERROR_CPU_EXCEPTION_1F		0x0000001f
 #define ERROR_CPU_EXCEPTIONS		0x0000001f
-#define ERROR_NO_MORE_SEGMENT	0x00000020
+#define ERROR_NO_MORE_SEGMENT		0x00000020
 //
 uint Error_Report(uint error_no, ...);
 void Error_Abort(void);
@@ -160,6 +160,19 @@ void ProgrammableInterruptController_InterruptMask_Clear(uint irq);
 void ProgrammableInterruptController_InterruptRequest_Complete(uint irq);
 void InterruptHandler27(uint *esp);
 
+/*keyboard.c キーボード関連*/
+#define KEYB_DATA		0x0060
+#define PORT_KEYSTA		0x0064
+#define KEYSTA_SEND_NOTREADY	0x02
+#define KEYCMD_WRITE_MODE	0x60
+#define KBC_MODE		0x47
+#define PORT_KEYCMD		0x0064
+#define KEYCMD_SENDTO_MOUSE	0xd4
+#define KEYCMD_LED		0xed
+//
+void Initialise_Keyboard(void);
+void InterruptHandler21(uint *esp);
+
 /*serial.c シリアル通信関連*/
 #define COM1_RX		0x03f8
 #define COM1_TX		0x03f8
@@ -175,6 +188,13 @@ void InterruptHandler27(uint *esp);
 //
 void Initialise_SerialPort(void);
 void Send_SerialPort(const uchar s[]);
+
+/*timer.c タイマー関連*/
+#define PIT_CTRL	0x0043
+#define PIT_CNT0	0x0040
+//
+void Initialise_ProgrammableIntervalTimer(void);
+void InterruptHandler20(uint *esp);
 
 /*vgatmode.c VGAテキストモード関連*/
 #define VGA_CRTC_R_NUMBER		0x03d4
@@ -304,4 +324,6 @@ void asm_CPU_ExceptionHandler1d(void);
 void asm_CPU_ExceptionHandler1e(void);
 void asm_CPU_ExceptionHandler1f(void);
 //
+void asm_InterruptHandler20(void);
+void asm_InterruptHandler21(void);
 void asm_InterruptHandler27(void);
