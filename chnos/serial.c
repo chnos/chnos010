@@ -30,18 +30,3 @@ void Send_SerialPort(const uchar s[])
 
 	return;
 }
-
-int debug(const uchar format[], ...)
-{
-	int i;
-	va_list ap;
-	uchar s[256];
-
-	va_start(ap, format);
-	i = vsprintf(s, format, ap);
-	va_end(ap);
-
-	Send_SerialPort(s);
-
-	return i;
-}

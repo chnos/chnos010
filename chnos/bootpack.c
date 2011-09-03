@@ -10,23 +10,20 @@ uchar *SystemPhaseText[] = {
 
 void CHNMain(void)
 {
-
-	SystemPhase = 0;
-
 	IO_CLI();
 
 	IO_STI();
 
 	TextMode_Clear_Screen();
+	Error_Set_Enable_Display_TextMode(true);
 
 	TextMode_Put_String("Welcome to CHNOSProject!\n", green);
 
-	TextMode_Put_String("Now SystemPhase is", white);
-	TextMode_Put_String(SystemPhaseText[SystemPhase], skyblue);
-	TextMode_Put_String("\n", white);
+	CHNOS_Set_SystemPhase(0);
 
 	TextMode_Put_String("\tInitialising SerialPort...\n", white);
 	Initialise_SerialPort();
+	Error_Set_Enable_SerialPort(true);
 
 	TextMode_Put_String("\tInitialising GDT...\n", white);
 	Initialise_GlobalDescriptorTable();
@@ -34,15 +31,26 @@ void CHNMain(void)
 	TextMode_Put_String("\tInitialising IDT...\n", white);
 	Initialise_InterruptDescriptorTable();
 
+	TextMode_Put_String("\tInitialising PIT...\n", white);
+	Initialise_ProgrammableInterruptController();
+
 	TextMode_Put_String("\tHardware Initialising Phase End.\n", white);
 
-	SystemPhase++;
+	CHNOS_Set_SystemPhase(1);
 
-	TextMode_Put_String("Now SystemPhase is", white);
-	TextMode_Put_String(SystemPhaseText[SystemPhase], skyblue);
-	TextMode_Put_String("\n", white);
-	
+	INT_3();
+
 	for (;;) {
 		IO_HLT();
 	}
+}
+
+void CHNOS_Set_SystemPhase(uint phase)
+{
+	SystemPhase = phase;
+	TextMode_Put_String("\nNow SystemPhase is", white);
+	TextMode_Put_String(SystemPhaseText[SystemPhase], skyblue);
+	TextMode_Put_String("\n", white);
+
+	return;
 }

@@ -32,6 +32,7 @@ extern uint SystemPhase;
 
 /*functions*/
 /*bootpack.c 基幹部分*/
+void CHNOS_Set_SystemPhase(uint phase);
 
 /*dsctbl.c セグメント・ゲートディスクリプタ関連*/
 #define ADR_IDT		0x0026f800
@@ -129,10 +130,35 @@ void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 #define ERROR_CPU_EXCEPTION_1D		0x0000001d
 #define ERROR_CPU_EXCEPTION_1E		0x0000001e
 #define ERROR_CPU_EXCEPTION_1F		0x0000001f
+#define ERROR_CPU_EXCEPTIONS		0x0000001f
 #define ERROR_NO_MORE_SEGMENT	0x00000020
 //
 uint Error_Report(uint error_no, ...);
 void Error_Abort(void);
+void Error_Set_Enable_SerialPort(bool serial);
+void Error_Set_Enable_Display_TextMode(bool tdisp);
+int Error_Put_String(const uchar format[], ...);
+void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp);
+void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp);
+
+/*intrpt.c 割り込み関連*/
+#define PIC0_ICW1	0x0020
+#define PIC0_OCW2	0x0020
+#define PIC0_IMR	0x0021
+#define PIC0_ICW2	0x0021
+#define PIC0_ICW3	0x0021
+#define PIC0_ICW4	0x0021
+#define PIC1_ICW1	0x00a0
+#define PIC1_OCW2	0x00a0
+#define PIC1_IMR	0x00a1
+#define PIC1_ICW2	0x00a1
+#define PIC1_ICW3	0x00a1
+#define PIC1_ICW4	0x00a1
+//
+void Initialise_ProgrammableInterruptController(void);
+void ProgrammableInterruptController_InterruptMask_Clear(uint irq);
+void ProgrammableInterruptController_InterruptRequest_Complete(uint irq);
+void InterruptHandler27(uint *esp);
 
 /*serial.c シリアル通信関連*/
 #define COM1_RX		0x03f8
@@ -149,7 +175,6 @@ void Error_Abort(void);
 //
 void Initialise_SerialPort(void);
 void Send_SerialPort(const uchar s[]);
-int debug(const uchar format[], ...);
 
 /*vgatmode.c VGAテキストモード関連*/
 #define VGA_CRTC_R_NUMBER		0x03d4
@@ -158,11 +183,15 @@ int debug(const uchar format[], ...);
 #define VGA_CRTC_R_CURSOR_LOCATION_LOW	0x0f
 #define VGA_TEXTMODE_ADR		0xb8000
 //
-void TextMode_Put_Character(uchar c, col_text col);
-void TextMode_Put_String(const uchar s[], col_text col);
+void TextMode_Write_TextRAM(ushort index, uchar data);
+void TextMode_Put_Character_Absolute(uchar c, col_text col, ushort location);
+void TextMode_Put_String_Absolute(const uchar s[], col_text col, uint x, uint y);
 void TextMode_Clear_Screen(void);
 ushort TextMode_Get_CursorLocation(void);
 void TextMode_Set_CursorLocation(ushort location);
+void TextMode_Put_Character(uchar c, col_text col);
+void TextMode_Newline(void);
+void TextMode_Put_String(const uchar s[], col_text col);
 
 /*xception.c 例外関連*/
 void CPU_ExceptionHandler00(int *esp);
@@ -274,3 +303,5 @@ void asm_CPU_ExceptionHandler1c(void);
 void asm_CPU_ExceptionHandler1d(void);
 void asm_CPU_ExceptionHandler1e(void);
 void asm_CPU_ExceptionHandler1f(void);
+//
+void asm_InterruptHandler27(void);
