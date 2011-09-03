@@ -1,0 +1,69 @@
+# .chnアプリ用共通Makefile
+
+# APP      = アプリ名
+
+# OBJS_APP = アプリに必要なオブジェクト.obj
+
+TOOLPATH = ../../z_tools/
+INCPATH  = ../../z_tools/CHNOSProject/
+
+include ../chnapi/apilist.txt
+
+MAKE     = $(TOOLPATH)make.exe -r
+NASK     = $(TOOLPATH)nask.exe
+CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet
+BIN2OBJ  = $(TOOLPATH)bin2obj.exe
+GAS2NASK = $(TOOLPATH)gas2nask.exe -a
+OBJ2BIM  = $(TOOLPATH)obj2bim.exe
+BIM2CHN  = $(TOOLPATH)bim2chn.exe
+RULEFILE = $(INCPATH)CHNOSP.rul
+EDIMG    = $(TOOLPATH)edimg.exe bias:9
+IMGTOL   = $(TOOLPATH)RWFD.EXE
+MAKEFONT = $(TOOLPATH)makefont.exe
+COPY     = copy
+DEL      = del
+SJISCONV = $(TOOLPATH)sjisconv.exe -s
+
+# デフォルト動作
+
+default :
+	$(MAKE) $(APP).chn
+
+# ファイル生成規則
+
+$(APP).bim : $(OBJS_APP) $(OBJS_API) Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:$(APP).bim map:$(APP).map $(OBJS_APP) $(OBJS_API)
+
+$(APP).chn : $(APP).bim Makefile
+	$(BIM2CHN) $(APP).bim $(APP).chn 0
+
+#一般規則
+
+%.ca : %.c Makefile
+	$(SJISCONV) $*.c $*.ca
+
+%.gas : %.ca Makefile
+	$(CC1) -o $*.gas $*.ca
+
+%.nas : %.gas Makefile
+	$(GAS2NASK) $*.gas $*.nas
+
+%.obj : %.nas Makefile
+	$(NASK) $*.nas $*.obj $*.lst
+
+
+
+# コマンド
+
+clean :
+	-$(DEL) *.bin
+	-$(DEL) *.lst
+	-$(DEL) *.gas
+	-$(DEL) *.obj
+	-$(DEL) $(APP).bim
+	-$(DEL) $(APP).map
+
+src_only :
+	$(MAKE) clean
+	-$(DEL) $(APP).chn
+

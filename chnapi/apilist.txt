@@ -1,0 +1,16 @@
+APIPATH  = ../chnapi/
+
+OBJS_API =	$(APIPATH)api_00000001_api_putchar.obj \
+		$(APIPATH)api_00000002_api_putstr.obj \
+		$(APIPATH)api_00000004_api_end.obj \
+		$(APIPATH)api_00000005_api_openwin.obj \
+		$(APIPATH)api_00000006_api_putstrwin.obj \
+		$(APIPATH)api_00000007_api_boxfilwin.obj \
+		$(APIPATH)api_00000008_api_initmalloc.obj \
+		$(APIPATH)api_00000009_api_malloc.obj \
+		$(APIPATH)api_00000010_api_free.obj \
+		$(APIPATH)api_00000011_api_point.obj \
+		$(APIPATH)api_00000012_api_refreshwin.obj \
+		$(APIPATH)api_00000013_api_linewin.obj \
+		$(APIPATH)api_00000014_api_closewin.obj \
+		$(APIPATH)api_00000015_api_getkey.obj 
