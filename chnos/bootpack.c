@@ -43,12 +43,12 @@ void CHNMain(void)
 
 	TextMode_Put_String("\tHardware Initialising Phase End.\n", white);
 
-	n = CHNOSProject_snprintf(s, "Test Text %x\n", 128, 0xfec37);
+	n = CHNOSProject_snprintf(s, "Test Text %X %u\n", 128, 0xfec37, 1234567890);
 	TextMode_Put_String(s, white);
 	sprintf(s, "n=%d\n", n);
 	TextMode_Put_String(s, white);
 
-	n = sprintf(s, "Test Text %x\n", 0xfec37);
+	n = sprintf(s, "Test Text %X %u\n", 0xfec37, 1234567890);
 	TextMode_Put_String(s, white);
 	sprintf(s, "n=%d\n", n);
 	TextMode_Put_String(s, white);
