@@ -126,6 +126,26 @@ int CHNOSProject_vsnprintf(unsigned char s[], const unsigned char format[], unsi
 				work.temporary_data_double[0] = CHNOSProject_snprintf_Get_NextArgument(&work);
 				work.temporary_data_double[1] = CHNOSProject_snprintf_Get_NextArgument(&work);
 
+				CHNOSProject_snprintf_To_String_From_Hex(&work, work.temporary_data_double[1]);
+				for(i = 0; i < 8; i++){
+					if(work.temporary_data[i] != ' '){
+						break;
+					}
+				}
+				for(; i < 8; i++){
+					CHNOSProject_snprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+				}
+
+				CHNOSProject_snprintf_To_String_From_Hex(&work, work.temporary_data_double[0]);
+				for(i = 0; i < 8; i++){
+					if(work.temporary_data[i] != ' '){
+						break;
+					}
+				}
+				for(; i < 8; i++){
+					CHNOSProject_snprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+				}
+				work.format_phase = 0;
 			} else if(c == 'e'){	/*データを指数形式で出力します。e:アルファベット小文字。標準の精度は6桁です。*/
 				
 			} else if(c == 'E'){	/*データを指数形式で出力します。E:アルファベット大文字。標準の精度は6桁です。*/
@@ -272,5 +292,7 @@ void CHNOSProject_snprintf_To_String_From_Decimal_Unsigned(CHNOSProject_snprintf
 //	work->format_exponent = (work->temporary_data_double[1] >> 20) & 0x7FF;
 	
 //}
+
+
 
 
