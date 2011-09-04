@@ -32,7 +32,7 @@ extern uint SystemPhase;
 
 /*functions*/
 /*bootpack.c 基幹部分*/
-void CHNOS_Set_SystemPhase(uint phase);
+void CHNOSProject_Set_SystemPhase(uint phase);
 
 /*dsctbl.c セグメント・ゲートディスクリプタ関連*/
 #define ADR_IDT		0x0026f800
@@ -188,6 +188,9 @@ void InterruptHandler21(uint *esp);
 //
 void Initialise_SerialPort(void);
 void Send_SerialPort(const uchar s[]);
+
+/*std_vsnp.c vsnprintfの独自実装*/
+int CHNOSProject_snprintf(unsigned char s[], const unsigned char format[], unsigned int n, ...);
 
 /*timer.c タイマー関連*/
 #define PIT_CTRL	0x0043

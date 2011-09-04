@@ -10,6 +10,9 @@ uchar *SystemPhaseText[] = {
 
 void CHNMain(void)
 {
+	uchar s[128];
+	int n;
+
 	IO_CLI();
 
 	TextMode_Clear_Screen();
@@ -17,7 +20,7 @@ void CHNMain(void)
 
 	TextMode_Put_String("Welcome to CHNOSProject!\n", green);
 
-	CHNOS_Set_SystemPhase(0);
+	CHNOSProject_Set_SystemPhase(0);
 
 	TextMode_Put_String("\tInitialising SerialPort...\n", white);
 	Initialise_SerialPort();
@@ -40,16 +43,26 @@ void CHNMain(void)
 
 	TextMode_Put_String("\tHardware Initialising Phase End.\n", white);
 
+	n = CHNOSProject_snprintf(s, "Test Text %x\n", 128, 0xfec37);
+	TextMode_Put_String(s, white);
+	sprintf(s, "n=%d\n", n);
+	TextMode_Put_String(s, white);
+
+	n = sprintf(s, "Test Text %x\n", 0xfec37);
+	TextMode_Put_String(s, white);
+	sprintf(s, "n=%d\n", n);
+	TextMode_Put_String(s, white);
+
 	IO_STI();
 
-	CHNOS_Set_SystemPhase(1);
+	CHNOSProject_Set_SystemPhase(1);
 
 	for (;;) {
 		IO_HLT();
 	}
 }
 
-void CHNOS_Set_SystemPhase(uint phase)
+void CHNOSProject_Set_SystemPhase(uint phase)
 {
 	SystemPhase = phase;
 	TextMode_Put_String("\nNow SystemPhase is", white);
