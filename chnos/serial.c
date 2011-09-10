@@ -13,7 +13,7 @@ void Initialise_SerialPort(void)
 	return;
 }
 
-void Send_SerialPort(const uchar s[])
+void SerialPort_Send(const uchar s[])
 {
 	for (; *s != 0x00; s++){
 		if(*s == '\n'){

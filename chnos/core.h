@@ -1,7 +1,6 @@
 
 /*include files*/
-#include <stdio.h>
-#include <stdarg.h>
+
 /*definemacros*/
 
 /*settings*/
@@ -33,6 +32,47 @@ extern uint SystemPhase;
 /*functions*/
 /*bootpack.c 基幹部分*/
 void CHNOSProject_Set_SystemPhase(uint phase);
+
+/*cfunc.c vsnprintfの独自実装等*/
+typedef struct CFUNCTION_VSNPRINTF_WORKAREA {
+	uchar *destination_buf;		/*書き込み先文字列の開始アドレス*/
+	uint length_destination_buf;	/*書き込み先文字列の最大サイズ*/
+	uint index_destination_buf;	/*書き込み先文字列のインデックス*/
+
+	const uchar *format_buf;	/*書式指定文字列の開始アドレス*/
+	uint index_format_buf;		/*書式指定文字列のインデックス*/
+
+	uchar temporary_data[16];	/*一時データの配列*/
+	uchar temporary_data_double[8];	/*64ビット浮動小数点用バッファ*/
+
+	uint *vargs;			/*可変長引数の開始アドレス*/
+	uint index_vargs;		/*可変長引数の現在の場所*/
+
+	uint format_phase;		/*フォーマットの段階を示す。*/
+						/*数値	:意味*/
+						/*0	:フォーマット指定中ではない*/
+						/*1	:フラグ以降の書式を要求*/
+						/*2	:フィールド幅以降の書式を要求。*/
+						/*3	:精度以降の書式を要求。*/
+						/*4	:変換修飾子以降の書式を要求。*/
+						/*5	:フォーマット指定子を要求*/
+} CFunction_vsnprintf_WorkArea;
+//
+int snprintf(uchar s[], const uchar format[], uint n, ...);
+int vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[]);
+//
+int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[]);
+void CFunction_vsnprintf_Initialise_WorkArea(CFunction_vsnprintf_WorkArea *work, uchar s[], const uchar format[], uint n, uint vargs[]);
+int CFunction_vsnprintf_Check_FormatBuffer(CFunction_vsnprintf_WorkArea *work);
+int CFunction_vsnprintf_Check_DestinationBuffer(CFunction_vsnprintf_WorkArea *work);
+uchar CFunction_vsnprintf_Read_FormatBuffer(CFunction_vsnprintf_WorkArea *work);
+void CFunction_vsnprintf_Write_DestinationBuffer(CFunction_vsnprintf_WorkArea *work, uchar c);
+void CFunction_vsnprintf_End(CFunction_vsnprintf_WorkArea *work);
+uint CFunction_vsnprintf_Get_NextArgument(CFunction_vsnprintf_WorkArea *work);
+void CFunction_vsnprintf_To_String_From_Hex_Upper(CFunction_vsnprintf_WorkArea *work, uint hex);
+void CFunction_vsnprintf_To_String_From_Hex_Lower(CFunction_vsnprintf_WorkArea *work, uint hex);
+void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_WorkArea *work, uint d);
+
 
 /*dsctbl.c セグメント・ゲートディスクリプタ関連*/
 #define ADR_IDT		0x0026f800
@@ -187,10 +227,7 @@ void InterruptHandler21(uint *esp);
 #define COM1_STA_MODEM	0x03fe
 //
 void Initialise_SerialPort(void);
-void Send_SerialPort(const uchar s[]);
-
-/*std_vsnp.c vsnprintfの独自実装*/
-int CHNOSProject_snprintf(unsigned char s[], const unsigned char format[], unsigned int n, ...);
+void SerialPort_Send(const uchar s[]);
 
 /*timer.c タイマー関連*/
 #define PIT_CTRL	0x0043
@@ -287,12 +324,14 @@ void PIT_Beep_Set(uint fq);		//ビープ音の周波数を、fqHzに変更する。
 void CPUID(void *addr, uint id);	//addr番地のuint[4]に、CPUの識別情報id番をEAX・EBX・EDX・ECXの順番で格納する。
 void CPUID2(void *addr, uint id);	//addr番地のuint[4]に、CPUの識別情報id番をEAX・EBX・ECX・EDXの順番で格納する。
 					//上記二つの関数は、EFLAGS内のIDフラグ(ビット21)が変更可能な場合のみ実行できる。
-void Read_TSC(uint *addr);		//addr番地のuint[2]に、マシン固有レジスタ(MSR)内にある、タイム・スタンプ・カウンタの上位・下位それぞれ32ビットを読み込む。
+void TSC_Read(uint *addr);		//addr番地のuint[2]に、マシン固有レジスタ(MSR)内にある、タイム・スタンプ・カウンタの上位・下位それぞれ32ビットを読み込む。
 					//この関数は、cpuidのTSCビットが有効でなければ使用できない。
 uint Memory_Test_Sub(uint start, uint end);
 void INT_3(void);			//ブレークポイント例外を発生させる。
-void APP_Run(uint eip, uint cs, uint esp, uint ds, uint *esp0);
-
+uint DIV_64_32(uint dividend_low, uint dividend_high, uint divisor);
+					//=((dividend_high << 32) | dividend_low) / divisor
+uint MOD_64_32(uint dividend_low, uint dividend_high, uint divisor);
+					//=((dividend_high << 32) | dividend_low) % divisor
 /*nasfunc0.nas 他の関数に依存するアセンブラ関数群*/
 void asm_CPU_ExceptionHandler00(void);
 void asm_CPU_ExceptionHandler01(void);

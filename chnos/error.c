@@ -169,14 +169,11 @@ void Error_Set_Enable_Display_TextMode(bool tdisp)
 int Error_Put_String(const uchar format[], ...)
 {
 	int i;
-	va_list ap;
 	uchar s[256];
 
-	va_start(ap, format);
-	i = vsprintf(s, format, ap);
-	va_end(ap);
+	i = vsnprintf(s, format, sizeof(s), (uint *)(&format + 1));
 	if(Error_Output_Enable_SerialPort){
-		Send_SerialPort(s);
+		SerialPort_Send(s);
 	}
 	if(Error_Output_Enable_Display_TextMode){
 		TextMode_Put_String(s, white);

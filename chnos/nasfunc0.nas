@@ -21,10 +21,10 @@
 	GLOBAL	_FNSave, _FRStore
 	GLOBAL	_PIT_Beep_On, _PIT_Beep_Off, _PIT_Beep_Set
 	GLOBAL	_CPUID, _CPUID2
-	GLOBAL	_Read_TSC
+	GLOBAL	_TSC_Read
 	GLOBAL	_Memory_Test_Sub
 	GLOBAL	_INT_3
-	GLOBAL	_APP_Run
+	GLOBAL	_DIV_64_32, _MOD_64_32
 
 [SECTION .text]
 
@@ -216,7 +216,7 @@ _CPUID2:
 	popad
 	ret
 
-_Read_TSC:
+_TSC_Read:
 	pushad
 	mov	ebx,[esp+36]
 	db	0x0f,0x31
@@ -262,24 +262,16 @@ _INT_3:
 	int	3
 	ret
 
-_APP_Run:
-	pushad
-	mov	eax,[esp+36]
-	mov	ecx,[esp+40]
-	mov	edx,[esp+44]
-	mov	ebx,[esp+48]
-	mov	ebp,[esp+52]
-	mov	[ebp  ],esp
-	mov	[ebp+4],ss
-	mov	es,bx
-	mov	ds,bx
-	mov	fs,bx
-	mov	gs,bx
+_DIV_64_32:
+	mov	eax,[esp+4]
+	mov	edx,[esp+8]
+	div	dword[esp+12]
+	ret
 
-	or	ecx,3
-	or	ebx,3
-	push	ebx
-	push	edx
-	push	ecx
-	push	eax
-	retf
+_MOD_64_32:
+	mov	eax,[esp+4]
+	mov	edx,[esp+8]
+	div	dword[esp+12]
+	mov	eax,edx
+	ret
+

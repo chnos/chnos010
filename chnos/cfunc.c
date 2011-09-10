@@ -1,8 +1,4 @@
-//
-//snprintf(beta)
-//author:hikarupsp
-//
-//引数(unsigned char s[], const unsigned char format[], unsigned int n, ...)
+//引数(uchar s[], const uchar format[], uint n, ...)
 //	s	:結果を書き込む文字列の先頭アドレスを指定します。
 //	format	:書式指定文字列の先頭アドレスを指定します。終端は0x00である必要があります。
 //	n	:s[]の大きさを指定します。(n - 1)番目以降の文字は書き込まれません。
@@ -29,121 +25,105 @@
 //		:この書式の目的は、なるべく短い表現で出力することです。
 //	p	:データを何らかのポインタと解釈して、その指し示すアドレスを出力します。
 //	n	:このフォーマット指定子を含むフォーマット指定に達するまで、今回出力した文字数を、
-//		:データをunsigned int *として解釈し、ポインタが指し示す先のunsigned int型変数に代入します。
+//		:データをuint *として解釈し、ポインタが指し示す先のuint型変数に代入します。
 
-typedef struct CHNOSPROJECT_SNPRINTF_WORKAREA {
-	unsigned char *destination_buf;		/*書き込み先文字列の開始アドレス*/
-	unsigned int length_destination_buf;	/*書き込み先文字列の最大サイズ*/
-	unsigned int index_destination_buf;	/*書き込み先文字列のインデックス*/
+#include "core.h"
 
-	const unsigned char *format_buf;		/*書式指定文字列の開始アドレス*/
-	unsigned int index_format_buf;		/*書式指定文字列のインデックス*/
-
-	unsigned char temporary_data[16];	/*一時データの配列*/
-	unsigned int temporary_data_double[2];	/*64ビット浮動小数点用バッファ*/
-
-	unsigned int *vargs;			/*可変長引数の開始アドレス*/
-	unsigned int index_vargs;		/*可変長引数の現在の場所*/
-
-	unsigned int format_phase;		/*フォーマットの段階を示す。*/
-						/*数値	:意味*/
-						/*0	:フォーマット指定中ではない*/
-						/*1	:フラグ以降の書式を要求*/
-						/*2	:フィールド幅以降の書式を要求。*/
-						/*3	:精度以降の書式を要求。*/
-						/*4	:変換修飾子以降の書式を要求。*/
-						/*5	:フォーマット指定子を要求*/
-	unsigned int format_sign;		/*符号がある数の符号を表現。*/
-						/*0:正 1:負*/
-	unsigned int format_exponent;		/*浮動小数点数の指数部分*/
-	unsigned int format_mantissa;		/*浮動小数点数の仮数部分*/
-
-} CHNOSProject_snprintf_WorkArea;
-
-int CHNOSProject_vsnprintf(unsigned char s[], const unsigned char format[], unsigned int n, unsigned int vargs[]);
-void CHNOSProject_snprintf_Initialise_WorkArea(CHNOSProject_snprintf_WorkArea *work, unsigned char s[], const unsigned char format[], unsigned int n, unsigned int vargs[]);
-int CHNOSProject_snprintf_Check_FormatBuffer(CHNOSProject_snprintf_WorkArea *work);
-int CHNOSProject_snprintf_Check_DestinationBuffer(CHNOSProject_snprintf_WorkArea *work);
-unsigned char CHNOSProject_snprintf_Read_FormatBuffer(CHNOSProject_snprintf_WorkArea *work);
-void CHNOSProject_snprintf_Write_DestinationBuffer(CHNOSProject_snprintf_WorkArea *work, unsigned char c);
-void CHNOSProject_snprintf_End(CHNOSProject_snprintf_WorkArea *work);
-unsigned int CHNOSProject_snprintf_Get_NextArgument(CHNOSProject_snprintf_WorkArea *work);
-void CHNOSProject_snprintf_To_String_From_Hex(CHNOSProject_snprintf_WorkArea *work, unsigned int hex);
-void CHNOSProject_snprintf_To_String_From_Decimal_Unsigned(CHNOSProject_snprintf_WorkArea *work, unsigned int d);
-
-int CHNOSProject_snprintf(unsigned char s[], const unsigned char format[], unsigned int n, ...)
+int snprintf(uchar s[], const uchar format[], uint n, ...)
 {
-	return CHNOSProject_vsnprintf(s, format, n, (unsigned int *)(&n + 1));
+	return CFunction_vsnprintf(s, format, n, (uint *)(&n + 1));
 }
 
-int CHNOSProject_vsnprintf(unsigned char s[], const unsigned char format[], unsigned int n, unsigned int vargs[])
+int vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 {
-	unsigned char c;
-	unsigned int i;
+	return CFunction_vsnprintf(s, format, n, vargs);
+}
 
-	CHNOSProject_snprintf_WorkArea work;
+int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
+{
+	uchar c;
+	uint i;
+	const uchar *d;
 
-	CHNOSProject_snprintf_Initialise_WorkArea(&work, s, format, n, vargs);
+	CFunction_vsnprintf_WorkArea work;
+
+	CFunction_vsnprintf_Initialise_WorkArea(&work, s, format, n, vargs);
 
 	for(;;){
-		if(CHNOSProject_snprintf_Check_FormatBuffer(&work) == -1){
+		if(CFunction_vsnprintf_Check_FormatBuffer(&work) == -1){
 			break;
 		}
-		c = CHNOSProject_snprintf_Read_FormatBuffer(&work);
+		c = CFunction_vsnprintf_Read_FormatBuffer(&work);
 		if(work.format_phase > 0){	/*書式指定中*/
 			if(c == '%'){		/*%文字を出力します。*/
-				CHNOSProject_snprintf_Write_DestinationBuffer(&work, '%');
+				CFunction_vsnprintf_Write_DestinationBuffer(&work, '%');
 				work.format_phase = 0;
 			} else if(c == 'o'){	/*データを8進数で出力します。*/
 			} else if(c == 'd'){	/*データを10進数で出力します。*/
 			} else if(c == 'i'){	/*データを10進数で出力します。*/
 			} else if(c == 'x'){	/*データを16進数で出力します。x:アルファベット小文字。*/
-			} else if(c == 'X'){	/*データを16進数で出力します。X:アルファベット大文字。*/
-				CHNOSProject_snprintf_To_String_From_Hex(&work, CHNOSProject_snprintf_Get_NextArgument(&work));
+				CFunction_vsnprintf_To_String_From_Hex_Lower(&work, CFunction_vsnprintf_Get_NextArgument(&work));
 				for(i = 0; i < 8; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
 				}
 				for(; i < 8; i++){
-					CHNOSProject_snprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+				}
+			} else if(c == 'X'){	/*データを16進数で出力します。X:アルファベット大文字。*/
+				CFunction_vsnprintf_To_String_From_Hex_Upper(&work, CFunction_vsnprintf_Get_NextArgument(&work));
+				for(i = 0; i < 8; i++){
+					if(work.temporary_data[i] != ' '){
+						break;
+					}
+				}
+				for(; i < 8; i++){
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
 				}
 				work.format_phase = 0;
 			} else if(c == 'u'){	/*データを符号なし10進数で出力します。*/
-				CHNOSProject_snprintf_To_String_From_Decimal_Unsigned(&work, CHNOSProject_snprintf_Get_NextArgument(&work));
+				CFunction_vsnprintf_To_String_From_Decimal_Unsigned(&work, CFunction_vsnprintf_Get_NextArgument(&work));
 				for(i = 0; i < 10; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
 				}
 				for(; i < 10; i++){
-					CHNOSProject_snprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
 				}
 				work.format_phase = 0;
 			} else if(c == 'c'){	/*データをASCIIコードと解釈して一文字を出力します。*/
+				CFunction_vsnprintf_Write_DestinationBuffer(&work, CFunction_vsnprintf_Get_NextArgument(&work));
+				work.format_phase = 0;
 			} else if(c == 's'){	/*データを文字列へのポインタと解釈して文字列を出力します。文字列の終端は0(null)である必要があります。*/
+				d = (const uchar *)CFunction_vsnprintf_Get_NextArgument(&work);
+				for (; *d != 0x00; d++){
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, *d);
+				}
+				work.format_phase = 0;
 			} else if(c == 'f'){	/*データを浮動小数点数として出力します。float/doubleの区別はしません。標準の精度は6桁です。可変長引数の場合、浮動小数点数は常にdoubleに拡張されるからです。*/
-				work.temporary_data_double[0] = CHNOSProject_snprintf_Get_NextArgument(&work);
-				work.temporary_data_double[1] = CHNOSProject_snprintf_Get_NextArgument(&work);
+				((uint *)work.temporary_data_double)[0] = CFunction_vsnprintf_Get_NextArgument(&work);
+				((uint *)work.temporary_data_double)[1] = CFunction_vsnprintf_Get_NextArgument(&work);
 
-				CHNOSProject_snprintf_To_String_From_Hex(&work, work.temporary_data_double[1]);
+				CFunction_vsnprintf_To_String_From_Hex_Upper(&work, ((uint *)work.temporary_data_double)[1]);
 				for(i = 0; i < 8; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
 				}
 				for(; i < 8; i++){
-					CHNOSProject_snprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
 				}
 
-				CHNOSProject_snprintf_To_String_From_Hex(&work, work.temporary_data_double[0]);
+				CFunction_vsnprintf_To_String_From_Hex_Upper(&work, ((uint *)work.temporary_data_double)[0]);
 				for(i = 0; i < 8; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
 				}
 				for(; i < 8; i++){
-					CHNOSProject_snprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
 				}
 				work.format_phase = 0;
 			} else if(c == 'e'){	/*データを指数形式で出力します。e:アルファベット小文字。標準の精度は6桁です。*/
@@ -152,25 +132,26 @@ int CHNOSProject_vsnprintf(unsigned char s[], const unsigned char format[], unsi
 			} else if(c == 'g'){	/*通常はfフォーマット指定子と同じ動作をしますが、指数部が-5以下か、有効精度以上のときは*/
 			} else if(c == 'G'){	/*e,Eフォーマット指定子と同じ動作をします。この書式の目的は、なるべく短い表現で出力することです。*/
 			} else if(c == 'p'){	/*データを何らかのポインタと解釈して、その指し示すアドレスを出力します。*/
-			} else if(c == 'n'){	/*このフォーマット指定子を含むフォーマット指定に達するまで、今回出力した文字数を、データをunsigned int *として解釈し、ポインタが指し示す先のunsigned int型変数に代入します。*/
+			} else if(c == 'n'){	/*このフォーマット指定子を含むフォーマット指定に達するまで、今回出力した文字数を、データをuint *として解釈し、ポインタが指し示す先のuint型変数に代入します。*/
 			} else{
+				CFunction_vsnprintf_Write_DestinationBuffer(&work, c);
 				work.format_phase = 0;
 			}
 		} else{	/*一般文字かも*/
 			if(c == '%'){	/*次からは書式指定*/
 				work.format_phase = 1;
 			} else{	/*一般文字出力中*/
-				CHNOSProject_snprintf_Write_DestinationBuffer(&work, c);
+				CFunction_vsnprintf_Write_DestinationBuffer(&work, c);
 			}
 		}
 	}
 
-	CHNOSProject_snprintf_End(&work);
+	CFunction_vsnprintf_End(&work);
 
 	return work.index_destination_buf;
 }
 
-void CHNOSProject_snprintf_Initialise_WorkArea(CHNOSProject_snprintf_WorkArea *work, unsigned char s[], const unsigned char format[], unsigned int n, unsigned int vargs[])
+void CFunction_vsnprintf_Initialise_WorkArea(CFunction_vsnprintf_WorkArea *work, uchar s[], const uchar format[], uint n, uint vargs[])
 {
 	work->destination_buf = s;
 	work->length_destination_buf = n;
@@ -189,7 +170,7 @@ void CHNOSProject_snprintf_Initialise_WorkArea(CHNOSProject_snprintf_WorkArea *w
 	return;
 }
 
-int CHNOSProject_snprintf_Check_FormatBuffer(CHNOSProject_snprintf_WorkArea *work)
+int CFunction_vsnprintf_Check_FormatBuffer(CFunction_vsnprintf_WorkArea *work)
 {
 	if(work->format_buf[work->index_format_buf] == 0x00){
 		return -1;
@@ -197,7 +178,7 @@ int CHNOSProject_snprintf_Check_FormatBuffer(CHNOSProject_snprintf_WorkArea *wor
 	return 0;
 }
 
-int CHNOSProject_snprintf_Check_DestinationBuffer(CHNOSProject_snprintf_WorkArea *work)
+int CFunction_vsnprintf_Check_DestinationBuffer(CFunction_vsnprintf_WorkArea *work)
 {
 	if(work->index_destination_buf >= work->length_destination_buf){
 		return -1;
@@ -205,18 +186,18 @@ int CHNOSProject_snprintf_Check_DestinationBuffer(CHNOSProject_snprintf_WorkArea
 	return 0;
 }
 
-unsigned char CHNOSProject_snprintf_Read_FormatBuffer(CHNOSProject_snprintf_WorkArea *work)
+uchar CFunction_vsnprintf_Read_FormatBuffer(CFunction_vsnprintf_WorkArea *work)
 {
-	if(CHNOSProject_snprintf_Check_FormatBuffer(work) == -1){
+	if(CFunction_vsnprintf_Check_FormatBuffer(work) == -1){
 		return 0;
 	}
 	work->index_format_buf++;
 	return work->format_buf[work->index_format_buf - 1];
 }
 
-void CHNOSProject_snprintf_Write_DestinationBuffer(CHNOSProject_snprintf_WorkArea *work, unsigned char c)
+void CFunction_vsnprintf_Write_DestinationBuffer(CFunction_vsnprintf_WorkArea *work, uchar c)
 {
-	if(CHNOSProject_snprintf_Check_DestinationBuffer(work) != -1){
+	if(CFunction_vsnprintf_Check_DestinationBuffer(work) != -1){
 		if(work->destination_buf != 0){
 			work->destination_buf[work->index_destination_buf] = c;
 		}
@@ -225,7 +206,7 @@ void CHNOSProject_snprintf_Write_DestinationBuffer(CHNOSProject_snprintf_WorkAre
 	return;
 }
 
-void CHNOSProject_snprintf_End(CHNOSProject_snprintf_WorkArea *work)
+void CFunction_vsnprintf_End(CFunction_vsnprintf_WorkArea *work)
 {
 	if(work->destination_buf != 0){
 		work->destination_buf[work->index_destination_buf] = 0x00;
@@ -233,16 +214,16 @@ void CHNOSProject_snprintf_End(CHNOSProject_snprintf_WorkArea *work)
 	return;
 }
 
-unsigned int CHNOSProject_snprintf_Get_NextArgument(CHNOSProject_snprintf_WorkArea *work)
+uint CFunction_vsnprintf_Get_NextArgument(CFunction_vsnprintf_WorkArea *work)
 {
 	work->index_vargs++;
 	return work->vargs[work->index_vargs - 1];
 }
 
-void CHNOSProject_snprintf_To_String_From_Hex(CHNOSProject_snprintf_WorkArea *work, unsigned int hex)
+void CFunction_vsnprintf_To_String_From_Hex_Upper(CFunction_vsnprintf_WorkArea *work, uint hex)
 {
 /*テンポラリデータに、右詰め、8桁固定、空白充填、終端null、大文字*/
-	unsigned int i;
+	uint i;
 
 	for(i = 0; i < 8; i++){	/*値の分配*/
 		work->temporary_data[7 - i] = (hex >> (i << 2)) & 0x0000000f;
@@ -264,10 +245,35 @@ void CHNOSProject_snprintf_To_String_From_Hex(CHNOSProject_snprintf_WorkArea *wo
 	return;
 }
 
-void CHNOSProject_snprintf_To_String_From_Decimal_Unsigned(CHNOSProject_snprintf_WorkArea *work, unsigned int d)
+void CFunction_vsnprintf_To_String_From_Hex_Lower(CFunction_vsnprintf_WorkArea *work, uint hex)
+{
+/*テンポラリデータに、右詰め、8桁固定、空白充填、終端null、小文字*/
+	uint i;
+
+	for(i = 0; i < 8; i++){	/*値の分配*/
+		work->temporary_data[7 - i] = (hex >> (i << 2)) & 0x0000000f;
+	}
+	work->temporary_data[8] = 0x00;	/*終端null*/
+	for(i = 0; i < 8; i++){	/*空白充填*/
+		if(work->temporary_data[i] != 0x00){
+			break;
+		}
+		work->temporary_data[i] = ' ';
+	}
+	for(; i < 8; i++){	/*ASCIIコードへ変換（小文字）*/
+		if(work->temporary_data[i] > 9){	/*アルファベット小文字へ変換*/
+			work->temporary_data[i] += 87;
+		} else{	/*数字へ変換*/
+			work->temporary_data[i] += 48;
+		}
+	}
+	return;
+}
+
+void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_WorkArea *work, uint d)
 {
 /*テンポラリデータに、右詰め、10桁固定、空白充填、終端null*/
-	unsigned int i;
+	uint i;
 
 	for(i = 0; i < 10; i++){	/*値の分配*/
 		work->temporary_data[9 - i] = d % 10;
@@ -285,14 +291,6 @@ void CHNOSProject_snprintf_To_String_From_Decimal_Unsigned(CHNOSProject_snprintf
 	}
 	return;
 }
-
-//void CHNOSProject_snprintf_To_String_From_FloatingPoint_Logarithmic(CHNOSProject_snprintf_WorkArea *work)
-//{
-//	work->format_sign = work->temporary_data_double[1] >> 31;
-//	work->format_exponent = (work->temporary_data_double[1] >> 20) & 0x7FF;
-	
-//}
-
 
 
 

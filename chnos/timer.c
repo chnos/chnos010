@@ -23,7 +23,7 @@ void InterruptHandler20(uint *esp)
 	ProgrammableInterruptController_InterruptRequest_Complete(0x00);
 	PIT_10ms_Tick++;
 
-	sprintf(s, "10ms_Tick:%u", PIT_10ms_Tick);
+	snprintf(s, "10ms_Tick:%u", sizeof(s), PIT_10ms_Tick);
 	TextMode_Put_String_Absolute(s, white, 50, 0);
 
 	return;

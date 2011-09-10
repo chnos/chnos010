@@ -11,7 +11,6 @@ uchar *SystemPhaseText[] = {
 void CHNMain(void)
 {
 	uchar s[128];
-	int n;
 
 	IO_CLI();
 
@@ -43,14 +42,22 @@ void CHNMain(void)
 
 	TextMode_Put_String("\tHardware Initialising Phase End.\n", white);
 
-	n = CHNOSProject_snprintf(s, "Test Text %X %u %f\n", 128, 0xfec37, 1234567890, 0.5);
-	TextMode_Put_String(s, white);
-	sprintf(s, "n=%d\n", n);
+	snprintf(s, "TEST X %X\n", 128, 0xABCDEF32);
 	TextMode_Put_String(s, white);
 
-	n = sprintf(s, "Test Text %X %u\n", 0xfec37, 1234567890);
+	snprintf(s, "TEST x %x\n", 128, 0xABCDEF32);
 	TextMode_Put_String(s, white);
-	sprintf(s, "n=%d\n", n);
+
+	snprintf(s, "TEST u %u\n", 128, 1234567890);
+	TextMode_Put_String(s, white);
+
+	snprintf(s, "TEST f %f\n", 128, 0.5);
+	TextMode_Put_String(s, white);
+
+	snprintf(s, "TEST c %c\n", 128, 'C');
+	TextMode_Put_String(s, white);
+
+	snprintf(s, "TEST s %s\n", 128, "TESTString.");
 	TextMode_Put_String(s, white);
 
 	IO_STI();
