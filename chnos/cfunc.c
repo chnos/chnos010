@@ -133,6 +133,7 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 			} else if(c == 'G'){	/*e,Eフォーマット指定子と同じ動作をします。この書式の目的は、なるべく短い表現で出力することです。*/
 			} else if(c == 'p'){	/*データを何らかのポインタと解釈して、その指し示すアドレスを出力します。*/
 			} else if(c == 'n'){	/*このフォーマット指定子を含むフォーマット指定に達するまで、今回出力した文字数を、データをuint *として解釈し、ポインタが指し示す先のuint型変数に代入します。*/
+			} else if(0x30 <= c && c <= 0x39){	/*数字*/
 			} else{
 				CFunction_vsnprintf_Write_DestinationBuffer(&work, c);
 				work.format_phase = 0;

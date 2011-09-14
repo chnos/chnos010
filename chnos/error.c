@@ -138,8 +138,14 @@ uint Error_Report(uint error_no, ...)
 		if(error_no == ERROR_NO_MORE_SEGMENT){
 			Error_Put_String("No More Segment Descriptor(requested at 0x%08X).\n", *retaddr, *va_args);
 			Error_Abort();
+		} else if(error_no == ERROR_NO_MORE_FREE_MEMORY){
+			Error_Put_String("No More Free Memory(Control:0x%08X Request Size:0x%08X).\n", *va_args, *(va_args + 1));
+		} else if(error_no == ERROR_MEMORY_FREE_RANGE_OVERLAPPED){
+			Error_Put_String("Memory Free Range Overlapped(Control:0x%08X).\n", *va_args);
+		} else if(error_no == ERROR_NO_MORE_FREE_TAG){
+			Error_Put_String("No More Free Tag(Control:0x%08X).\n", *va_args);
 		} else{
-			Error_Put_String("[0x%08X]Error:Unknown Error Number.\n", *retaddr);
+			Error_Put_String("Unknown Error Number.\n");
 			Error_Abort();
 		}
 	}

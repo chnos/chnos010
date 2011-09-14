@@ -1,37 +1,50 @@
 
-/*include files*/
-
-/*definemacros*/
-
-/*settings*/
-
 /*new object types*/
 typedef enum _bool { false, true} bool;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
-
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 
-/*structures*/
-typedef struct SEGMENT_DESCRIPTOR { 
-	ushort limit_low, base_low;
-	uchar base_mid, access_right;
-	uchar limit_high, base_high;
-} IO_SegmentDescriptor;
+/*defines*/
+#define EFLAGS_AC_BIT	0x00040000
 
-typedef struct GATE_DESCRIPTOR { 
-	ushort offset_low, selector;
-	uchar dw_count, access_right;
-	ushort offset_high;
-} IO_GateDescriptor;
+#define CR0_PROTECTIONENABLE	0x00000001
+#define CR0_MONITORCOPROCESSOR	0x00000002
+#define CR0_EMULATION		0x00000004
+#define CR0_TASKSWITCH		0x00000008
+#define CR0_EXTENDEDTYPE	0x00000010
+#define CR0_NUMERICERROR	0x00000020
+#define CR0_WRITEPROTECT	0x00010000
+#define CR0_ALIGNMENTMASK	0x00040000
+#define CR0_NOTWRITETHROUGH	0x20000000
+#define CR0_CACHE_DISABLE	0x40000000
+#define CR0_PAGING		0x80000000
 
-/*externs*/
-extern uint SystemPhase;
+#define CR0_ALL_CACHE_DISABLE	CR0_NOTWRITETHROUGH + CR0_CACHE_DISABLE
 
 /*functions*/
 /*bootpack.c 基幹部分*/
-void CHNOSProject_Set_SystemPhase(uint phase);
+#define PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS	0x00400000
+#define SYSTEM_MEMORY_CONTROL_TAGS	1024
+//
+typedef struct IO_MEMORYCONTROLTAG {
+	void *addr;
+	uint size;
+} IO_MemoryControlTag;
+
+typedef IO_MemoryControlTag* IO_MemoryControl;
+
+typedef struct SYSTEM_COMMONDATA {
+	uint RunningPhase;
+	uint PhysicalMemorySize;
+	IO_MemoryControl MemoryController;
+} System_CommonData;
+//
+void System_Set_RunningPhase(uint phase);
+uint System_Get_RunningPhase(void);
+void System_Check_Memory(void);
+uint System_Get_PhisycalMemorySize(void);
 
 /*cfunc.c vsnprintfの独自実装等*/
 typedef struct CFUNCTION_VSNPRINTF_WORKAREA {
@@ -123,6 +136,19 @@ void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_Wor
 #define AR_TYPE_CODE_ER			0x000a
 #define AR_TYPE_CODE_E_CONFORMING	0x000c
 #define AR_TYPE_CODE_ER_CONFORMING	0x000e
+//
+typedef struct SEGMENT_DESCRIPTOR { 
+	ushort limit_low, base_low;
+	uchar base_mid, access_right;
+	uchar limit_high, base_high;
+} IO_SegmentDescriptor;
+
+typedef struct GATE_DESCRIPTOR { 
+	ushort offset_low, selector;
+	uchar dw_count, access_right;
+	ushort offset_high;
+} IO_GateDescriptor;
+//
 void Initialise_GlobalDescriptorTable(void);
 void Initialise_InterruptDescriptorTable(void);
 void SegmentDescriptor_Set(IO_SegmentDescriptor *seg_desc, uint limit, uint base, uint ar);
@@ -138,40 +164,44 @@ uint System_SegmentDescriptor_Set(uint limit, int base, int ar);
 void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 
 /*error.c エラー関連*/
-#define ERROR_CPU_EXCEPTION_00		0x00000000
-#define ERROR_CPU_EXCEPTION_01		0x00000001
-#define ERROR_CPU_EXCEPTION_02		0x00000002
-#define ERROR_CPU_EXCEPTION_03		0x00000003
-#define ERROR_CPU_EXCEPTION_04		0x00000004
-#define ERROR_CPU_EXCEPTION_05		0x00000005
-#define ERROR_CPU_EXCEPTION_06		0x00000006
-#define ERROR_CPU_EXCEPTION_07		0x00000007
-#define ERROR_CPU_EXCEPTION_08		0x00000008
-#define ERROR_CPU_EXCEPTION_09		0x00000009
-#define ERROR_CPU_EXCEPTION_0A		0x0000000a
-#define ERROR_CPU_EXCEPTION_0B		0x0000000b
-#define ERROR_CPU_EXCEPTION_0C		0x0000000c
-#define ERROR_CPU_EXCEPTION_0D		0x0000000d
-#define ERROR_CPU_EXCEPTION_0E		0x0000000e
-#define ERROR_CPU_EXCEPTION_0F		0x0000000f
-#define ERROR_CPU_EXCEPTION_10		0x00000010
-#define ERROR_CPU_EXCEPTION_11		0x00000011
-#define ERROR_CPU_EXCEPTION_12		0x00000012
-#define ERROR_CPU_EXCEPTION_13		0x00000013
-#define ERROR_CPU_EXCEPTION_14		0x00000014
-#define ERROR_CPU_EXCEPTION_15		0x00000015
-#define ERROR_CPU_EXCEPTION_16		0x00000016
-#define ERROR_CPU_EXCEPTION_17		0x00000017
-#define ERROR_CPU_EXCEPTION_18		0x00000018
-#define ERROR_CPU_EXCEPTION_19		0x00000019
-#define ERROR_CPU_EXCEPTION_1A		0x0000001a
-#define ERROR_CPU_EXCEPTION_1B		0x0000001b
-#define ERROR_CPU_EXCEPTION_1C		0x0000001c
-#define ERROR_CPU_EXCEPTION_1D		0x0000001d
-#define ERROR_CPU_EXCEPTION_1E		0x0000001e
-#define ERROR_CPU_EXCEPTION_1F		0x0000001f
-#define ERROR_CPU_EXCEPTIONS		0x0000001f
-#define ERROR_NO_MORE_SEGMENT		0x00000020
+#define ERROR_CPU_EXCEPTION_00			0x00000000
+#define ERROR_CPU_EXCEPTION_01			0x00000001
+#define ERROR_CPU_EXCEPTION_02			0x00000002
+#define ERROR_CPU_EXCEPTION_03			0x00000003
+#define ERROR_CPU_EXCEPTION_04			0x00000004
+#define ERROR_CPU_EXCEPTION_05			0x00000005
+#define ERROR_CPU_EXCEPTION_06			0x00000006
+#define ERROR_CPU_EXCEPTION_07			0x00000007
+#define ERROR_CPU_EXCEPTION_08			0x00000008
+#define ERROR_CPU_EXCEPTION_09			0x00000009
+#define ERROR_CPU_EXCEPTION_0A			0x0000000a
+#define ERROR_CPU_EXCEPTION_0B			0x0000000b
+#define ERROR_CPU_EXCEPTION_0C			0x0000000c
+#define ERROR_CPU_EXCEPTION_0D			0x0000000d
+#define ERROR_CPU_EXCEPTION_0E			0x0000000e
+#define ERROR_CPU_EXCEPTION_0F			0x0000000f
+#define ERROR_CPU_EXCEPTION_10			0x00000010
+#define ERROR_CPU_EXCEPTION_11			0x00000011
+#define ERROR_CPU_EXCEPTION_12			0x00000012
+#define ERROR_CPU_EXCEPTION_13			0x00000013
+#define ERROR_CPU_EXCEPTION_14			0x00000014
+#define ERROR_CPU_EXCEPTION_15			0x00000015
+#define ERROR_CPU_EXCEPTION_16			0x00000016
+#define ERROR_CPU_EXCEPTION_17			0x00000017
+#define ERROR_CPU_EXCEPTION_18			0x00000018
+#define ERROR_CPU_EXCEPTION_19			0x00000019
+#define ERROR_CPU_EXCEPTION_1A			0x0000001a
+#define ERROR_CPU_EXCEPTION_1B			0x0000001b
+#define ERROR_CPU_EXCEPTION_1C			0x0000001c
+#define ERROR_CPU_EXCEPTION_1D			0x0000001d
+#define ERROR_CPU_EXCEPTION_1E			0x0000001e
+#define ERROR_CPU_EXCEPTION_1F			0x0000001f
+#define ERROR_CPU_EXCEPTIONS			0x0000001f
+#define ERROR_NO_MORE_SEGMENT			0x00000020
+#define ERROR_NO_MORE_FREE_MEMORY		0x00000021
+#define ERROR_MEMORY_FREE_RANGE_OVERLAPPED	0x00000022
+#define ERROR_NO_MORE_FREE_TAG			0x00000023
+
 //
 uint Error_Report(uint error_no, ...);
 void Error_Abort(void);
@@ -213,6 +243,13 @@ void InterruptHandler27(uint *esp);
 void Initialise_Keyboard(void);
 void InterruptHandler21(uint *esp);
 
+/*memory.c メモリ関連*/
+uint Memory_Test(uint start, uint end);
+IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags);
+//uint Memory_Free(IO_MemoryControl ctrl, void *addr, uint size);
+void *Memory_Allocate(IO_MemoryControl ctrl, uint size);
+uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
+
 /*serial.c シリアル通信関連*/
 #define COM1_RX		0x03f8
 #define COM1_TX		0x03f8
@@ -243,6 +280,8 @@ void InterruptHandler20(uint *esp);
 #define VGA_CRTC_R_CURSOR_LOCATION_LOW	0x0f
 #define VGA_TEXTMODE_ADR		0xb8000
 //
+uchar VGA_CRTController_ReadRegister(uchar regno);
+void VGA_CRTController_WriteRegister(uchar regno, uchar data);
 void TextMode_Write_TextRAM(ushort index, uchar data);
 void TextMode_Put_Character_Absolute(uchar c, col_text col, ushort location);
 void TextMode_Put_String_Absolute(const uchar s[], col_text col, uint x, uint y);

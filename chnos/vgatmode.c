@@ -1,6 +1,19 @@
 
 #include "core.h"
 
+uchar VGA_CRTController_ReadRegister(uchar regno)
+{
+	IO_Out8(VGA_CRTC_R_NUMBER, regno);
+	return IO_In8(VGA_CRTC_R_DATA);
+}
+
+void VGA_CRTController_WriteRegister(uchar regno, uchar data)
+{
+	IO_Out8(VGA_CRTC_R_NUMBER, regno);
+	IO_Out8(VGA_CRTC_R_DATA, data);
+	return;
+}
+
 void TextMode_Write_TextRAM(ushort index, uchar data)
 {
 	uchar *textram;
@@ -56,36 +69,22 @@ void TextMode_Clear_Screen(void)
 
 ushort TextMode_Get_CursorLocation(void)
 {
-	uint eflags;
 	ushort location;
 
-	eflags = IO_Load_EFlags();
-
-	IO_Out8(VGA_CRTC_R_NUMBER, VGA_CRTC_R_CURSOR_LOCATION_HIGH);
-	location = IO_In8(VGA_CRTC_R_DATA);
+	location = VGA_CRTController_ReadRegister(VGA_CRTC_R_CURSOR_LOCATION_HIGH);
 
 	location = location << 8;
 
-	IO_Out8(VGA_CRTC_R_NUMBER, VGA_CRTC_R_CURSOR_LOCATION_LOW);
-	location |= IO_In8(VGA_CRTC_R_DATA);
+	location |= VGA_CRTController_ReadRegister(VGA_CRTC_R_CURSOR_LOCATION_LOW);
 
-	IO_Store_EFlags(eflags);
 	return location;
 }
 
 void TextMode_Set_CursorLocation(ushort location)
 {
-	uint eflags;
+	VGA_CRTController_WriteRegister(VGA_CRTC_R_CURSOR_LOCATION_HIGH, location >> 8);
+	VGA_CRTController_WriteRegister(VGA_CRTC_R_CURSOR_LOCATION_LOW, location & 0x00ff);
 
-	eflags = IO_Load_EFlags();
-
-	IO_Out8(VGA_CRTC_R_NUMBER, VGA_CRTC_R_CURSOR_LOCATION_HIGH);
-	IO_Out8(VGA_CRTC_R_DATA, location >> 8);
-
-	IO_Out8(VGA_CRTC_R_NUMBER, VGA_CRTC_R_CURSOR_LOCATION_LOW);
-	IO_Out8(VGA_CRTC_R_DATA, location & 0x00ff);
-
-	IO_Store_EFlags(eflags);
 	return;
 }
 

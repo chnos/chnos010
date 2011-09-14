@@ -16,7 +16,7 @@ void InterruptHandler21(uint *esp)
 
 	ProgrammableInterruptController_InterruptRequest_Complete(0x01);
 
-	snprintf(s, "KBD:0x%02X", sizeof(s), data);
+	snprintf(s, "KBD:0x%X", sizeof(s), data);
 	TextMode_Put_String_Absolute(s, white, 40, 0);
 
 	return;
