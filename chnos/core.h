@@ -164,43 +164,45 @@ uint System_SegmentDescriptor_Set(uint limit, int base, int ar);
 void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 
 /*error.c エラー関連*/
-#define ERROR_CPU_EXCEPTION_00			0x00000000
-#define ERROR_CPU_EXCEPTION_01			0x00000001
-#define ERROR_CPU_EXCEPTION_02			0x00000002
-#define ERROR_CPU_EXCEPTION_03			0x00000003
-#define ERROR_CPU_EXCEPTION_04			0x00000004
-#define ERROR_CPU_EXCEPTION_05			0x00000005
-#define ERROR_CPU_EXCEPTION_06			0x00000006
-#define ERROR_CPU_EXCEPTION_07			0x00000007
-#define ERROR_CPU_EXCEPTION_08			0x00000008
-#define ERROR_CPU_EXCEPTION_09			0x00000009
-#define ERROR_CPU_EXCEPTION_0A			0x0000000a
-#define ERROR_CPU_EXCEPTION_0B			0x0000000b
-#define ERROR_CPU_EXCEPTION_0C			0x0000000c
-#define ERROR_CPU_EXCEPTION_0D			0x0000000d
-#define ERROR_CPU_EXCEPTION_0E			0x0000000e
-#define ERROR_CPU_EXCEPTION_0F			0x0000000f
-#define ERROR_CPU_EXCEPTION_10			0x00000010
-#define ERROR_CPU_EXCEPTION_11			0x00000011
-#define ERROR_CPU_EXCEPTION_12			0x00000012
-#define ERROR_CPU_EXCEPTION_13			0x00000013
-#define ERROR_CPU_EXCEPTION_14			0x00000014
-#define ERROR_CPU_EXCEPTION_15			0x00000015
-#define ERROR_CPU_EXCEPTION_16			0x00000016
-#define ERROR_CPU_EXCEPTION_17			0x00000017
-#define ERROR_CPU_EXCEPTION_18			0x00000018
-#define ERROR_CPU_EXCEPTION_19			0x00000019
-#define ERROR_CPU_EXCEPTION_1A			0x0000001a
-#define ERROR_CPU_EXCEPTION_1B			0x0000001b
-#define ERROR_CPU_EXCEPTION_1C			0x0000001c
-#define ERROR_CPU_EXCEPTION_1D			0x0000001d
-#define ERROR_CPU_EXCEPTION_1E			0x0000001e
-#define ERROR_CPU_EXCEPTION_1F			0x0000001f
+#define ERROR_CPU_EXCEPTION_00			0x00000000	//int *esp
+#define ERROR_CPU_EXCEPTION_01			0x00000001	//int *esp
+#define ERROR_CPU_EXCEPTION_02			0x00000002	//int *esp
+#define ERROR_CPU_EXCEPTION_03			0x00000003	//int *esp
+#define ERROR_CPU_EXCEPTION_04			0x00000004	//int *esp
+#define ERROR_CPU_EXCEPTION_05			0x00000005	//int *esp
+#define ERROR_CPU_EXCEPTION_06			0x00000006	//int *esp
+#define ERROR_CPU_EXCEPTION_07			0x00000007	//int *esp
+#define ERROR_CPU_EXCEPTION_08			0x00000008	//int *esp
+#define ERROR_CPU_EXCEPTION_09			0x00000009	//int *esp
+#define ERROR_CPU_EXCEPTION_0A			0x0000000a	//int *esp
+#define ERROR_CPU_EXCEPTION_0B			0x0000000b	//int *esp
+#define ERROR_CPU_EXCEPTION_0C			0x0000000c	//int *esp
+#define ERROR_CPU_EXCEPTION_0D			0x0000000d	//int *esp
+#define ERROR_CPU_EXCEPTION_0E			0x0000000e	//int *esp
+#define ERROR_CPU_EXCEPTION_0F			0x0000000f	//int *esp
+#define ERROR_CPU_EXCEPTION_10			0x00000010	//int *esp
+#define ERROR_CPU_EXCEPTION_11			0x00000011	//int *esp
+#define ERROR_CPU_EXCEPTION_12			0x00000012	//int *esp
+#define ERROR_CPU_EXCEPTION_13			0x00000013	//int *esp
+#define ERROR_CPU_EXCEPTION_14			0x00000014	//int *esp
+#define ERROR_CPU_EXCEPTION_15			0x00000015	//int *esp
+#define ERROR_CPU_EXCEPTION_16			0x00000016	//int *esp
+#define ERROR_CPU_EXCEPTION_17			0x00000017	//int *esp
+#define ERROR_CPU_EXCEPTION_18			0x00000018	//int *esp
+#define ERROR_CPU_EXCEPTION_19			0x00000019	//int *esp
+#define ERROR_CPU_EXCEPTION_1A			0x0000001a	//int *esp
+#define ERROR_CPU_EXCEPTION_1B			0x0000001b	//int *esp
+#define ERROR_CPU_EXCEPTION_1C			0x0000001c	//int *esp
+#define ERROR_CPU_EXCEPTION_1D			0x0000001d	//int *esp
+#define ERROR_CPU_EXCEPTION_1E			0x0000001e	//int *esp
+#define ERROR_CPU_EXCEPTION_1F			0x0000001f	//int *esp
 #define ERROR_CPU_EXCEPTIONS			0x0000001f
-#define ERROR_NO_MORE_SEGMENT			0x00000020
-#define ERROR_NO_MORE_FREE_MEMORY		0x00000021
+//
+#define ERROR_NO_MORE_SEGMENT			0x00000020	//uint *retaddr
+#define ERROR_NOT_ENOUGH_FREE_MEMORY		0x00000021	//IO_MemoryControl ctrl, uint size
 #define ERROR_MEMORY_FREE_RANGE_OVERLAPPED	0x00000022
-#define ERROR_NO_MORE_FREE_TAG			0x00000023
+#define ERROR_NO_MORE_FREE_TAG			0x00000023	//IO_MemoryControl ctrl
+#define ERROR_INVALID_FREE_MEMORY_INDEX		0x00000024	//IO_MemoryControl ctrl, uint tagno
 
 //
 uint Error_Report(uint error_no, ...);
@@ -246,7 +248,8 @@ void InterruptHandler21(uint *esp);
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
 IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags);
-//uint Memory_Free(IO_MemoryControl ctrl, void *addr, uint size);
+void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size);
+void Memory_Free_Sub(IO_MemoryControl ctrl, uint tagno);
 void *Memory_Allocate(IO_MemoryControl ctrl, uint size);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 
