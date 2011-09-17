@@ -30,3 +30,14 @@ void SerialPort_Send(const uchar s[])
 
 	return;
 }
+
+#ifdef CHNOSPROJECT_DEBUG
+void debug(const uchar format[], ...)
+{
+	uchar s[256];
+
+	vsnprintf(s, format, sizeof(s), (uint *)(&format + 1));
+	SerialPort_Send(s);
+	return;
+}
+#endif

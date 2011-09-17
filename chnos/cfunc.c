@@ -60,7 +60,29 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 				work.format_phase = 0;
 			} else if(c == 'o'){	/*データを8進数で出力します。*/
 			} else if(c == 'd'){	/*データを10進数で出力します。*/
+				/*えせ仕様。符号なし。*/
+				CFunction_vsnprintf_To_String_From_Decimal_Unsigned(&work, CFunction_vsnprintf_Get_NextArgument(&work));
+				for(i = 0; i < 10; i++){
+					if(work.temporary_data[i] != ' '){
+						break;
+					}
+				}
+				for(; i < 10; i++){
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+				}
+				work.format_phase = 0;
 			} else if(c == 'i'){	/*データを10進数で出力します。*/
+				/*えせ仕様。符号なし。*/
+				CFunction_vsnprintf_To_String_From_Decimal_Unsigned(&work, CFunction_vsnprintf_Get_NextArgument(&work));
+				for(i = 0; i < 10; i++){
+					if(work.temporary_data[i] != ' '){
+						break;
+					}
+				}
+				for(; i < 10; i++){
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
+				}
+				work.format_phase = 0;
 			} else if(c == 'x'){	/*データを16進数で出力します。x:アルファベット小文字。*/
 				CFunction_vsnprintf_To_String_From_Hex_Lower(&work, CFunction_vsnprintf_Get_NextArgument(&work));
 				for(i = 0; i < 8; i++){

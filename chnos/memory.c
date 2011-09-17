@@ -66,6 +66,10 @@ void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size)
 
 	size = (size + 7) & ~7;
 
+#ifdef CHNOSPROJECT_DEBUG_MEMORY
+	debug("DEBUG:MemoryFree:Start ctrl:0x%08X addr:0x%08X size 0x%08X\n", ctrl, addr, size);
+#endif
+
 	eflags = IO_Load_EFlags();
 
 	IO_CLI();
@@ -81,7 +85,10 @@ void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size)
 			k = i;
 		}
 		if(addr + size <= ctrl[i].addr){	/*解放しようとしている空きメモリの次に来るべき空きメモリ*/
-			j = 1;
+#ifdef CHNOSPROJECT_DEBUG_MEMORY
+	debug("DEBUG:MemoryFree:Found NextTagIndex:%d\n", i);
+#endif
+			j = i;
 			break;
 		}
 	}
@@ -93,6 +100,9 @@ void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size)
 			k = i;
 		}
 	}
+#ifdef CHNOSPROJECT_DEBUG_MEMORY
+	debug("DEBUG:MemoryFree:Loop EndTagIndex:%d\n", i);
+#endif
 	if(j == 0){	/*自分よりもアドレスの小さな空き情報が見つからなかった*/
 		j = i;
 	}
@@ -112,6 +122,10 @@ void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size)
 			j--;
 		}
 	} else{	/*空きは十分あるのでずらす*/
+		if(i + 1 != ctrl[0].size - 1){
+			ctrl[i + 1].addr = 0;
+			ctrl[i + 1].size = 0xffffffff;
+		}
 		for(; i > j; i--){
 			ctrl[i] = ctrl[i - 1];
 		}
@@ -159,7 +173,7 @@ void Memory_Free_Sub(IO_MemoryControl ctrl, uint tagno)
 				}
 				ctrl[k] = ctrl[k + 1];
 			}
-			if(k == ctrl[0].size - 1){
+			if(k != ctrl[0].size - 1){
 				ctrl[k].addr = 0;
 				ctrl[k].size = 0xffffffff;
 			}
@@ -179,6 +193,10 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size)
 
 	size = (size + 7) & ~7;
 
+#ifdef CHNOSPROJECT_DEBUG_MEMORY
+	debug("DEBUG:MemoryAllocate:Start ctrl:0x%08X size 0x%08X\n", ctrl, size);
+#endif
+
 	eflags = IO_Load_EFlags();
 
 	IO_CLI();
@@ -188,6 +206,9 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size)
 			break;
 		}
 		if(ctrl[i].size >= size){	/*十分な空きを発見*/
+#ifdef CHNOSPROJECT_DEBUG_MEMORY
+	debug("DEBUG:MemoryAllocate:Found index:%d\n", i);
+#endif
 			addr = ctrl[i].addr;
 			if(ctrl[i].size == size){	/*ぴったりだったので空き情報を破棄*/
 				for(; i < ctrl[0].size - 1; i++){
@@ -196,7 +217,7 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size)
 					}
 					ctrl[i] = ctrl[i + 1];
 				}
-				if(i == ctrl[0].size - 1){
+				if(i != ctrl[0].size - 1){
 					ctrl[i].addr = 0;
 					ctrl[i].size = 0xffffffff;
 				}

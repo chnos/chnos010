@@ -32,28 +32,9 @@ void CHNMain(void)
 	snprintf(s, "\tMemory:%uByte %uKiB %uMib\n", sizeof(s), i, i >> 10, i >> 20);
 	TextMode_Put_String(s, white);
 	System.MemoryController = Memory_Initialise_Control((void *)PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, i - PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, SYSTEM_MEMORY_CONTROL_TAGS);
+
 	i = Memory_Get_FreeSize(System.MemoryController);
 	snprintf(s, "\tFreeMemory:%uByte %uKiB %uMib\n", sizeof(s), i, i >> 10, i >> 20);
-	TextMode_Put_String(s, white);
-
-	i = (uint)Memory_Allocate(System.MemoryController, 1024);
-	snprintf(s, "\tAllocateTest:%uByte[0x%X]\n", sizeof(s), 1024, i);
-	TextMode_Put_String(s, white);
-
-	i = (uint)Memory_Allocate(System.MemoryController, 1024);
-	snprintf(s, "\tAllocateTest:%uByte[0x%X]\n", sizeof(s), 1024, i);
-	TextMode_Put_String(s, white);
-
-	Memory_Free(System.MemoryController, (void *)i, 512);
-	snprintf(s, "\tFreeTest:%uByte[0x%X]\n", sizeof(s), 512, i);
-	TextMode_Put_String(s, white);
-
-	Memory_Free(System.MemoryController, (void *)(i + 512), 512);
-	snprintf(s, "\tFreeTest:%uByte[0x%X]\n", sizeof(s), 512, i + 512);
-	TextMode_Put_String(s, white);
-
-	i = (uint)Memory_Allocate(System.MemoryController, 1024);
-	snprintf(s, "\tAllocateTest:%uByte[0x%X]\n", sizeof(s), 1024, i);
 	TextMode_Put_String(s, white);
 
 	TextMode_Put_String("\tInitialising GDT...\n", white);

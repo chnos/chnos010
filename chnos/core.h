@@ -1,4 +1,11 @@
 
+/*debug option*/
+#define CHNOSPROJECT_DEBUG		/*定義するとデバッグモードで実行。それぞれのデバッグオプションも有効にする必要がある*/
+
+#ifdef CHNOSPROJECT_DEBUG
+	//#define CHNOSPROJECT_DEBUG_MEMORY	/*定義するとメモリ関連のデバッグをオンにする*/
+#endif
+
 /*new object types*/
 typedef enum _bool { false, true} bool;
 typedef unsigned char uchar;
@@ -7,6 +14,8 @@ typedef unsigned int uint;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 
 /*defines*/
+#define CHNOSPROJECT_DEBUG		/*定義するとデバッグモードで実行*/
+
 #define EFLAGS_AC_BIT	0x00040000
 
 #define CR0_PROTECTIONENABLE	0x00000001
@@ -268,6 +277,10 @@ uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 //
 void Initialise_SerialPort(void);
 void SerialPort_Send(const uchar s[]);
+//
+#ifdef CHNOSPROJECT_DEBUG
+void debug(const uchar format[], ...);
+#endif
 
 /*timer.c タイマー関連*/
 #define PIT_CTRL	0x0043
