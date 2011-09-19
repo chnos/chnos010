@@ -70,6 +70,10 @@ void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size)
 	debug("DEBUG:MemoryFree:Start ctrl:0x%08X addr:0x%08X size 0x%08X\n", ctrl, addr, size);
 #endif
 
+	if(size == 0){
+		return;
+	}
+
 	eflags = IO_Load_EFlags();
 
 	IO_CLI();
@@ -165,7 +169,11 @@ void Memory_Free_Sub(IO_MemoryControl ctrl, uint tagno)
 	}
 
 	for(; i < j; i++){
-		if(ctrl[i].addr + ctrl[i].size == ctrl[i + 1].addr){	/*ctrl[i]の後ろに、ctrl[i + 1]がつながる*/
+		if(ctrl[i].addr + ctrl[i].size >= ctrl[i + 1].addr){	/*ctrl[i]の後ろに、ctrl[i + 1]がつながる*/
+			if(ctrl[i].addr + ctrl[i].size > ctrl[i + 1].addr){	/*範囲が重なっている*/
+				Error_Report(ERROR_MEMORY_FREE_RANGE_OVERLAPPED, ctrl, i);
+				ctrl[i].size = (uint)ctrl[i + 1].addr - (uint)ctrl[i].addr;
+			}
 			ctrl[i].size += ctrl[i + 1].size;
 			for(k = i + 1; k < ctrl[0].size - 1; k++){
 				if(ctrl[k].size == 0xffffffff){
@@ -235,6 +243,31 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size)
 	IO_Store_EFlags(eflags);
 
 	return 0;
+}
+
+void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align)
+/*alignは2の冪乗倍として解釈する。2の冪乗倍でない場合は、最大のセットされているビットに対応する値でアラインされる*/
+{
+	uint i;
+	void *notaligned;
+	void *aligned;
+
+	if(align != 0){
+		for(i = 0; i < 32; i++){
+			align = align >> 1;
+			if(align == 0){
+				break;
+			}
+		}
+		notaligned = Memory_Allocate(ctrl, size + (1 << i) - 1);
+		aligned = (void *)((((uint)notaligned + (1 << i) - 1) >> i) << i);
+		Memory_Free(ctrl, notaligned, (uint)aligned - (uint)notaligned);
+		Memory_Free(ctrl, aligned + size, ((uint)notaligned + size + (1 << i) - 1) - ((uint)aligned + size));
+	} else{
+		aligned = Memory_Allocate(ctrl, size);
+	}
+
+	return aligned;
 }
 
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl)

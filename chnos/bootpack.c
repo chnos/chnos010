@@ -4,14 +4,14 @@
 System_CommonData System;
 
 uchar *SystemRunningPhaseText[] = {
-	" 0:Initialising Hardware (Protected 32bit Text Mode)",
-	" 1:Initialising Software (Protected 32bit Text Mode)"
+	" 0:Initialising System (Protected 32bit Text Mode)"
 };
 
 void CHNMain(void)
 {
 	uchar s[128];
 	uint i;
+	CPU_ControlRegister0 cr0;
 
 	IO_CLI();
 
@@ -36,6 +36,8 @@ void CHNMain(void)
 	i = Memory_Get_FreeSize(System.MemoryController);
 	snprintf(s, "\tFreeMemory:%uByte %uKiB %uMib\n", sizeof(s), i, i >> 10, i >> 20);
 	TextMode_Put_String(s, white);
+
+	Memory_Allocate_Aligned(System.MemoryController, 4096, 4096);
 
 	TextMode_Put_String("\tInitialising GDT...\n", white);
 	Initialise_GlobalDescriptorTable();
@@ -72,9 +74,18 @@ void CHNMain(void)
 	snprintf(s, "TEST s %s\n", sizeof(s), "TESTString.");
 	TextMode_Put_String(s, white);
 
-	IO_STI();
+	snprintf(s, "TEST d %d\n", sizeof(s), -1234);
+	TextMode_Put_String(s, white);
 
-	System_Set_RunningPhase(1);
+	snprintf(s, "TEST i %i\n", sizeof(s), -1234);
+	TextMode_Put_String(s, white);
+
+	cr0.cr0 = Load_CR0();
+
+	snprintf(s, "CR0.PE=%d PG=%d\n", sizeof(s), cr0.bit.PE, cr0.bit.PG);
+	TextMode_Put_String(s, white);
+
+	IO_STI();
 
 	for (;;) {
 		IO_HLT();

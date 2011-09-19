@@ -60,11 +60,19 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 				work.format_phase = 0;
 			} else if(c == 'o'){	/*データを8進数で出力します。*/
 			} else if(c == 'd'){	/*データを10進数で出力します。*/
-				/*えせ仕様。符号なし。*/
-				CFunction_vsnprintf_To_String_From_Decimal_Unsigned(&work, CFunction_vsnprintf_Get_NextArgument(&work));
+				i = CFunction_vsnprintf_Get_NextArgument(&work);
+				if((i & 0x80000000) != 0){
+					i--;
+					i = ~i;
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, '-');
+				}
+				CFunction_vsnprintf_To_String_From_Decimal_Unsigned(&work, i);
 				for(i = 0; i < 10; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
+					}
+					if(i >= 10 - 1){
+						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
 					}
 				}
 				for(; i < 10; i++){
@@ -72,11 +80,19 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 				}
 				work.format_phase = 0;
 			} else if(c == 'i'){	/*データを10進数で出力します。*/
-				/*えせ仕様。符号なし。*/
-				CFunction_vsnprintf_To_String_From_Decimal_Unsigned(&work, CFunction_vsnprintf_Get_NextArgument(&work));
+				i = CFunction_vsnprintf_Get_NextArgument(&work);
+				if((i & 0x80000000) != 0){
+					i--;
+					i = ~i;
+					CFunction_vsnprintf_Write_DestinationBuffer(&work, '-');
+				}
+				CFunction_vsnprintf_To_String_From_Decimal_Unsigned(&work, i);
 				for(i = 0; i < 10; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
+					}
+					if(i >= 10 - 1){
+						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
 					}
 				}
 				for(; i < 10; i++){
@@ -89,6 +105,9 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
+					if(i >= 10 - 1){
+						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
+					}
 				}
 				for(; i < 8; i++){
 					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
@@ -98,6 +117,9 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 				for(i = 0; i < 8; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
+					}
+					if(i >= 10 - 1){
+						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
 					}
 				}
 				for(; i < 8; i++){
@@ -109,6 +131,9 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 				for(i = 0; i < 10; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
+					}
+					if(i >= 10 - 1){
+						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
 					}
 				}
 				for(; i < 10; i++){

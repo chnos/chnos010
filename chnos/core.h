@@ -14,7 +14,169 @@ typedef unsigned int uint;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 
 /*defines*/
-#define CHNOSPROJECT_DEBUG		/*定義するとデバッグモードで実行*/
+#define True	1
+#define False	0
+
+typedef struct DATA_BIT32 {
+	unsigned bit0 : 1;
+	unsigned bit1 : 1;
+	unsigned bit2 : 1;
+	unsigned bit3 : 1;
+	unsigned bit4 : 1;
+	unsigned bit5 : 1;
+	unsigned bit6 : 1;
+	unsigned bit7 : 1;
+	unsigned bit8 : 1;
+	unsigned bit9 : 1;
+	unsigned bit10 : 1;
+	unsigned bit11 : 1;
+	unsigned bit12 : 1;
+	unsigned bit13 : 1;
+	unsigned bit14 : 1;
+	unsigned bit15 : 1;
+	unsigned bit16 : 1;
+	unsigned bit17 : 1;
+	unsigned bit18 : 1;
+	unsigned bit19 : 1;
+	unsigned bit20 : 1;
+	unsigned bit21 : 1;
+	unsigned bit22 : 1;
+	unsigned bit23 : 1;
+	unsigned bit24 : 1;
+	unsigned bit25 : 1;
+	unsigned bit26 : 1;
+	unsigned bit27 : 1;
+	unsigned bit28 : 1;
+	unsigned bit29 : 1;
+	unsigned bit30 : 1;
+	unsigned bit31 : 1;
+} Data_Bit32;
+
+typedef union CPU_CONTROL_REGISTER0 {
+	uint cr0;
+	struct CPU_CONTROL_REGISTER0_BIT {
+		unsigned PE : 1;
+		unsigned MP : 1;
+		unsigned EM : 1;
+		unsigned TS : 1;
+		unsigned ET : 1;
+		unsigned NE : 1;
+		unsigned bit6 : 1;
+		unsigned bit7 : 1;
+		unsigned bit8 : 1;
+		unsigned bit9 : 1;
+		unsigned bit10 : 1;
+		unsigned bit11 : 1;
+		unsigned bit12 : 1;
+		unsigned bit13 : 1;
+		unsigned bit14 : 1;
+		unsigned bit15 : 1;
+		unsigned WP : 1;
+		unsigned bit17 : 1;
+		unsigned AM : 1;
+		unsigned bit19 : 1;
+		unsigned bit20 : 1;
+		unsigned bit21 : 1;
+		unsigned bit22 : 1;
+		unsigned bit23 : 1;
+		unsigned bit24 : 1;
+		unsigned bit25 : 1;
+		unsigned bit26 : 1;
+		unsigned bit27 : 1;
+		unsigned bit28 : 1;
+		unsigned NW : 1;
+		unsigned CD : 1;
+		unsigned PG : 1;
+	} bit;
+} CPU_ControlRegister0;
+
+typedef struct CPU_CONTROL_REGISTER3 {
+	unsigned bit0 : 1;
+	unsigned bit1 : 1;
+	unsigned bit2 : 1;
+	unsigned PWT : 1;
+	unsigned PCD : 1;
+	unsigned bit5 : 1;
+	unsigned bit6 : 1;
+	unsigned bit7 : 1;
+	unsigned bit8 : 1;
+	unsigned bit9 : 1;
+	unsigned bit10 : 1;
+	unsigned bit11 : 1;
+	unsigned PDB : 20;
+} CPU_ControlRegister3;
+
+typedef struct CPU_CONTROL_REGISTER4 {
+	unsigned VME : 1;
+	unsigned PVI : 1;
+	unsigned TSD : 1;
+	unsigned DE : 1;
+	unsigned PSE : 1;
+	unsigned PAE : 1;
+	unsigned MCE : 1;
+	unsigned PGE : 1;
+	unsigned PCE : 1;
+	unsigned OSFXSR : 1;
+	unsigned OSXMMEXCPT : 1;
+	unsigned bit11 : 1;
+	unsigned bit12 : 1;
+	unsigned VMXE : 1;
+	unsigned SMXE : 1;
+	unsigned bit15 : 1;
+	unsigned bit16 : 1;
+	unsigned PCIDE : 1;
+	unsigned OSXSAVE : 1;
+	unsigned bit19 : 1;
+	unsigned SMEP : 1;
+	unsigned bit21 : 1;
+	unsigned bit22 : 1;
+	unsigned bit23 : 1;
+	unsigned bit24 : 1;
+	unsigned bit25 : 1;
+	unsigned bit26 : 1;
+	unsigned bit27 : 1;
+	unsigned bit28 : 1;
+	unsigned bit29 : 1;
+	unsigned bit30 : 1;
+	unsigned bit31 : 1;
+} CPU_ControlRegister4;
+
+typedef union CPU_EFLAGS {
+	uint eflags;
+	struct CPU_EFLAGS_BIT {
+		unsigned CF : 1;
+		unsigned bit1 : 1;
+		unsigned PF : 1;
+		unsigned bit3 : 1;
+		unsigned AF : 1;
+		unsigned bit5 : 1;
+		unsigned ZF : 1;
+		unsigned SF : 1;
+		unsigned TF : 1;
+		unsigned IF : 1;
+		unsigned DF : 1;
+		unsigned OF : 1;
+		unsigned IOPL : 2;
+		unsigned NT : 1;
+		unsigned bit15 : 1;
+		unsigned RF : 1;
+		unsigned VM : 1;
+		unsigned AC : 1;
+		unsigned VIF : 1;
+		unsigned VIP : 1;
+		unsigned ID : 1;
+		unsigned bit22 : 1;
+		unsigned bit23 : 1;
+		unsigned bit24 : 1;
+		unsigned bit25 : 1;
+		unsigned bit26 : 1;
+		unsigned bit27 : 1;
+		unsigned bit28 : 1;
+		unsigned bit29 : 1;
+		unsigned bit30 : 1;
+		unsigned bit31 : 1;
+	} bit;
+} CPU_EFlags;
 
 #define EFLAGS_AC_BIT	0x00040000
 
@@ -209,7 +371,7 @@ void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 //
 #define ERROR_NO_MORE_SEGMENT			0x00000020	//uint *retaddr
 #define ERROR_NOT_ENOUGH_FREE_MEMORY		0x00000021	//IO_MemoryControl ctrl, uint size
-#define ERROR_MEMORY_FREE_RANGE_OVERLAPPED	0x00000022
+#define ERROR_MEMORY_FREE_RANGE_OVERLAPPED	0x00000022	//IO_MemoryControl ctrl, uint tagno
 #define ERROR_NO_MORE_FREE_TAG			0x00000023	//IO_MemoryControl ctrl
 #define ERROR_INVALID_FREE_MEMORY_INDEX		0x00000024	//IO_MemoryControl ctrl, uint tagno
 
@@ -260,6 +422,7 @@ IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags);
 void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size);
 void Memory_Free_Sub(IO_MemoryControl ctrl, uint tagno);
 void *Memory_Allocate(IO_MemoryControl ctrl, uint size);
+void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 
 /*serial.c シリアル通信関連*/
