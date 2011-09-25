@@ -4,6 +4,7 @@
 
 #ifdef CHNOSPROJECT_DEBUG
 	//#define CHNOSPROJECT_DEBUG_MEMORY	/*定義するとメモリ関連のデバッグをオンにする*/
+	#define CHNOSPROJECT_DEBUG_EMULATOR_X86
 #endif
 
 /*new object types*/
@@ -17,39 +18,42 @@ typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white}
 #define True	1
 #define False	0
 
-typedef struct DATA_BIT32 {
-	unsigned bit0 : 1;
-	unsigned bit1 : 1;
-	unsigned bit2 : 1;
-	unsigned bit3 : 1;
-	unsigned bit4 : 1;
-	unsigned bit5 : 1;
-	unsigned bit6 : 1;
-	unsigned bit7 : 1;
-	unsigned bit8 : 1;
-	unsigned bit9 : 1;
-	unsigned bit10 : 1;
-	unsigned bit11 : 1;
-	unsigned bit12 : 1;
-	unsigned bit13 : 1;
-	unsigned bit14 : 1;
-	unsigned bit15 : 1;
-	unsigned bit16 : 1;
-	unsigned bit17 : 1;
-	unsigned bit18 : 1;
-	unsigned bit19 : 1;
-	unsigned bit20 : 1;
-	unsigned bit21 : 1;
-	unsigned bit22 : 1;
-	unsigned bit23 : 1;
-	unsigned bit24 : 1;
-	unsigned bit25 : 1;
-	unsigned bit26 : 1;
-	unsigned bit27 : 1;
-	unsigned bit28 : 1;
-	unsigned bit29 : 1;
-	unsigned bit30 : 1;
-	unsigned bit31 : 1;
+typedef union DATA_BIT32 {
+	uint data;
+	struct DATA_BIT32_BIT {
+		unsigned bit0 : 1;
+		unsigned bit1 : 1;
+		unsigned bit2 : 1;
+		unsigned bit3 : 1;
+		unsigned bit4 : 1;
+		unsigned bit5 : 1;
+		unsigned bit6 : 1;
+		unsigned bit7 : 1;
+		unsigned bit8 : 1;
+		unsigned bit9 : 1;
+		unsigned bit10 : 1;
+		unsigned bit11 : 1;
+		unsigned bit12 : 1;
+		unsigned bit13 : 1;
+		unsigned bit14 : 1;
+		unsigned bit15 : 1;
+		unsigned bit16 : 1;
+		unsigned bit17 : 1;
+		unsigned bit18 : 1;
+		unsigned bit19 : 1;
+		unsigned bit20 : 1;
+		unsigned bit21 : 1;
+		unsigned bit22 : 1;
+		unsigned bit23 : 1;
+		unsigned bit24 : 1;
+		unsigned bit25 : 1;
+		unsigned bit26 : 1;
+		unsigned bit27 : 1;
+		unsigned bit28 : 1;
+		unsigned bit29 : 1;
+		unsigned bit30 : 1;
+		unsigned bit31 : 1;
+	} bit;
 } Data_Bit32;
 
 typedef union CPU_CONTROL_REGISTER0 {
@@ -90,55 +94,61 @@ typedef union CPU_CONTROL_REGISTER0 {
 	} bit;
 } CPU_ControlRegister0;
 
-typedef struct CPU_CONTROL_REGISTER3 {
-	unsigned bit0 : 1;
-	unsigned bit1 : 1;
-	unsigned bit2 : 1;
-	unsigned PWT : 1;
-	unsigned PCD : 1;
-	unsigned bit5 : 1;
-	unsigned bit6 : 1;
-	unsigned bit7 : 1;
-	unsigned bit8 : 1;
-	unsigned bit9 : 1;
-	unsigned bit10 : 1;
-	unsigned bit11 : 1;
-	unsigned PDB : 20;
+typedef union CPU_CONTROL_REGISTER3 {
+	uint cr3;
+	struct CPU_CONTROL_REGISTER3_BIT {
+		unsigned bit0 : 1;
+		unsigned bit1 : 1;
+		unsigned bit2 : 1;
+		unsigned PWT : 1;
+		unsigned PCD : 1;
+		unsigned bit5 : 1;
+		unsigned bit6 : 1;
+		unsigned bit7 : 1;
+		unsigned bit8 : 1;
+		unsigned bit9 : 1;
+		unsigned bit10 : 1;
+		unsigned bit11 : 1;
+		unsigned PDB : 20;
+	} bit;
 } CPU_ControlRegister3;
 
-typedef struct CPU_CONTROL_REGISTER4 {
-	unsigned VME : 1;
-	unsigned PVI : 1;
-	unsigned TSD : 1;
-	unsigned DE : 1;
-	unsigned PSE : 1;
-	unsigned PAE : 1;
-	unsigned MCE : 1;
-	unsigned PGE : 1;
-	unsigned PCE : 1;
-	unsigned OSFXSR : 1;
-	unsigned OSXMMEXCPT : 1;
-	unsigned bit11 : 1;
-	unsigned bit12 : 1;
-	unsigned VMXE : 1;
-	unsigned SMXE : 1;
-	unsigned bit15 : 1;
-	unsigned bit16 : 1;
-	unsigned PCIDE : 1;
-	unsigned OSXSAVE : 1;
-	unsigned bit19 : 1;
-	unsigned SMEP : 1;
-	unsigned bit21 : 1;
-	unsigned bit22 : 1;
-	unsigned bit23 : 1;
-	unsigned bit24 : 1;
-	unsigned bit25 : 1;
-	unsigned bit26 : 1;
-	unsigned bit27 : 1;
-	unsigned bit28 : 1;
-	unsigned bit29 : 1;
-	unsigned bit30 : 1;
-	unsigned bit31 : 1;
+typedef union CPU_CONTROL_REGISTER4 {
+	uint cr4;
+	struct CPU_CONTROL_REGISTER4_BIT {
+		unsigned VME : 1;
+		unsigned PVI : 1;
+		unsigned TSD : 1;
+		unsigned DE : 1;
+		unsigned PSE : 1;
+		unsigned PAE : 1;
+		unsigned MCE : 1;
+		unsigned PGE : 1;
+		unsigned PCE : 1;
+		unsigned OSFXSR : 1;
+		unsigned OSXMMEXCPT : 1;
+		unsigned bit11 : 1;
+		unsigned bit12 : 1;
+		unsigned VMXE : 1;
+		unsigned SMXE : 1;
+		unsigned bit15 : 1;
+		unsigned bit16 : 1;
+		unsigned PCIDE : 1;
+		unsigned OSXSAVE : 1;
+		unsigned bit19 : 1;
+		unsigned SMEP : 1;
+		unsigned bit21 : 1;
+		unsigned bit22 : 1;
+		unsigned bit23 : 1;
+		unsigned bit24 : 1;
+		unsigned bit25 : 1;
+		unsigned bit26 : 1;
+		unsigned bit27 : 1;
+		unsigned bit28 : 1;
+		unsigned bit29 : 1;
+		unsigned bit30 : 1;
+		unsigned bit31 : 1;
+	} bit;
 } CPU_ControlRegister4;
 
 typedef union CPU_EFLAGS {
@@ -177,22 +187,6 @@ typedef union CPU_EFLAGS {
 		unsigned bit31 : 1;
 	} bit;
 } CPU_EFlags;
-
-#define EFLAGS_AC_BIT	0x00040000
-
-#define CR0_PROTECTIONENABLE	0x00000001
-#define CR0_MONITORCOPROCESSOR	0x00000002
-#define CR0_EMULATION		0x00000004
-#define CR0_TASKSWITCH		0x00000008
-#define CR0_EXTENDEDTYPE	0x00000010
-#define CR0_NUMERICERROR	0x00000020
-#define CR0_WRITEPROTECT	0x00010000
-#define CR0_ALIGNMENTMASK	0x00040000
-#define CR0_NOTWRITETHROUGH	0x20000000
-#define CR0_CACHE_DISABLE	0x40000000
-#define CR0_PAGING		0x80000000
-
-#define CR0_ALL_CACHE_DISABLE	CR0_NOTWRITETHROUGH + CR0_CACHE_DISABLE
 
 /*functions*/
 /*bootpack.c 基幹部分*/
@@ -333,6 +327,182 @@ uint System_SegmentDescriptor_Get_Limit(uint selector);
 uint System_SegmentDescriptor_Get_AccessRight(uint selector);
 uint System_SegmentDescriptor_Set(uint limit, int base, int ar);
 void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
+
+/*emu86.c x86エミュレーター関連*/
+typedef struct EMULATOR_X86_ENVIRONMENT_SEGMENT_REGISTER {
+	ushort selector;
+	ushort type;
+	uint base;
+	uint limit;
+} Emulator_x86_Environment_SegmentRegister;
+
+typedef struct EMULATOR_X86_ENVIRONMENT_SYSTEM_TABLE_REGISTER {
+	uint base;
+	ushort limit;
+} Emulator_x86_Environment_SystemTableRegister;
+
+typedef struct EMULATOR_X86_ENVIRONMENT {
+	CPU_EFlags EFLAGS;
+	uint EIP;
+//
+	uint GReg[8];
+//
+	Emulator_x86_Environment_SystemTableRegister GDTR;
+	Emulator_x86_Environment_SystemTableRegister IDTR;
+//
+	Emulator_x86_Environment_SegmentRegister SReg[8];
+//
+	CPU_ControlRegister0 CR0;
+	uint CR2;
+	CPU_ControlRegister3 CR3;
+	CPU_ControlRegister4 CR4;
+//
+	uchar now_opcode;
+	uchar operation_end;
+	uchar operation_32bit;
+	uchar operation_prefix_lock_repeat;
+	uchar operation_prefix_segment;
+	uchar operation_prefix_opsize;
+	uchar operation_prefix_addrsize;
+} Emulator_x86_Environment;
+
+typedef union EMULATOR_X86_OPCODE_MODRM {
+	uchar modrm;
+	struct EMULATOR_X86_OPCODE_MODRM_BIT {
+		unsigned RM : 3;
+		unsigned Reg : 3;
+		unsigned Mod : 2;
+	} bit;
+} Emulator_x86_OperationCode_ModRM;
+//
+#define OPCODE_REG_EAX			0
+#define OPCODE_REG_ECX			1
+#define OPCODE_REG_EDX			2
+#define OPCODE_REG_EBX			3
+#define OPCODE_REG_ESP			4
+#define OPCODE_REG_EBP			5
+#define OPCODE_REG_ESI			6
+#define OPCODE_REG_EDI			7
+//
+#define OPCODE_W_BYTE			0
+#define OPCODE_W_16BIT_OR_32BIT		1
+//
+#define OPCODE_REG_BYTE_AL		0
+#define OPCODE_REG_BYTE_CL		1
+#define OPCODE_REG_BYTE_DL		2
+#define OPCODE_REG_BYTE_BL		3
+#define OPCODE_REG_BYTE_AH		4
+#define OPCODE_REG_BYTE_CH		5
+#define OPCODE_REG_BYTE_DH		6
+#define OPCODE_REG_BYTE_BH		7
+//
+#define OPCODE_SREG2_ES			0
+#define OPCODE_SREG2_CS			1
+#define OPCODE_SREG2_SS			2
+#define OPCODE_SREG2_DS			3
+//
+#define OPCODE_SREG3_ES			0
+#define OPCODE_SREG3_CS			1
+#define OPCODE_SREG3_SS			2
+#define OPCODE_SREG3_DS			3
+#define OPCODE_SREG3_FS			4
+#define OPCODE_SREG3_GS			5
+//
+#define OPCODE_EEE_CR0			0
+#define OPCODE_EEE_CR2			2
+#define OPCODE_EEE_CR3			3
+#define OPCODE_EEE_CR4			4
+//
+#define OPCODE_EEE_DR0			0
+#define OPCODE_EEE_DR1			1
+#define OPCODE_EEE_DR2			2
+#define OPCODE_EEE_DR3			3
+#define OPCODE_EEE_DR6			6
+#define OPCODE_EEE_DR7			7
+//
+#define OPCODE_TTTN_OVERFLOW		0
+#define OPCODE_TTTN_NO_OVERFLOW		1
+#define OPCODE_TTTN_BELOW		2
+#define OPCODE_TTTN_NOT_BELOW		3
+#define OPCODE_TTTN_EQUAL_OR_ZERO	4
+#define OPCODE_TTTN_NOT_EQUAL_OR_ZERO	5
+#define OPCODE_TTTN_NOT_ABOVE		6
+#define OPCODE_TTTN_ABOVE		7
+#define OPCODE_TTTN_SIGN		8
+#define OPCODE_TTTN_NOT_SIGN		9
+#define OPCODE_TTTN_PARITY		10
+#define OPCODE_TTTN_NOT_PARITY		10
+#define OPCODE_TTTN_LESS_THAN		10
+#define OPCODE_TTTN_NOT_LESS_THAN	10
+#define OPCODE_TTTN_NOT_GREATER_THAN	10
+#define OPCODE_TTTN_GREATER_THAN	10
+//
+#define OPCODE_D_REG_SOURCE		0
+#define OPCODE_D_REG_DESTINATION	1
+//
+#define OPCODE_MOD_INDEXONLY		0
+#define OPCODE_MOD_INDEX_AND_DISP8	1
+#define OPCODE_MOD_INDEX_AND_DISP32	2
+#define OPCODE_MOD_REGISTER		3
+//
+#define OPCODE_RM32_ADDR_EAX		0
+#define OPCODE_RM32_ADDR_ECX		1
+#define OPCODE_RM32_ADDR_EDX		2
+#define OPCODE_RM32_ADDR_EBX		3
+#define OPCODE_RM32_ADDR_SIB		4
+#define OPCODE_RM32_ADDR_EBP		5
+#define OPCODE_RM32_MOD00_ADDR_DISP32	5
+#define OPCODE_RM32_ADDR_ESI		6
+#define OPCODE_RM32_ADDR_EDI		7
+//
+#define OPCODE_RM16_ADDR_BX_SI		0
+#define OPCODE_RM16_ADDR_BX_DI		1
+#define OPCODE_RM16_ADDR_BP_SI		2
+#define OPCODE_RM16_ADDR_BP_DI		3
+#define OPCODE_RM16_ADDR_SI		4
+#define OPCODE_RM16_ADDR_DI		5
+#define OPCODE_RM16_ADDR_DISP16		6
+#define OPCODE_RM16_ADDR_BX		7
+//
+#define OPCODE_PREFIX_NONE		0
+//
+#define OPCODE_PREFIX_LOCK		0xf0
+#define OPCODE_PREFIX_REPNE_REPNZ	0xf2
+#define OPCODE_PREFIX_REP_REPE_REPZ	0xf3
+//
+#define OPCODE_PREFIX_CS		0x2e
+#define OPCODE_PREFIX_SS		0x36
+#define OPCODE_PREFIX_DS		0x3e
+#define OPCODE_PREFIX_ES		0x26
+#define OPCODE_PREFIX_FS		0x64
+#define OPCODE_PREFIX_GS		0x65
+#define OPCODE_PREFIX_BRANCH_NOT_TAKEN	0x2e
+#define OPCODE_PREFIX_BRANCH_TAKEN	0x3e
+//
+#define OPCODE_PREFIX_OPERAND_SIZE	0x66
+//
+#define OPCODE_PREFIX_ADDRESS_SIZE	0x67
+//
+void Emulator_x86_Initialise(Emulator_x86_Environment *env);
+uint Emulator_x86_Execute(Emulator_x86_Environment *env);
+uint Emulator_x86_FetchCode(Emulator_x86_Environment *env, uint bytes);
+void Emulator_x86_InstructionPointer_Increment(Emulator_x86_Environment *env);
+uint Emulator_x86_Get_EffectivePhysicalAddress(Emulator_x86_Environment *env, uint sreg, uint offset);
+void Emulator_x86_MoveToGReg(Emulator_x86_Environment *env, uint reg, uint data, uint fullsize);
+uint Emulator_x86_MoveFromGReg(Emulator_x86_Environment *env, uint reg, uint fullsize);
+void Emulator_x86_MoveToSReg(Emulator_x86_Environment *env, uint sreg, ushort selector);
+void Emulator_x86_Push_Data_To_Stack(Emulator_x86_Environment *env, uint data, uint size_dword);
+uint Emulator_x86_Pop_Data_From_Stack(Emulator_x86_Environment *env, uint size_dword);
+//
+void Emulator_x86_Operation_MOV_To_Reg_FullSize(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_MOV_To_SegReg(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_MOV_To_ByteReg(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_INTn(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_LEA(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_CALL_Near_Relative(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_PUSHA(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_POPA(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_MOV_To_ByteReg_Gb_Eb(Emulator_x86_Environment *env);
 
 /*error.c エラー関連*/
 #define ERROR_CPU_EXCEPTION_00			0x00000000	//int *esp

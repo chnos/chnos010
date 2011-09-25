@@ -105,7 +105,7 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
-					if(i >= 10 - 1){
+					if(i >= 8 - 1){
 						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
 					}
 				}
@@ -118,7 +118,7 @@ int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
-					if(i >= 10 - 1){
+					if(i >= 8 - 1){
 						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
 					}
 				}

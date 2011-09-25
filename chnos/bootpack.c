@@ -12,6 +12,7 @@ void CHNMain(void)
 	uchar s[128];
 	uint i;
 	CPU_ControlRegister0 cr0;
+	Emulator_x86_Environment x86emu;
 
 	IO_CLI();
 
@@ -86,6 +87,15 @@ void CHNMain(void)
 	TextMode_Put_String(s, white);
 
 	IO_STI();
+
+	Emulator_x86_Initialise(&x86emu);
+
+	x86emu.EIP = 0xc200;
+	x86emu.GReg[OPCODE_REG_ESP] = 0xc200;
+
+	for(i = 0; i < 16; i++){
+		Emulator_x86_Execute(&x86emu);
+	}
 
 	for (;;) {
 		IO_HLT();
