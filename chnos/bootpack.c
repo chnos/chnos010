@@ -10,7 +10,7 @@ uchar *SystemRunningPhaseText[] = {
 void CHNMain(void)
 {
 	uchar s[128];
-	uint i;
+	uint i, emu_steps;
 	CPU_ControlRegister0 cr0;
 	Emulator_x86_Environment x86emu;
 
@@ -93,9 +93,10 @@ void CHNMain(void)
 	x86emu.EIP = 0xc200;
 	x86emu.GReg[OPCODE_REG_ESP] = 0xc200;
 
-	for(i = 0; i < 16; i++){
-		Emulator_x86_Execute(&x86emu);
-	}
+	emu_steps = Emulator_x86_Execute_Auto(&x86emu);
+
+	snprintf(s, "x86Emulator:Instructions=%d\n", sizeof(s), emu_steps);
+	TextMode_Put_String(s, white);
 
 	for (;;) {
 		IO_HLT();

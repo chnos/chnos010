@@ -441,8 +441,8 @@ typedef union EMULATOR_X86_OPCODE_MODRM {
 #define OPCODE_D_REG_DESTINATION	1
 //
 #define OPCODE_MOD_INDEXONLY		0
-#define OPCODE_MOD_INDEX_AND_DISP8	1
-#define OPCODE_MOD_INDEX_AND_DISP32	2
+#define OPCODE_MOD_INDEX_AND_DISP_BYTE	1
+#define OPCODE_MOD_INDEX_AND_DISP_FULL	2
 #define OPCODE_MOD_REGISTER		3
 //
 #define OPCODE_RM32_ADDR_EAX		0
@@ -461,7 +461,8 @@ typedef union EMULATOR_X86_OPCODE_MODRM {
 #define OPCODE_RM16_ADDR_BP_DI		3
 #define OPCODE_RM16_ADDR_SI		4
 #define OPCODE_RM16_ADDR_DI		5
-#define OPCODE_RM16_ADDR_DISP16		6
+#define OPCODE_RM16_ADDR_BP		6
+#define OPCODE_RM16_MOD00_ADDR_DISP16	6
 #define OPCODE_RM16_ADDR_BX		7
 //
 #define OPCODE_PREFIX_NONE		0
@@ -470,12 +471,12 @@ typedef union EMULATOR_X86_OPCODE_MODRM {
 #define OPCODE_PREFIX_REPNE_REPNZ	0xf2
 #define OPCODE_PREFIX_REP_REPE_REPZ	0xf3
 //
-#define OPCODE_PREFIX_CS		0x2e
-#define OPCODE_PREFIX_SS		0x36
-#define OPCODE_PREFIX_DS		0x3e
-#define OPCODE_PREFIX_ES		0x26
-#define OPCODE_PREFIX_FS		0x64
-#define OPCODE_PREFIX_GS		0x65
+//#define OPCODE_PREFIX_CS		0x2e
+//#define OPCODE_PREFIX_SS		0x36
+//#define OPCODE_PREFIX_DS		0x3e
+//#define OPCODE_PREFIX_ES		0x26
+//#define OPCODE_PREFIX_FS		0x64
+//#define OPCODE_PREFIX_GS		0x65
 #define OPCODE_PREFIX_BRANCH_NOT_TAKEN	0x2e
 #define OPCODE_PREFIX_BRANCH_TAKEN	0x3e
 //
@@ -485,6 +486,7 @@ typedef union EMULATOR_X86_OPCODE_MODRM {
 //
 void Emulator_x86_Initialise(Emulator_x86_Environment *env);
 uint Emulator_x86_Execute(Emulator_x86_Environment *env);
+uint Emulator_x86_Execute_Auto(Emulator_x86_Environment *env);
 uint Emulator_x86_FetchCode(Emulator_x86_Environment *env, uint bytes);
 void Emulator_x86_InstructionPointer_Increment(Emulator_x86_Environment *env);
 uint Emulator_x86_Get_EffectivePhysicalAddress(Emulator_x86_Environment *env, uint sreg, uint offset);
@@ -503,6 +505,16 @@ void Emulator_x86_Operation_CALL_Near_Relative(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_PUSHA(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_POPA(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_MOV_To_ByteReg_Gb_Eb(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_CMP_AL(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_Jcc_JE_rel8(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_INC_RegOnly(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_JMP_rel8(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_RET_Near(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_PUSH_RegOnly(Emulator_x86_Environment *env);
+
+/*emu86asm.nas x86エミュレーター関連アセンブラ関数*/
+uint asm_Emulator_x86_Get_EFlags_Compare(uint first_op, uint second_op);	//eflagsを返す
+uint asm_Emulator_x86_Get_EFlags_Increment(uint first_op);
 
 /*error.c エラー関連*/
 #define ERROR_CPU_EXCEPTION_00			0x00000000	//int *esp
@@ -544,7 +556,6 @@ void Emulator_x86_Operation_MOV_To_ByteReg_Gb_Eb(Emulator_x86_Environment *env);
 #define ERROR_MEMORY_FREE_RANGE_OVERLAPPED	0x00000022	//IO_MemoryControl ctrl, uint tagno
 #define ERROR_NO_MORE_FREE_TAG			0x00000023	//IO_MemoryControl ctrl
 #define ERROR_INVALID_FREE_MEMORY_INDEX		0x00000024	//IO_MemoryControl ctrl, uint tagno
-
 //
 uint Error_Report(uint error_no, ...);
 void Error_Abort(void);

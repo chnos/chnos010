@@ -89,7 +89,7 @@ uint Emulator_x86_Execute(Emulator_x86_Environment *env)
 	#endif
 
 	env->operation_prefix_lock_repeat = OPCODE_PREFIX_NONE;
-	env->operation_prefix_segment = OPCODE_PREFIX_NONE;
+	env->operation_prefix_segment = OPCODE_SREG3_DS;
 	env->operation_prefix_opsize = OPCODE_PREFIX_NONE;
 	env->operation_prefix_addrsize = OPCODE_PREFIX_NONE;
 
@@ -98,32 +98,40 @@ uint Emulator_x86_Execute(Emulator_x86_Environment *env)
 		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 			debug("opcode=0x%02X ", env->now_opcode);
 		#endif
-		if(0xB0 <= env->now_opcode && env->now_opcode <= 0xB7){	/*MOV ByteReg*/
+		if(0x40 <= env->now_opcode && env->now_opcode <= 0x47){	/*INC FullReg*/
+			Emulator_x86_Operation_INC_RegOnly(env);
+
+		} else if(0x50 <= env->now_opcode && env->now_opcode <= 0x57){	/*PUSH FullReg*/
+			Emulator_x86_Operation_PUSH_RegOnly(env);
+
+		} else if(0xB0 <= env->now_opcode && env->now_opcode <= 0xB7){	/*MOV ByteReg*/
 			Emulator_x86_Operation_MOV_To_ByteReg(env);
 
 		} else if(0xB8 <= env->now_opcode && env->now_opcode <= 0xBF){	/*MOV FullSize*/
 			Emulator_x86_Operation_MOV_To_Reg_FullSize(env);
 
 		} else if(env->now_opcode == 0x26){	/*ES Prefix*/
-			env->operation_prefix_segment = OPCODE_PREFIX_ES;
+			env->operation_prefix_segment = OPCODE_SREG3_ES;
 			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 				debug("(Prefix:ES)");
 			#endif
 
 		} else if(env->now_opcode == 0x2E){	/*CS/BranchNotTaken Prefix*/
-			env->operation_prefix_segment = OPCODE_PREFIX_CS;
+			env->operation_prefix_segment = OPCODE_SREG3_CS;
 			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 				debug("(Prefix:CS)");
 			#endif
 
 		} else if(env->now_opcode == 0x36){	/*SS Prefix*/
-			env->operation_prefix_segment = OPCODE_PREFIX_SS;
+			env->operation_prefix_segment = OPCODE_SREG3_SS;
 			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 				debug("(Prefix:SS)");
 			#endif
+		} else if(env->now_opcode == 0x3C){	/*CMP AL*/
+			Emulator_x86_Operation_CMP_AL(env);
 
 		} else if(env->now_opcode == 0x3E){	/*DS/BranchTaken Prefix*/
-			env->operation_prefix_segment = OPCODE_PREFIX_DS;
+			env->operation_prefix_segment = OPCODE_SREG3_DS;
 			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 				debug("(Prefix:DS)");
 			#endif
@@ -135,13 +143,13 @@ uint Emulator_x86_Execute(Emulator_x86_Environment *env)
 			Emulator_x86_Operation_POPA(env);
 
 		} else if(env->now_opcode == 0x64){	/*FS Prefix*/
-			env->operation_prefix_segment = OPCODE_PREFIX_FS;
+			env->operation_prefix_segment = OPCODE_SREG3_FS;
 			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 				debug("(Prefix:FS)");
 			#endif
 
 		} else if(env->now_opcode == 0x65){	/*GS Prefix*/
-			env->operation_prefix_segment = OPCODE_PREFIX_GS;
+			env->operation_prefix_segment = OPCODE_SREG3_GS;
 			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 				debug("(Prefix:GS)");
 			#endif
@@ -158,6 +166,9 @@ uint Emulator_x86_Execute(Emulator_x86_Environment *env)
 				debug("(Prefix:AddressSize)");
 			#endif
 
+		} else if(env->now_opcode == 0x74){	/*JE rel8*/
+			Emulator_x86_Operation_Jcc_JE_rel8(env);
+
 		} else if(env->now_opcode == 0x8A){	/*MOV Byte*/
 			Emulator_x86_Operation_MOV_To_ByteReg_Gb_Eb(env);
 
@@ -167,11 +178,17 @@ uint Emulator_x86_Execute(Emulator_x86_Environment *env)
 		} else if(env->now_opcode == 0x8E){	/*MOV SegReg*/
 			Emulator_x86_Operation_MOV_To_SegReg(env);
 
+		} else if(env->now_opcode == 0xC3){	/*near RET*/
+			Emulator_x86_Operation_RET_Near(env);
+
 		} else if(env->now_opcode == 0xCD){	/*INT n*/
 			Emulator_x86_Operation_INTn(env);
 
 		} else if(env->now_opcode == 0xE8){	/*CALL near*/
 			Emulator_x86_Operation_CALL_Near_Relative(env);
+
+		} else if(env->now_opcode == 0xEB){	/*JMP short*/
+			Emulator_x86_Operation_JMP_rel8(env);
 
 		} else if(env->now_opcode == 0xF0){	/*LOCK Prefix*/
 			env->operation_prefix_lock_repeat = OPCODE_PREFIX_LOCK;
@@ -195,12 +212,30 @@ uint Emulator_x86_Execute(Emulator_x86_Environment *env)
 			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 				debug("Unknown opcode.\n", env->now_opcode);
 			#endif
-			env->operation_end = True;
+			return 0xFFFFFFFF;
+			//env->operation_end = True;
 		}
 	}
+
+	#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+		debug("\n");
+	#endif
+
 	env->operation_end = False;
 
 	return 0;
+}
+
+uint Emulator_x86_Execute_Auto(Emulator_x86_Environment *env)
+{
+	uint i;
+
+	for(i = 0; ; i++){
+		if(Emulator_x86_Execute(env) == 0xffffffff){
+			break;
+		}
+	}
+	return i + 1;
 }
 
 uint Emulator_x86_FetchCode(Emulator_x86_Environment *env, uint bytes)
@@ -364,6 +399,7 @@ void Emulator_x86_Push_Data_To_Stack(Emulator_x86_Environment *env, uint data, u
 		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
 			debug("\nEmulator-x86:Internal Error(No more Stack).\n");
 		#endif
+		return;
 	}
 	if(size_dword){	/*DoubleWord*/
 		Emulator_x86_MoveToGReg(env, OPCODE_REG_ESP, env->GReg[OPCODE_REG_ESP] - 4, True);
@@ -429,13 +465,13 @@ void Emulator_x86_Operation_MOV_To_SegReg(Emulator_x86_Environment *env)
 	modrm.modrm = Emulator_x86_FetchCode(env, 1);
 
 	if(modrm.bit.Mod == OPCODE_MOD_INDEXONLY){
-	} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP8){
+	} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP_BYTE){
 		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
-			debug("Move to SReg From Index+Disp8 is not implemented.\n");
+			debug("Move to SReg From Index+Disp_Byte is not implemented.\n");
 		#endif
-	} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP32){
+	} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP_FULL){
 		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
-			debug("Move to SReg From Index+Disp32 is not implemented.\n");
+			debug("Move to SReg From Index+Disp_Full is not implemented.\n");
 		#endif
 	} else if(modrm.bit.Mod == OPCODE_MOD_REGISTER){
 		Emulator_x86_MoveToSReg(env, modrm.bit.Reg, Emulator_x86_MoveFromGReg(env, modrm.bit.RM, True));
@@ -489,7 +525,7 @@ void Emulator_x86_Operation_LEA(Emulator_x86_Environment *env)
 	modrm.modrm = Emulator_x86_FetchCode(env, 1);
 
 	if(modrm.bit.Mod == OPCODE_MOD_INDEXONLY){
-		if(modrm.bit.RM == OPCODE_RM16_ADDR_DISP16){
+		if(modrm.bit.RM == OPCODE_RM16_MOD00_ADDR_DISP16){
 			disp = Emulator_x86_FetchCode(env, 2);
 			Emulator_x86_MoveToGReg(env, modrm.bit.Reg, disp, True);
 			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
@@ -500,13 +536,13 @@ void Emulator_x86_Operation_LEA(Emulator_x86_Environment *env)
 				debug("LEA INDEXONLY is not implemented.\n");
 			#endif
 		}
-	} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP8){
+	} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP_BYTE){
 		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
-			debug("LEA DISP8 is not implemented.\n");
+			debug("LEA DISP_BYTE is not implemented.\n");
 		#endif
-	} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP32){
+	} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP_FULL){
 		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
-			debug("LEA DISP32 is not implemented.\n");
+			debug("LEA DISP_FULLis not implemented.\n");
 		#endif
 	} else if(modrm.bit.Mod == OPCODE_MOD_REGISTER){
 		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
@@ -520,7 +556,7 @@ void Emulator_x86_Operation_LEA(Emulator_x86_Environment *env)
 
 void Emulator_x86_Operation_CALL_Near_Relative(Emulator_x86_Environment *env)
 {
-	int relative_addr;
+	short relative_addr;
 	uchar sign;
 
 	sign = False;
@@ -532,7 +568,7 @@ void Emulator_x86_Operation_CALL_Near_Relative(Emulator_x86_Environment *env)
 		relative_addr = -relative_addr;
 	}
 
-	Emulator_x86_Push_Data_To_Stack(env, env->EIP + 1, False);
+	Emulator_x86_Push_Data_To_Stack(env, env->EIP, False);
 
 	if(sign){
 		env->EIP -= (uint)relative_addr;
@@ -602,7 +638,7 @@ void Emulator_x86_Operation_POPA(Emulator_x86_Environment *env)
 		}
 		Emulator_x86_Pop_Data_From_Stack(env, True);
 		for(i = 3; i > -1; i--){
-			Emulator_x86_Push_Data_To_Stack(env, Emulator_x86_MoveFromGReg(env, i, True), True);
+			Emulator_x86_MoveToGReg(env, i, Emulator_x86_Pop_Data_From_Stack(env, True), True);
 		}
 	} else{	/*PUSHA*/
 		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
@@ -613,7 +649,7 @@ void Emulator_x86_Operation_POPA(Emulator_x86_Environment *env)
 		}
 		Emulator_x86_Pop_Data_From_Stack(env, False);
 		for(i = 3; i > -1; i--){
-			Emulator_x86_Push_Data_To_Stack(env, Emulator_x86_MoveFromGReg(env, i, False), True);
+			Emulator_x86_MoveToGReg(env, i, Emulator_x86_Pop_Data_From_Stack(env, False), True);
 		}
 	}
 
@@ -624,7 +660,239 @@ void Emulator_x86_Operation_POPA(Emulator_x86_Environment *env)
 
 void Emulator_x86_Operation_MOV_To_ByteReg_Gb_Eb(Emulator_x86_Environment *env)
 {
+	Emulator_x86_OperationCode_ModRM modrm;
+	uint addr;
+
+	modrm.modrm = Emulator_x86_FetchCode(env, 1);
+	addr = 0;
+
+	if(!env->operation_32bit){	/*16-bit Addressing*/
+		if(modrm.bit.Mod == OPCODE_MOD_REGISTER){	/*Reg only*/
+			Emulator_x86_MoveToGReg(env, modrm.bit.Reg, Emulator_x86_MoveFromGReg(env, modrm.bit.RM, False), False);
+			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+				debug("MOV %s, %s\n", Emulator_x86_ByteRegNames[modrm.bit.Reg], Emulator_x86_ByteRegNames[modrm.bit.RM]);
+			#endif
+		} else{	/*From MemoryAddress*/
+			if(modrm.bit.RM == OPCODE_RM16_ADDR_BX_SI){
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EBX, True);
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_ESI, True);
+			} else if(modrm.bit.RM == OPCODE_RM16_ADDR_BX_SI){
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EBX, True);
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EDI, True);
+			} else if(modrm.bit.RM == OPCODE_RM16_ADDR_BX_DI){
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EBP, True);
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_ESI, True);
+			} else if(modrm.bit.RM == OPCODE_RM16_ADDR_BP_SI){
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EBP, True);
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EDI, True);
+			} else if(modrm.bit.RM == OPCODE_RM16_ADDR_SI){
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_ESI, True);
+			} else if(modrm.bit.RM == OPCODE_RM16_ADDR_DI){
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EDI, True);
+			} else if(modrm.bit.RM == OPCODE_RM16_MOD00_ADDR_DISP16){
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EBP, True);
+			} else if(modrm.bit.RM == OPCODE_RM16_ADDR_BX){
+				addr += Emulator_x86_MoveFromGReg(env, OPCODE_REG_EBX, True);
+			}
+			if(modrm.bit.Mod == OPCODE_MOD_INDEXONLY){
+				if(modrm.bit.RM == OPCODE_RM16_MOD00_ADDR_DISP16){
+					addr = Emulator_x86_FetchCode(env, 2);
+				}
+			} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP_BYTE){
+				addr += Emulator_x86_FetchCode(env, 1);
+			} else if(modrm.bit.Mod == OPCODE_MOD_INDEX_AND_DISP_FULL){
+				addr += Emulator_x86_FetchCode(env, 2);
+			}
+			addr &= 0x0000ffff;
+			addr = Emulator_x86_Get_EffectivePhysicalAddress(env, env->operation_prefix_segment, addr);
+			Emulator_x86_MoveToGReg(env, modrm.bit.Reg, *((uchar *)addr), False);
+			#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+				debug("MOV %s, [0x%X]\n", Emulator_x86_ByteRegNames[modrm.bit.Reg], addr);
+			#endif
+		}
+	} else{	/*32-bit Addressing*/
+		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+			debug("32-bit addressing is not implemented.\n");
+		#endif
+	}
+
+	env->operation_end = True;
+
 	return;
 }
 
+void Emulator_x86_Operation_CMP_AL(Emulator_x86_Environment *env)
+{
+	CPU_EFlags eflags;
+	uint imm;
 
+	imm = Emulator_x86_FetchCode(env, 1);
+
+	eflags.eflags = asm_Emulator_x86_Get_EFlags_Compare(Emulator_x86_MoveFromGReg(env, OPCODE_REG_BYTE_AL, False), imm);
+	env->EFLAGS.bit.CF = eflags.bit.CF;
+	env->EFLAGS.bit.PF = eflags.bit.PF;
+	env->EFLAGS.bit.AF = eflags.bit.AF;
+	env->EFLAGS.bit.ZF = eflags.bit.ZF;
+	env->EFLAGS.bit.SF = eflags.bit.SF;
+	env->EFLAGS.bit.OF = eflags.bit.OF;
+	#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+		debug("CMP AL, 0x%X CF:%d PF:%d AF:%d ZF:%d SF:%d OF:%d\n", imm, env->EFLAGS.bit.CF, env->EFLAGS.bit.PF, env->EFLAGS.bit.AF, env->EFLAGS.bit.ZF, env->EFLAGS.bit.SF, env->EFLAGS.bit.OF);
+	#endif
+
+	env->operation_end = True;
+
+	return;
+}
+
+void Emulator_x86_Operation_Jcc_JE_rel8(Emulator_x86_Environment *env)
+{
+	char relative_addr;
+	uchar sign;
+	uint new_eip;
+
+	sign = False;
+	relative_addr = Emulator_x86_FetchCode(env, 1);
+	new_eip = env->EIP;
+
+	if(relative_addr < 0){
+		sign = True;
+		relative_addr = -relative_addr;
+	}
+	if(sign){
+		new_eip -= (uint)relative_addr;
+	} else{
+		new_eip += (uint)relative_addr;
+	}
+
+	if(!env->operation_32bit){
+		new_eip &= 0x0000ffff;
+	}
+
+	#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+		debug("JE 0x%X ", new_eip);
+	#endif
+
+	if(env->EFLAGS.bit.ZF){
+		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+			debug("Taken.\n");
+		#endif
+		env->EIP = new_eip;
+	} else{
+		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+			debug("NotTaken.\n");
+		#endif
+	}
+
+	env->operation_end = True;
+
+	return;
+}
+
+void Emulator_x86_Operation_INC_RegOnly(Emulator_x86_Environment *env)
+{
+	uint operand;
+	CPU_EFlags eflags;
+
+	if((env->now_opcode - 0x40) > 7){
+		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+			debug("\nEmulator-x86:Internal Error(Invalid GReg From OpCode).\n");
+		#endif
+	}
+
+	operand = Emulator_x86_MoveFromGReg(env, env->now_opcode - 0x40, True);
+	Emulator_x86_MoveToGReg(env, env->now_opcode - 0x40, operand + 1, True);
+
+	eflags.eflags = asm_Emulator_x86_Get_EFlags_Increment(operand);
+	env->EFLAGS.bit.PF = eflags.bit.PF;
+	env->EFLAGS.bit.AF = eflags.bit.AF;
+	env->EFLAGS.bit.ZF = eflags.bit.ZF;
+	env->EFLAGS.bit.SF = eflags.bit.SF;
+	env->EFLAGS.bit.OF = eflags.bit.OF;
+	#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+		debug("INC %s PF:%d AF:%d ZF:%d SF:%d OF:%d\n", Emulator_x86_RegNames[env->now_opcode - 0x40], env->EFLAGS.bit.PF, env->EFLAGS.bit.AF, env->EFLAGS.bit.ZF, env->EFLAGS.bit.SF, env->EFLAGS.bit.OF);
+	#endif
+
+	env->operation_end = True;
+
+	return;
+}
+
+void Emulator_x86_Operation_JMP_rel8(Emulator_x86_Environment *env)
+{
+	char relative_addr;
+	uchar sign;
+	uint new_eip;
+
+	sign = False;
+	relative_addr = Emulator_x86_FetchCode(env, 1);
+	new_eip = env->EIP;
+
+	if(relative_addr < 0){
+		sign = True;
+		relative_addr = -relative_addr;
+	}
+	if(sign){
+		new_eip -= (uint)relative_addr;
+	} else{
+		new_eip += (uint)relative_addr;
+	}
+
+	if(!env->operation_32bit){
+		new_eip &= 0x0000ffff;
+	}
+
+	#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+		debug("JMP 0x%X\n", new_eip);
+	#endif
+
+	env->EIP = new_eip;
+
+	env->operation_end = True;
+
+	return;
+}
+
+void Emulator_x86_Operation_RET_Near(Emulator_x86_Environment *env)
+{
+	uint new_eip;
+
+	new_eip = Emulator_x86_Pop_Data_From_Stack(env, False);
+
+	if(!env->operation_32bit){
+		new_eip &= 0x0000ffff;
+	}
+
+	#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+		debug("near RET to 0x%X\n", new_eip);
+	#endif
+
+	env->EIP = new_eip;
+
+	env->operation_end = True;
+
+	return;
+}
+
+void Emulator_x86_Operation_PUSH_RegOnly(Emulator_x86_Environment *env)
+{
+	if((env->now_opcode - 0x50) > 7){
+		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+			debug("\nEmulator-x86:Internal Error(Invalid GReg From OpCode).\n");
+		#endif
+	}
+	if(!env->operation_32bit){	/*16-bit*/
+		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+			debug("PUSH %s\n", Emulator_x86_RegNames[env->now_opcode - 0x50]);
+		#endif
+		Emulator_x86_Push_Data_To_Stack(env, Emulator_x86_MoveFromGReg(env, env->now_opcode - 0x50, True), False);
+	} else{	/*32-bit*/
+		#ifdef CHNOSPROJECT_DEBUG_EMULATOR_X86
+			debug("PUSH E%s\n", Emulator_x86_RegNames[env->now_opcode - 0x50]);
+		#endif
+		Emulator_x86_Push_Data_To_Stack(env, Emulator_x86_MoveFromGReg(env, env->now_opcode - 0x50, True), True);
+	}
+
+	env->operation_end = True;
+
+	return;
+}
