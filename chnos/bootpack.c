@@ -11,7 +11,6 @@ void CHNMain(void)
 {
 	uchar s[128];
 	uint i, emu_steps;
-	CPU_ControlRegister0 cr0;
 	Emulator_x86_Environment x86emu;
 
 	IO_CLI();
@@ -79,11 +78,6 @@ void CHNMain(void)
 	TextMode_Put_String(s, white);
 
 	snprintf(s, "TEST i %i\n", sizeof(s), -1234);
-	TextMode_Put_String(s, white);
-
-	cr0.cr0 = Load_CR0();
-
-	snprintf(s, "CR0.PE=%d PG=%d\n", sizeof(s), cr0.bit.PE, cr0.bit.PG);
 	TextMode_Put_String(s, white);
 
 	IO_STI();

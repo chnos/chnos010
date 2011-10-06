@@ -5,6 +5,8 @@
 
 	GLOBAL	_asm_Emulator_x86_Get_EFlags_Compare
 	GLOBAL	_asm_Emulator_x86_Get_EFlags_Increment
+	GLOBAL	_asm_Emulator_x86_Get_EFlags_XOR
+	GLOBAL	_asm_Emulator_x86_Get_EFlags_Decrement
 
 [SECTION .text]
 
@@ -21,4 +23,19 @@ _asm_Emulator_x86_Get_EFlags_Increment:
 	pushfd
 	pop	eax
 	ret
+
+_asm_Emulator_x86_Get_EFlags_XOR:
+	mov	eax, [esp + 8]
+	xor	[esp + 4], eax
+	pushfd
+	pop	eax
+	ret
+
+_asm_Emulator_x86_Get_EFlags_Decrement:
+	mov	eax, [esp + 4]
+	dec	eax
+	pushfd
+	pop	eax
+	ret
+
 

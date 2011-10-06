@@ -490,6 +490,7 @@ uint Emulator_x86_Execute_Auto(Emulator_x86_Environment *env);
 uint Emulator_x86_FetchCode(Emulator_x86_Environment *env, uint bytes);
 void Emulator_x86_InstructionPointer_Increment(Emulator_x86_Environment *env);
 uint Emulator_x86_Get_EffectivePhysicalAddress(Emulator_x86_Environment *env, uint sreg, uint offset);
+uint Emulator_x86_Get_EffectivePhysicalAddress_FromModRM(Emulator_x86_Environment *env, uint modrm);
 void Emulator_x86_MoveToGReg(Emulator_x86_Environment *env, uint reg, uint data, uint fullsize);
 uint Emulator_x86_MoveFromGReg(Emulator_x86_Environment *env, uint reg, uint fullsize);
 void Emulator_x86_MoveToSReg(Emulator_x86_Environment *env, uint sreg, ushort selector);
@@ -511,10 +512,22 @@ void Emulator_x86_Operation_INC_RegOnly(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_JMP_rel8(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_RET_Near(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_PUSH_RegOnly(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_XOR_Eb_Gb(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_DEC_RegOnly(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_MOV_eAX_Ov(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_MOV_Ov_eAX(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_OUT_AL(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_CMP_Gv_Ev(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_LOOP_Jv(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_POP_Ev(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_POP_RegOnly(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_Jcc_JNE_rel8(Emulator_x86_Environment *env);
 
 /*emu86asm.nas x86エミュレーター関連アセンブラ関数*/
 uint asm_Emulator_x86_Get_EFlags_Compare(uint first_op, uint second_op);	//eflagsを返す
 uint asm_Emulator_x86_Get_EFlags_Increment(uint first_op);
+uint asm_Emulator_x86_Get_EFlags_XOR(uint first_op, uint second_op);
+uint asm_Emulator_x86_Get_EFlags_Decrement(uint first_op);
 
 /*error.c エラー関連*/
 #define ERROR_CPU_EXCEPTION_00			0x00000000	//int *esp
