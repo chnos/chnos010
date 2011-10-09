@@ -374,6 +374,11 @@ typedef union EMULATOR_X86_OPCODE_MODRM {
 		unsigned Mod : 2;
 	} bit;
 } Emulator_x86_OperationCode_ModRM;
+
+typedef struct EMULATOR_X86_FAR_POINTER {
+	ushort offset;
+	ushort selector;
+} Emulator_x86_FarPointer;
 //
 #define OPCODE_REG_EAX			0
 #define OPCODE_REG_ECX			1
@@ -487,6 +492,7 @@ typedef union EMULATOR_X86_OPCODE_MODRM {
 void Emulator_x86_Initialise(Emulator_x86_Environment *env);
 uint Emulator_x86_Execute(Emulator_x86_Environment *env);
 uint Emulator_x86_Execute_Auto(Emulator_x86_Environment *env);
+int Emulator_x86_Put_EmulationInformation(Emulator_x86_Environment *env, const uchar format[], ...);
 uint Emulator_x86_FetchCode(Emulator_x86_Environment *env, uint bytes);
 void Emulator_x86_InstructionPointer_Increment(Emulator_x86_Environment *env);
 uint Emulator_x86_Get_EffectivePhysicalAddress(Emulator_x86_Environment *env, uint sreg, uint offset);
@@ -496,6 +502,12 @@ uint Emulator_x86_MoveFromGReg(Emulator_x86_Environment *env, uint reg, uint ful
 void Emulator_x86_MoveToSReg(Emulator_x86_Environment *env, uint sreg, ushort selector);
 void Emulator_x86_Push_Data_To_Stack(Emulator_x86_Environment *env, uint data, uint size_dword);
 uint Emulator_x86_Pop_Data_From_Stack(Emulator_x86_Environment *env, uint size_dword);
+void Emulator_x86_Push_eIP_To_Stack(Emulator_x86_Environment *env);
+void Emulator_x86_Pop_eIP_From_Stack(Emulator_x86_Environment *env);
+void Emulator_x86_Push_eFLAGS_To_Stack(Emulator_x86_Environment *env);
+void Emulator_x86_Pop_eFLAGS_From_Stack(Emulator_x86_Environment *env);
+void Emulator_x86_Push_SReg_To_Stack(Emulator_x86_Environment *env, uint sreg);
+void Emulator_x86_Pop_SReg_From_Stack(Emulator_x86_Environment *env, uint sreg);
 //
 void Emulator_x86_Operation_MOV_To_Reg_FullSize(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_MOV_To_SegReg(Emulator_x86_Environment *env);
@@ -522,12 +534,18 @@ void Emulator_x86_Operation_LOOP_Jv(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_POP_Ev(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_POP_RegOnly(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_Jcc_JNE_rel8(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_STI(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_SBB_Gv_Ev(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_MOV_Ev_Gv(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_PUSH_Ib(Emulator_x86_Environment *env);
+void Emulator_x86_Operation_CLD(Emulator_x86_Environment *env);
 
 /*emu86asm.nas x86エミュレーター関連アセンブラ関数*/
 uint asm_Emulator_x86_Get_EFlags_Compare(uint first_op, uint second_op);	//eflagsを返す
 uint asm_Emulator_x86_Get_EFlags_Increment(uint first_op);
 uint asm_Emulator_x86_Get_EFlags_XOR(uint first_op, uint second_op);
 uint asm_Emulator_x86_Get_EFlags_Decrement(uint first_op);
+uint asm_Emulator_x86_Get_EFlags_Subtract_with_Borrow(uint *first_op, uint second_op, uint borrow);
 
 /*error.c エラー関連*/
 #define ERROR_CPU_EXCEPTION_00			0x00000000	//int *esp
