@@ -2,10 +2,12 @@
 #include "core.h"
 
 uint PIT_10ms_Tick;
+void (*TaskSwitch)(void);
 
 void Initialise_ProgrammableIntervalTimer(void)
 {
 	PIT_10ms_Tick = 0;
+	TaskSwitch = &Timer_TaskSwitch_Invalid;
 
 	IO_Out8(PIT_CTRL, 0x34);
 	IO_Out8(PIT_CNT0, 0x9c);
@@ -26,5 +28,24 @@ void InterruptHandler20(uint *esp)
 	snprintf(s, "10ms_Tick:%u", sizeof(s), PIT_10ms_Tick);
 	TextMode_Put_String_Absolute(s, white, 50, 0);
 
+	if((PIT_10ms_Tick & 0x00000002) == 0){
+		TaskSwitch();
+	}
+
+	return;
+}
+
+void Timer_Set_TaskSwitch(void (*TaskSwitchFunction)(void))
+{
+	if(TaskSwitchFunction != 0){
+		TaskSwitch = TaskSwitchFunction;
+	} else{
+		TaskSwitch = Timer_TaskSwitch_Invalid;
+	}
+	return;
+}
+
+void Timer_TaskSwitch_Invalid(void)
+{
 	return;
 }

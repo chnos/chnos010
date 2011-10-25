@@ -155,7 +155,7 @@ typedef union CPU_EFLAGS {
 	uint eflags;
 	struct CPU_EFLAGS_BIT {
 		unsigned CF : 1;
-		unsigned bit1 : 1;
+		unsigned bit1 : 1;	//常にTrue、これ以外の予約済みビットは常にFalse
 		unsigned PF : 1;
 		unsigned bit3 : 1;
 		unsigned AF : 1;
@@ -190,26 +190,6 @@ typedef union CPU_EFLAGS {
 
 /*functions*/
 /*bootpack.c 基幹部分*/
-#define PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS	0x00400000
-#define SYSTEM_MEMORY_CONTROL_TAGS	1024
-//
-typedef struct IO_MEMORYCONTROLTAG {
-	void *addr;
-	uint size;
-} IO_MemoryControlTag;
-
-typedef IO_MemoryControlTag* IO_MemoryControl;
-
-typedef struct SYSTEM_COMMONDATA {
-	uint RunningPhase;
-	uint PhysicalMemorySize;
-	IO_MemoryControl MemoryController;
-} System_CommonData;
-//
-void System_Set_RunningPhase(uint phase);
-uint System_Get_RunningPhase(void);
-void System_Check_Memory(void);
-uint System_Get_PhisycalMemorySize(void);
 
 /*cfunc.c vsnprintfの独自実装等*/
 typedef struct CFUNCTION_VSNPRINTF_WORKAREA {
@@ -253,6 +233,9 @@ void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_Wor
 
 
 /*dsctbl.c セグメント・ゲートディスクリプタ関連*/
+#define SYSTEM_DS	0x01
+#define SYSTEM_CS	0x02
+//
 #define ADR_IDT		0x0026f800
 #define LIMIT_IDT	0x000007ff
 #define ADR_GDT		0x00270000
@@ -321,12 +304,6 @@ uint SegmentDescriptor_Get_Base(IO_SegmentDescriptor *seg_desc);
 uint SegmentDescriptor_Get_Limit(IO_SegmentDescriptor *seg_desc);
 uint SegmentDescriptor_Get_AccessRight(IO_SegmentDescriptor *seg_desc);
 void GateDescriptor_Set(IO_GateDescriptor *gate_desc, uint offset, uint selector, uint ar);
-void System_SegmentDescriptor_Set_Absolute(uint selector, uint limit, uint base, uint ar);
-uint System_SegmentDescriptor_Get_Base(uint selector);
-uint System_SegmentDescriptor_Get_Limit(uint selector);
-uint System_SegmentDescriptor_Get_AccessRight(uint selector);
-uint System_SegmentDescriptor_Set(uint limit, int base, int ar);
-void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 
 /*emu86.c x86エミュレーター関連*/
 typedef struct EMULATOR_X86_ENVIRONMENT_SEGMENT_REGISTER {
@@ -629,6 +606,13 @@ void Initialise_Keyboard(void);
 void InterruptHandler21(uint *esp);
 
 /*memory.c メモリ関連*/
+typedef struct IO_MEMORYCONTROLTAG {
+	void *addr;
+	uint size;
+} IO_MemoryControlTag;
+
+typedef IO_MemoryControlTag* IO_MemoryControl;
+//
 uint Memory_Test(uint start, uint end);
 IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags);
 void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size);
@@ -636,6 +620,58 @@ void Memory_Free_Sub(IO_MemoryControl ctrl, uint tagno);
 void *Memory_Allocate(IO_MemoryControl ctrl, uint size);
 void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
+
+/*mtask.c マルチタスク関連*/
+typedef struct TASK_STATE_SEGMENT {
+	ushort backlink, reserve00;
+	uint esp0;
+	ushort ss0, reserve01;
+	uint esp1;
+	ushort ss1, reserve02;
+	uint esp2;
+	ushort ss2, reserve03;
+	uint cr3;
+	uint eip;
+	CPU_EFlags eflags;
+	uint eax;
+	uint ecx;
+	uint edx;
+	uint ebx;
+	uint esp;
+	uint ebp;
+	uint esi;
+	uint edi;
+	ushort es, reserve04;
+	ushort cs, reserve05;
+	ushort ss, reserve06;
+	ushort ds, reserve07;
+	ushort fs, reserve08;
+	ushort gs, reserve09;
+	ushort ldtr, reserve10;
+	unsigned flag_trap : 1;
+	unsigned reserve11 : 15;
+	ushort iomap_base;
+
+} CPU_TaskStateSegment;
+
+typedef struct UI_TASK {
+	uint selector;
+	struct UI_TASK *next;
+	uint count;
+	CPU_TaskStateSegment *tss;
+} UI_Task;
+
+typedef struct UI_TASK_CONTROL {
+	struct UI_TASK *start;
+	struct UI_TASK *now;
+	IO_MemoryControl sysmemctrl;
+} UI_TaskControl;
+//
+UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl);
+UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl);
+void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task);
+void MultiTask_TaskSwitch(UI_TaskControl *ctrl);
+UI_Task *MultiTask_GetNowTask(UI_TaskControl *ctrl);
 
 /*serial.c シリアル通信関連*/
 #define COM1_RX		0x03f8
@@ -657,12 +693,31 @@ void SerialPort_Send(const uchar s[]);
 void debug(const uchar format[], ...);
 #endif
 
+/*system.c システムデータ・初期化関連*/
+void Initialise_System(void);
+void System_Set_RunningPhase(uint phase);
+uint System_Get_RunningPhase(void);
+uint System_Get_PhisycalMemorySize(void);
+void System_SegmentDescriptor_Set_Absolute(uint selector, uint limit, uint base, uint ar);
+uint System_SegmentDescriptor_Get_Base(uint selector);
+uint System_SegmentDescriptor_Get_Limit(uint selector);
+uint System_SegmentDescriptor_Get_AccessRight(uint selector);
+uint System_SegmentDescriptor_Set(uint limit, uint base, uint ar);
+void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
+void System_TaskSwitch(void);
+UI_Task *System_MultiTask_Task_Initialise(void);
+void System_MultiTask_Task_Run(UI_Task *task);
+void *System_Memory_Allocate(uint size);
+UI_Task *System_MultiTask_GetNowTask(void);
+
 /*timer.c タイマー関連*/
 #define PIT_CTRL	0x0043
 #define PIT_CNT0	0x0040
 //
 void Initialise_ProgrammableIntervalTimer(void);
 void InterruptHandler20(uint *esp);
+void Timer_Set_TaskSwitch(void (*TaskSwitchFunction)(void));
+void Timer_TaskSwitch_Invalid(void);
 
 /*vgatmode.c VGAテキストモード関連*/
 #define VGA_CRTC_R_NUMBER		0x03d4

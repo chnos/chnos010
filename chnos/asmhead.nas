@@ -31,11 +31,11 @@ PHYSBASEPTR	equ	0x28
 
         org     0xc200
 asmhead:
-        mov     ax, 0
-        mov     ss, ax
-        mov     sp, 0xc200
-        mov     ds, ax
-        mov     es, ax
+	mov	ax, 0
+	mov	ss, ax
+	mov	sp, 0xc200
+	mov	ds, ax
+	mov	es, ax
 
 	mov	ah, 0x00
 	mov	al, 0x03

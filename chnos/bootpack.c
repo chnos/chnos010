@@ -1,126 +1,75 @@
 
 #include "core.h"
 
-System_CommonData System;
-
-uchar *SystemRunningPhaseText[] = {
-	" 0:Initialising System (Protected 32bit Text Mode)"
-};
+void TestTask1(void);
+void TestTask2(void);
 
 void CHNMain(void)
 {
 	uchar s[128];
-	uint i, emu_steps;
-	Emulator_x86_Environment x86emu;
+	uint i;
+	UI_Task *test1, *test2;
+	UI_Task *mytask;
 
-	IO_CLI();
+	Initialise_System();
 
-	TextMode_Clear_Screen();
-	Error_Set_Enable_Display_TextMode(true);
+	test1 = System_MultiTask_Task_Initialise();
+	test1->tss->eip = (uint)&TestTask1;
+	test1->tss->cs = SYSTEM_CS << 3;
+	test1->tss->ss = SYSTEM_DS << 3;
+	test1->tss->ds = SYSTEM_DS << 3;
+	test1->tss->esp = (uint)System_Memory_Allocate(4096) + 4096;
+	System_MultiTask_Task_Run(test1);
 
-	TextMode_Put_String("Welcome to CHNOSProject!\n", green);
+	test2 = System_MultiTask_Task_Initialise();
+	test2->tss->eip = (uint)&TestTask2;
+	test2->tss->cs = SYSTEM_CS << 3;
+	test2->tss->ss = SYSTEM_DS << 3;
+	test2->tss->ds = SYSTEM_DS << 3;
+	test2->tss->esp = (uint)System_Memory_Allocate(4096) + 4096;
+	System_MultiTask_Task_Run(test2);
 
-	System_Set_RunningPhase(0);
+	i = 0;
 
-	TextMode_Put_String("\tInitialising SerialPort...\n", white);
-	Initialise_SerialPort();
-	Error_Set_Enable_SerialPort(true);
-
-	TextMode_Put_String("\tInitialising Memory...\n", white);
-	System_Check_Memory();
-	i = System_Get_PhisycalMemorySize();
-	snprintf(s, "\tMemory:%uByte %uKiB %uMib\n", sizeof(s), i, i >> 10, i >> 20);
-	TextMode_Put_String(s, white);
-	System.MemoryController = Memory_Initialise_Control((void *)PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, i - PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, SYSTEM_MEMORY_CONTROL_TAGS);
-
-	i = Memory_Get_FreeSize(System.MemoryController);
-	snprintf(s, "\tFreeMemory:%uByte %uKiB %uMib\n", sizeof(s), i, i >> 10, i >> 20);
-	TextMode_Put_String(s, white);
-
-	Memory_Allocate_Aligned(System.MemoryController, 4096, 4096);
-
-	TextMode_Put_String("\tInitialising GDT...\n", white);
-	Initialise_GlobalDescriptorTable();
-
-	TextMode_Put_String("\tInitialising IDT...\n", white);
-	Initialise_InterruptDescriptorTable();
-
-	TextMode_Put_String("\tInitialising PIC...\n", white);
-	Initialise_ProgrammableInterruptController();
-
-	TextMode_Put_String("\tInitialising PIT...\n", white);
-	Initialise_ProgrammableIntervalTimer();
-
-	TextMode_Put_String("\tInitialising Keyboard...\n", white);
-	Initialise_Keyboard();
-
-	TextMode_Put_String("\tHardware Initialising Phase End.\n", white);
-
-	snprintf(s, "TEST X %X\n", sizeof(s), 0xABCDEF32);
-	TextMode_Put_String(s, white);
-
-	snprintf(s, "TEST x %x\n", sizeof(s), 0xABCDEF32);
-	TextMode_Put_String(s, white);
-
-	snprintf(s, "TEST u %u\n", sizeof(s), 1234567890);
-	TextMode_Put_String(s, white);
-
-	snprintf(s, "TEST f %f\n", sizeof(s), 0.5);
-	TextMode_Put_String(s, white);
-
-	snprintf(s, "TEST c %c\n", sizeof(s), 'C');
-	TextMode_Put_String(s, white);
-
-	snprintf(s, "TEST s %s\n", sizeof(s), "TESTString.");
-	TextMode_Put_String(s, white);
-
-	snprintf(s, "TEST d %d\n", sizeof(s), -1234);
-	TextMode_Put_String(s, white);
-
-	snprintf(s, "TEST i %i\n", sizeof(s), -1234);
-	TextMode_Put_String(s, white);
-
-	IO_STI();
-
-	Emulator_x86_Initialise(&x86emu);
-
-	x86emu.EIP = 0xc200;
-	x86emu.GReg[OPCODE_REG_ESP] = 0xc200;
-
-	emu_steps = Emulator_x86_Execute_Auto(&x86emu);
-
-	snprintf(s, "x86Emulator:Instructions=%d\n", sizeof(s), emu_steps);
-	TextMode_Put_String(s, white);
+	mytask = System_MultiTask_GetNowTask();
 
 	for (;;) {
-		IO_HLT();
+		i++;
+		snprintf(s, "MainTask0=%d=%d", sizeof(s), mytask->count, i);
+		TextMode_Put_String_Absolute(s, white, 0, 1);
 	}
 }
 
-void System_Set_RunningPhase(uint phase)
+void TestTask1(void)
 {
-	System.RunningPhase = phase;
-	TextMode_Put_String("\nNow SystemRunningPhase is", white);
-	TextMode_Put_String(SystemRunningPhaseText[System.RunningPhase], skyblue);
-	TextMode_Put_String("\n", white);
+	uchar s[128];
+	uint i;
+	UI_Task *mytask;
 
-	return;
+	i = 0;
+
+	mytask = System_MultiTask_GetNowTask();
+
+	for (;;) {
+		i++;
+		snprintf(s, "TestTask1=%d=%d", sizeof(s), mytask->count, i);
+		TextMode_Put_String_Absolute(s, white, 0, 2);
+	}
 }
 
-uint System_Get_RunningPhase(void)
+void TestTask2(void)
 {
-	return System.RunningPhase;
+	uchar s[128];
+	uint i;
+	UI_Task *mytask;
+
+	i = 0;
+
+	mytask = System_MultiTask_GetNowTask();
+
+	for (;;) {
+		i++;
+		snprintf(s, "TestTask2=%d=%d", sizeof(s), mytask->count, i);
+		TextMode_Put_String_Absolute(s, white, 0, 3);
+	}
 }
-
-void System_Check_Memory(void)
-{
-	System.PhysicalMemorySize = Memory_Test(0x00400000, 0xbfffffff);
-	return;
-}
-
-uint System_Get_PhisycalMemorySize(void)
-{
-	return System.PhysicalMemorySize;
-}
-
-
