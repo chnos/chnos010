@@ -9,6 +9,7 @@ typedef struct SYSTEM_COMMONDATA {
 	uint PhysicalMemorySize;
 	IO_MemoryControl MemoryController;
 	UI_TaskControl *TaskController;
+	IO_CallBIOSControl *CallBIOSController;
 } System_CommonData;
 //
 System_CommonData System;
@@ -66,6 +67,9 @@ void Initialise_System(void)
 	TextMode_Put_String("\tInitialising MultiTask...\n", white);
 	System.TaskController = Initialise_MultiTask_Control(System.MemoryController);
 	Timer_Set_TaskSwitch(&System_TaskSwitch);
+
+	TextMode_Put_String("\tInitialising CallBIOS...\n", white);
+	System.CallBIOSController = Initialise_CallBIOS();
 
 	TextMode_Put_String("\tSystem Initialising Phase End.\n", white);
 
@@ -176,9 +180,9 @@ void System_TaskSwitch(void)
 	return;
 }
 
-UI_Task *System_MultiTask_Task_Initialise(void)
+UI_Task *System_MultiTask_Task_Initialise(uint tss_additional_size)
 {
-	return MultiTask_Task_Initialise(System.TaskController);
+	return MultiTask_Task_Initialise(System.TaskController, tss_additional_size);
 }
 
 void System_MultiTask_Task_Run(UI_Task *task)
@@ -195,6 +199,23 @@ void *System_Memory_Allocate(uint size)
 UI_Task *System_MultiTask_GetNowTask(void)
 {
 	return MultiTask_GetNowTask(System.TaskController);
+}
+
+IO_CallBIOSControl *System_CallBIOS_Get_Controller(void)
+{
+	return System.CallBIOSController;
+}
+
+void System_CallBIOS_Execute(uchar intn)
+{
+	CallBIOS_Execute(System.CallBIOSController, intn);
+	return;
+}
+
+void System_Memory_Free(void *addr, uint size)
+{
+	Memory_Free(System.MemoryController, addr, size);
+	return;
 }
 
 //

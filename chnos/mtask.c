@@ -10,7 +10,7 @@ UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl)
 	ctrl->now = 0;
 	ctrl->sysmemctrl = sysmemctrl;
 
-	maintask = MultiTask_Task_Initialise(ctrl);
+	maintask = MultiTask_Task_Initialise(ctrl, 0);
 
 	Load_TR(maintask->selector << 3);
 
@@ -20,12 +20,12 @@ UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl)
 	return ctrl;
 }
 
-UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl)
+UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_size)
 {
 	UI_Task *task;
 
 	task = Memory_Allocate(ctrl->sysmemctrl, sizeof(UI_Task));
-	task->tss = Memory_Allocate(ctrl->sysmemctrl, sizeof(CPU_TaskStateSegment));
+	task->tss = Memory_Allocate(ctrl->sysmemctrl, sizeof(CPU_TaskStateSegment) + tss_additional_size);
 
 	task->tss->reserve00		= 0;
 	task->tss->reserve01		= 0;
@@ -72,10 +72,12 @@ UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl)
 	task->tss->flag_trap		= False;
 	task->tss->iomap_base		= 0x00004000;	//TSSリミット以上なら無効
 
-	task->selector = System_SegmentDescriptor_Set(sizeof(CPU_TaskStateSegment) - 1, (uint)task->tss, AR_TSS32);
+	task->selector = System_SegmentDescriptor_Set(sizeof(CPU_TaskStateSegment) + tss_additional_size - 1, (uint)task->tss, AR_TSS32);
 
 	task->next = 0;
 	task->count = 0;
+
+	task->fifo = FIFO32_Initialise(ctrl->sysmemctrl, 128);
 
 	return task;
 }
@@ -85,7 +87,9 @@ void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task)
 	UI_Task *last;
 
 	for(last = ctrl->start; last->next != 0; last = last->next){
-
+		if(last == task){	/*すでにタスク実行リンクに入っていたら*/
+			return;
+		}
 	}
 
 	task->next = 0;

@@ -5,6 +5,7 @@
 #ifdef CHNOSPROJECT_DEBUG
 	//#define CHNOSPROJECT_DEBUG_MEMORY	/*定義するとメモリ関連のデバッグをオンにする*/
 	#define CHNOSPROJECT_DEBUG_EMULATOR_X86
+	#define CHNOSPROJECT_DEBUG_CALLBIOS
 #endif
 
 /*new object types*/
@@ -14,7 +15,7 @@ typedef unsigned short ushort;
 typedef unsigned int uint;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
 
-/*defines*/
+/*defines どこにも属さないか、共通で使用される宣言*/
 #define True	1
 #define False	0
 
@@ -188,8 +189,75 @@ typedef union CPU_EFLAGS {
 	} bit;
 } CPU_EFlags;
 
+typedef struct IO_MEMORYCONTROLTAG {
+	void *addr;
+	uint size;
+} IO_MemoryControlTag;
+
+typedef IO_MemoryControlTag* IO_MemoryControl;
+
+typedef struct FIFO32 {
+	uint *buf;
+	uint p, q, size, free;
+	union FIFO32_FLAGS {
+		uint flags;
+		struct FIFO32_FLAGS_BITS {
+			unsigned overflow : 1;
+		} bit;
+	} flags;
+} DATA_FIFO32;
+
+typedef struct TASK_STATE_SEGMENT {
+	ushort backlink, reserve00;
+	uint esp0;
+	ushort ss0, reserve01;
+	uint esp1;
+	ushort ss1, reserve02;
+	uint esp2;
+	ushort ss2, reserve03;
+	uint cr3;
+	uint eip;
+	CPU_EFlags eflags;
+	uint eax;
+	uint ecx;
+	uint edx;
+	uint ebx;
+	uint esp;
+	uint ebp;
+	uint esi;
+	uint edi;
+	ushort es, reserve04;
+	ushort cs, reserve05;
+	ushort ss, reserve06;
+	ushort ds, reserve07;
+	ushort fs, reserve08;
+	ushort gs, reserve09;
+	ushort ldtr, reserve10;
+	unsigned flag_trap : 1;
+	unsigned reserve11 : 15;
+	ushort iomap_base;
+
+} CPU_TaskStateSegment;
+
+typedef struct UI_TASK {
+	uint selector;
+	struct UI_TASK *next;
+	uint count;
+	DATA_FIFO32 *fifo;
+	CPU_TaskStateSegment *tss;
+} UI_Task;
+
 /*functions*/
 /*bootpack.c 基幹部分*/
+void KeyboardControlTask(void);
+
+/*callbios.c 32bitからBIOSをコールするための関数群*/
+typedef struct CALL_BIOS_CONTROL {
+	UI_Task *CallBIOS_Task;
+	uint codesize;
+} IO_CallBIOSControl;
+IO_CallBIOSControl *Initialise_CallBIOS(void);
+void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn);
 
 /*cfunc.c vsnprintfの独自実装等*/
 typedef struct CFUNCTION_VSNPRINTF_WORKAREA {
@@ -573,6 +641,18 @@ int Error_Put_String(const uchar format[], ...);
 void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp);
 void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp);
 
+/*fifo.c FIFOバッファ関連*/
+#define SIGNAL_ARGUMENTS_END	0xfefe1234
+//
+DATA_FIFO32 *FIFO32_Initialise(IO_MemoryControl memctrl, uint size);
+int FIFO32_Put(DATA_FIFO32 *fifo, uint data);
+int FIFO32_Put_Arguments(DATA_FIFO32 *fifo, uint args, ...);
+uint FIFO32_Get(DATA_FIFO32 *fifo);
+uint FIFO32_Status(DATA_FIFO32 *fifo);
+void FIFO32_Free(DATA_FIFO32 *fifo);
+uint FIFO32_MyTaskFIFO_Status(void);
+uint FIFO32_MyTaskFIFO_Get(void);
+
 /*intrpt.c 割り込み関連*/
 #define PIC0_ICW1	0x0020
 #define PIC0_OCW2	0x0020
@@ -604,15 +684,9 @@ void InterruptHandler27(uint *esp);
 //
 void Initialise_Keyboard(void);
 void InterruptHandler21(uint *esp);
+void Keyboard_Set_ReceiveFIFO(DATA_FIFO32 *fifo, uint data0);
 
 /*memory.c メモリ関連*/
-typedef struct IO_MEMORYCONTROLTAG {
-	void *addr;
-	uint size;
-} IO_MemoryControlTag;
-
-typedef IO_MemoryControlTag* IO_MemoryControl;
-//
 uint Memory_Test(uint start, uint end);
 IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags);
 void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size);
@@ -622,53 +696,16 @@ void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 
 /*mtask.c マルチタスク関連*/
-typedef struct TASK_STATE_SEGMENT {
-	ushort backlink, reserve00;
-	uint esp0;
-	ushort ss0, reserve01;
-	uint esp1;
-	ushort ss1, reserve02;
-	uint esp2;
-	ushort ss2, reserve03;
-	uint cr3;
-	uint eip;
-	CPU_EFlags eflags;
-	uint eax;
-	uint ecx;
-	uint edx;
-	uint ebx;
-	uint esp;
-	uint ebp;
-	uint esi;
-	uint edi;
-	ushort es, reserve04;
-	ushort cs, reserve05;
-	ushort ss, reserve06;
-	ushort ds, reserve07;
-	ushort fs, reserve08;
-	ushort gs, reserve09;
-	ushort ldtr, reserve10;
-	unsigned flag_trap : 1;
-	unsigned reserve11 : 15;
-	ushort iomap_base;
-
-} CPU_TaskStateSegment;
-
-typedef struct UI_TASK {
-	uint selector;
-	struct UI_TASK *next;
-	uint count;
-	CPU_TaskStateSegment *tss;
-} UI_Task;
-
 typedef struct UI_TASK_CONTROL {
 	struct UI_TASK *start;
 	struct UI_TASK *now;
 	IO_MemoryControl sysmemctrl;
 } UI_TaskControl;
 //
+#define TASK_FIFOSIZE	128;
+//
 UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl);
-UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl);
+UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_size);
 void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task);
 void MultiTask_TaskSwitch(UI_TaskControl *ctrl);
 UI_Task *MultiTask_GetNowTask(UI_TaskControl *ctrl);
@@ -705,10 +742,13 @@ uint System_SegmentDescriptor_Get_AccessRight(uint selector);
 uint System_SegmentDescriptor_Set(uint limit, uint base, uint ar);
 void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 void System_TaskSwitch(void);
-UI_Task *System_MultiTask_Task_Initialise(void);
+UI_Task *System_MultiTask_Task_Initialise(uint tss_additional_size);
 void System_MultiTask_Task_Run(UI_Task *task);
 void *System_Memory_Allocate(uint size);
 UI_Task *System_MultiTask_GetNowTask(void);
+void System_Memory_Free(void *addr, uint size);
+IO_CallBIOSControl *System_CallBIOS_Get_Controller(void);
+void System_CallBIOS_Execute(uchar intn);
 
 /*timer.c タイマー関連*/
 #define PIT_CTRL	0x0043
@@ -817,7 +857,7 @@ uint DIV_64_32(uint dividend_low, uint dividend_high, uint divisor);
 					//=((dividend_high << 32) | dividend_low) / divisor
 uint MOD_64_32(uint dividend_low, uint dividend_high, uint divisor);
 					//=((dividend_high << 32) | dividend_low) % divisor
-/*nasfunc0.nas 他の関数に依存するアセンブラ関数群*/
+/*nasfunc1.nas 他の関数に依存するアセンブラ関数群*/
 void asm_CPU_ExceptionHandler00(void);
 void asm_CPU_ExceptionHandler01(void);
 void asm_CPU_ExceptionHandler02(void);
@@ -854,3 +894,6 @@ void asm_CPU_ExceptionHandler1f(void);
 void asm_InterruptHandler20(void);
 void asm_InterruptHandler21(void);
 void asm_InterruptHandler27(void);
+
+/*nasfunc2.nas 16bitコード*/
+void asm_16bit_CallBIOSTask(void);
