@@ -79,6 +79,9 @@ UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_siz
 
 	task->fifo = FIFO32_Initialise(ctrl->sysmemctrl, 128);
 
+	task->flags.initialized = True;
+	task->flags.linked = False;
+
 	return task;
 }
 
@@ -94,6 +97,7 @@ void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task)
 
 	task->next = 0;
 	last->next = task;
+	task->flags.linked = True;
 	return;
 }
 
@@ -110,6 +114,36 @@ void MultiTask_TaskSwitch(UI_TaskControl *ctrl)
 		ctrl->now->count++;
 		FarJMP(0, ctrl->now->selector << 3);
 	}
+	return;
+}
+
+void MultiTask_Task_Sleep(UI_TaskControl *ctrl, UI_Task *task)
+{
+	UI_Task **find;
+
+	uint eflags;
+
+	for(find = &ctrl->start; (*find)->next != 0; find = &(*find)->next){
+		if(*find == task){	/*タスク実行リンクからみつけたら*/
+			break;
+		}
+	}
+	if((*find)->next == 0){	/*見つけたのでなく、終端だったら*/
+		return;
+	}
+
+	eflags = IO_Load_EFlags();
+	IO_CLI();
+
+	*find = task->next;
+	task->flags.linked = false;
+
+	if(ctrl->now == task){
+		MultiTask_TaskSwitch(ctrl);
+	}
+
+	IO_Store_EFlags(eflags);
+
 	return;
 }
 

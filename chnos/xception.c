@@ -33,7 +33,13 @@ void CPU_ExceptionHandler05(int *esp)
 
 void CPU_ExceptionHandler06(int *esp)
 {
-	Error_Report(ERROR_CPU_EXCEPTION_06, esp);
+/*Invalid Opcode Exception*/
+	if(System_MultiTask_GetNowTask()->tss->eflags.bit.VM){	/*もし、例外を起こしたタスクが仮想8086モードだったら*/
+		System_CallBIOS_Send_End_Of_Operation();
+		System_MultiTask_Task_Sleep(System_MultiTask_GetNowTask());
+	} else{
+		Error_Report(ERROR_CPU_EXCEPTION_06, esp);
+	}
 }
 
 void CPU_ExceptionHandler07(int *esp)

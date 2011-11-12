@@ -5,13 +5,15 @@ void TestTask2(void);
 
 void CHNMain(void)
 {
-	uchar s[128];
-	uint i;
+	//uchar s[128];
+	uint i, data;
 	UI_Task *KBCT, *test2;
 	UI_Task *mytask;
 	IO_CallBIOSControl *callbiosctrl;
 
 	Initialise_System();
+
+	mytask = System_MultiTask_GetNowTask();
 
 	KBCT = System_MultiTask_Task_Initialise(0);
 	KBCT->tss->eip = (uint)&KeyboardControlTask;
@@ -33,14 +35,21 @@ void CHNMain(void)
 
 	callbiosctrl = System_CallBIOS_Get_Controller();
 	callbiosctrl->CallBIOS_Task->tss->eax = 0x0013;
-	System_CallBIOS_Execute(0x10);
-
-	mytask = System_MultiTask_GetNowTask();
+	//System_CallBIOS_Execute(0x10, mytask->fifo, 0xff);
 
 	for (;;) {
-		i++;
-		snprintf(s, "MainTask0=%d=%d", sizeof(s), mytask->count, i);
-		TextMode_Put_String_Absolute(s, white, 0, 1);
+		if(FIFO32_MyTaskFIFO_Status() == 0){
+			
+		} else{
+			data = FIFO32_MyTaskFIFO_Get();
+			if(data <= 0xff){
+				if(data == 0xff){
+					#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
+						debug("Main:Receive BIOS Control End.\n");
+					#endif
+				}
+			}
+		}
 	}
 }
 

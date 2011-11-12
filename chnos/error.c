@@ -212,6 +212,7 @@ void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp)
 	Error_Put_String("CR0 = 0x%08X\n", Load_CR0());
 	Error_Put_String("CR2 = 0x%08X\n", Load_CR2());
 	Error_Put_String("CR3 = 0x%08X\n", Load_CR3());
+	Error_Put_String("CR4 = 0x%08X\n", Load_CR4());
 	return;
 }
 
