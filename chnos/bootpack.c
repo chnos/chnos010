@@ -35,21 +35,28 @@ void CHNMain(void)
 
 	callbiosctrl = System_CallBIOS_Get_Controller();
 	callbiosctrl->CallBIOS_Task->tss->eax = 0x0013;
-	//System_CallBIOS_Execute(0x10, mytask->fifo, 0xff);
+	System_CallBIOS_Execute(0x10, mytask->fifo, 0xff);
 
-	for (;;) {
+	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
 			
 		} else{
 			data = FIFO32_MyTaskFIFO_Get();
-			if(data <= 0xff){
-				if(data == 0xff){
-					#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
-						debug("Main:Receive BIOS Control End.\n");
-					#endif
-				}
+			if(data == 0xff){
+				#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
+					debug("Main:Receive BIOS Control End.\n");
+				#endif
+				break;
 			}
 		}
+	}
+
+	Drawing08_Initialise_Palette();
+	Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0xffffff, 0, 0, VGA08_VRAM_XSIZE - 1, VGA08_VRAM_YSIZE - 1);
+	Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 100, 100, VGA08_VRAM_XSIZE - 10 - 1, VGA08_VRAM_YSIZE - 10);
+
+	for(;;){
+
 	}
 }
 
@@ -90,7 +97,7 @@ void TestTask2(void)
 
 	mytask = System_MultiTask_GetNowTask();
 
-	for (;;) {
+	for(;;){
 		i++;
 		snprintf(s, "TestTask2=%d=%d", sizeof(s), mytask->count, i);
 		TextMode_Put_String_Absolute(s, white, 0, 3);

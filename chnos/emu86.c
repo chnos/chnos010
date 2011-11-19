@@ -651,7 +651,7 @@ void Emulator_x86_Operation_INTn(Emulator_x86_Environment *env)
 
 	vector = (Emulator_x86_FarPointer *)(intn << 2);
 
-	Emulator_x86_Put_EmulationInformation(env, "[0x%X:0x%X] = [0x%X]", vector->selector, vector->offset, (vector->selector << 2) + vector->offset);
+	Emulator_x86_Put_EmulationInformation(env, "[0x%X:0x%X] = [0x%X]", vector->selector, vector->offset, (vector->selector << 4) + vector->offset);
 
 	Emulator_x86_Push_eFLAGS_To_Stack(env);
 	env->EFLAGS.bit.IF = False;

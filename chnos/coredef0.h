@@ -215,6 +215,11 @@
 #define VGA_CRTC_R_CURSOR_LOCATION_HIGH	0x0e
 #define VGA_CRTC_R_CURSOR_LOCATION_LOW	0x0f
 #define VGA_TEXTMODE_ADR		0xb8000
+#define VGA_VDAC_DATA			0x03c9
+#define VGA_VDAC_WRITE_ADR		0x03c8
+#define VGA_VRAM_ADR			(void *)0x000a0000
+#define VGA08_VRAM_XSIZE		320
+#define VGA08_VRAM_YSIZE		200
 
 /*settings*/
 /*system segments*/
@@ -275,5 +280,23 @@
 
 /*task*/
 #define TASK_FIFOSIZE	128;
+
+/*exceptions esp[] data with errorcode*/
+#define EXCEPTION_INFO_EDI		0x00
+#define EXCEPTION_INFO_ESI		0x01
+#define EXCEPTION_INFO_EBP		0x02
+#define EXCEPTION_INFO_ESP		0x03
+#define EXCEPTION_INFO_EBX		0x04
+#define EXCEPTION_INFO_EDX		0x05
+#define EXCEPTION_INFO_ECX		0x06
+#define EXCEPTION_INFO_EAX		0x07
+#define EXCEPTION_INFO_DS		0x08
+#define EXCEPTION_INFO_ES		0x09
+#define EXCEPTION_INFO_ERRORCODE	0x0a
+#define EXCEPTION_INFO_EIP		0x0b
+#define EXCEPTION_INFO_CS		0x0c
+#define EXCEPTION_INFO_EFLAGS		0x0d
+#define EXCEPTION_INFO_USER_ESP		0x0e
+#define EXCEPTION_INFO_USER_SS		0x0f
 
 

@@ -332,6 +332,7 @@ _asm_CPU_ExceptionHandler0d:
 	popad
 	pop	ds
 	pop	es
+	add	esp, 4
 	iretd
 
 _asm_CPU_ExceptionHandler0e:

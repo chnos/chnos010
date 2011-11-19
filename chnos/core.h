@@ -12,6 +12,9 @@ void KeyboardControlTask(void);
 IO_CallBIOSControl *Initialise_CallBIOS(void);
 void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn, DATA_FIFO32 *fifo, uint endsignal);
 void CallBIOS_Send_End_Of_Operation(IO_CallBIOSControl *ctrl);
+void CallBIOS_Check_Privileged_Operation(uint *esp);
+uint CallBIOS_Push_Data_To_Stack(uint *esp, ushort data);
+uint CallBIOS_Pop_Data_From_Stack(uint *esp);
 
 /*cfunc.c vsnprintfの独自実装等*/
 int snprintf(uchar s[], const uchar format[], uint n, ...);
@@ -29,6 +32,13 @@ void CFunction_vsnprintf_To_String_From_Hex_Upper(CFunction_vsnprintf_WorkArea *
 void CFunction_vsnprintf_To_String_From_Hex_Lower(CFunction_vsnprintf_WorkArea *work, uint hex);
 void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_WorkArea *work, uint d);
 
+/*drawing.c 描画関連*/
+void Drawing08_Initialise_Palette(void);
+void Drawing08_Set_Palette(uint start, uint end, uchar *rgb);
+void Drawing08_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+uchar RGB_32_To_08(uint c32);
+uchar RGB_32_To_08_xy(uint c32, int x, int y);
+ushort RGB_32_To_16(uint c32);
 
 /*dsctbl.c セグメント・ゲートディスクリプタ関連*/
 void Initialise_GlobalDescriptorTable(void);
@@ -195,38 +205,38 @@ void TextMode_Newline(void);
 void TextMode_Put_String(const uchar s[], col_text col);
 
 /*xception.c 例外関連*/
-void CPU_ExceptionHandler00(int *esp);
-void CPU_ExceptionHandler01(int *esp);
-void CPU_ExceptionHandler02(int *esp);
-void CPU_ExceptionHandler03(int *esp);
-void CPU_ExceptionHandler04(int *esp);
-void CPU_ExceptionHandler05(int *esp);
-void CPU_ExceptionHandler06(int *esp);
-void CPU_ExceptionHandler07(int *esp);
-void CPU_ExceptionHandler08(int *esp);
-void CPU_ExceptionHandler09(int *esp);
-void CPU_ExceptionHandler0a(int *esp);
-void CPU_ExceptionHandler0b(int *esp);
-void CPU_ExceptionHandler0c(int *esp);
-void CPU_ExceptionHandler0d(int *esp);
-void CPU_ExceptionHandler0e(int *esp);
-void CPU_ExceptionHandler0f(int *esp);
-void CPU_ExceptionHandler10(int *esp);
-void CPU_ExceptionHandler11(int *esp);
-void CPU_ExceptionHandler12(int *esp);
-void CPU_ExceptionHandler13(int *esp);
-void CPU_ExceptionHandler14(int *esp);
-void CPU_ExceptionHandler15(int *esp);
-void CPU_ExceptionHandler16(int *esp);
-void CPU_ExceptionHandler17(int *esp);
-void CPU_ExceptionHandler18(int *esp);
-void CPU_ExceptionHandler19(int *esp);
-void CPU_ExceptionHandler1a(int *esp);
-void CPU_ExceptionHandler1b(int *esp);
-void CPU_ExceptionHandler1c(int *esp);
-void CPU_ExceptionHandler1d(int *esp);
-void CPU_ExceptionHandler1e(int *esp);
-void CPU_ExceptionHandler1f(int *esp);
+void CPU_ExceptionHandler00(uint *esp);
+void CPU_ExceptionHandler01(uint *esp);
+void CPU_ExceptionHandler02(uint *esp);
+void CPU_ExceptionHandler03(uint *esp);
+void CPU_ExceptionHandler04(uint *esp);
+void CPU_ExceptionHandler05(uint *esp);
+void CPU_ExceptionHandler06(uint *esp);
+void CPU_ExceptionHandler07(uint *esp);
+void CPU_ExceptionHandler08(uint *esp);
+void CPU_ExceptionHandler09(uint *esp);
+void CPU_ExceptionHandler0a(uint *esp);
+void CPU_ExceptionHandler0b(uint *esp);
+void CPU_ExceptionHandler0c(uint *esp);
+void CPU_ExceptionHandler0d(uint *esp);
+void CPU_ExceptionHandler0e(uint *esp);
+void CPU_ExceptionHandler0f(uint *esp);
+void CPU_ExceptionHandler10(uint *esp);
+void CPU_ExceptionHandler11(uint *esp);
+void CPU_ExceptionHandler12(uint *esp);
+void CPU_ExceptionHandler13(uint *esp);
+void CPU_ExceptionHandler14(uint *esp);
+void CPU_ExceptionHandler15(uint *esp);
+void CPU_ExceptionHandler16(uint *esp);
+void CPU_ExceptionHandler17(uint *esp);
+void CPU_ExceptionHandler18(uint *esp);
+void CPU_ExceptionHandler19(uint *esp);
+void CPU_ExceptionHandler1a(uint *esp);
+void CPU_ExceptionHandler1b(uint *esp);
+void CPU_ExceptionHandler1c(uint *esp);
+void CPU_ExceptionHandler1d(uint *esp);
+void CPU_ExceptionHandler1e(uint *esp);
+void CPU_ExceptionHandler1f(uint *esp);
 
 /*nasfunc0.nas 他の関数に全く依存しないアセンブラ関数群*/
 void IO_HLT(void);			//CPUを停止させる。割り込みがあると再開する。特権命令。

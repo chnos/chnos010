@@ -308,3 +308,9 @@ typedef struct EMULATOR_X86_FAR_POINTER {
 	ushort offset;
 	ushort selector;
 } Emulator_x86_FarPointer;
+
+/*drawing*/
+typedef struct DATA_LOCATION_2D {
+	int x;
+	int y;
+} DATA_Location2D;

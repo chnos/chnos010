@@ -123,12 +123,12 @@ void MultiTask_Task_Sleep(UI_TaskControl *ctrl, UI_Task *task)
 
 	uint eflags;
 
-	for(find = &ctrl->start; (*find)->next != 0; find = &(*find)->next){
+	for(find = &ctrl->start; (*find) != 0; find = &(*find)->next){
 		if(*find == task){	/*タスク実行リンクからみつけたら*/
 			break;
 		}
 	}
-	if((*find)->next == 0){	/*見つけたのでなく、終端だったら*/
+	if((*find) == 0){	/*見つけたのでなく、終端だったら*/
 		return;
 	}
 

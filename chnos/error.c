@@ -54,8 +54,8 @@ uchar *cpu_exception_infos[16] = {
 	"EIP      ",
 	"CS       ",
 	"EFLAGS   ",
-	"APP's ESP",
-	"APP's SS "
+	"User ESP ",
+	"User SS  "
 };
 
 uint Error_Report(uint error_no, ...)
@@ -213,6 +213,8 @@ void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp)
 	Error_Put_String("CR2 = 0x%08X\n", Load_CR2());
 	Error_Put_String("CR3 = 0x%08X\n", Load_CR3());
 	Error_Put_String("CR4 = 0x%08X\n", Load_CR4());
+
+	Error_Put_String("Opcode[0x%X]:0x%X\n", esp[0x0b], ((uchar *)(esp[0x0b]))[0]);
 	return;
 }
 
