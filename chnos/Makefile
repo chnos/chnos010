@@ -1,6 +1,7 @@
 
 #OBJS_BOOTPACK = naskfunc.obj hankaku.obj gdtidt.obj graphic.obj grap_08.obj grap_16.obj grap_32.obj init.obj intrpt.obj io.obj memory.obj paging.obj sheet.obj fifo.obj mtask.obj timer.obj keyboard.obj mouse.obj window.obj console.obj file.obj uuid.obj api.obj bootpack.obj
-OBJS_BOOTPACK = nasfunc0.obj nasfunc1.obj nasfunc2.obj callbios.obj cfunc.obj drawing.obj dsctbl.obj emu86.obj emu86asm.obj error.obj fifo.obj intrpt.obj keyboard.obj memory.obj mtask.obj serial.obj system.obj timer.obj vgatmode.obj xception.obj bootpack.obj
+OBJS_BOOTPACK = nasfunc0.obj nasfunc1.obj nasfunc2.obj hankaku.obj callbios.obj cfunc.obj drawing.obj dsctbl.obj emu86.obj emu86asm.obj error.obj fifo.obj intrpt.obj keyboard.obj memory.obj mtask.obj serial.obj system.obj timer.obj vgatmode.obj xception.obj bootpack.obj
+HEADS_BOOTPACK = core.h coredef0.h coredef1.h coredef2.h keyid.h
 TOOLPATH = ../../z_tools/
 INCPATH  = ../../z_tools/CHNOSProject/
 
@@ -38,8 +39,8 @@ hankaku.obj : hankaku.bin Makefile
 asmhead.bin : asmhead.nas Makefile
 	$(NASK) asmhead.nas asmhead.bin asmhead.lst
 
-bootpack.gas : bootpack.c Makefile
-	$(CC1) -o bootpack.gas bootpack.c
+bootpack.gas : bootpack.ca $(HEADS_BOOTPACK) Makefile
+	$(CC1) -o bootpack.gas bootpack.ca
 
 bootpack.nas : bootpack.gas Makefile
 	$(GAS2NASK) bootpack.gas bootpack.nas
@@ -73,7 +74,7 @@ chnos.img : chnipl.bin chnos.sys Makefile
 %.ca : %.c Makefile
 	$(SJISCONV) $*.c $*.ca
 
-%.gas : %.ca core.h Makefile
+%.gas : %.ca $(HEADS_BOOTPACK) Makefile
 	$(CC1) -o $*.gas $*.ca
 
 %.nas : %.gas Makefile
@@ -112,6 +113,7 @@ clean :
 	-$(DEL) *.lst
 	-$(DEL) *.gas
 	-$(DEL) *.obj
+	-$(DEL) *.ca
 	-$(DEL) bootpack.nas
 	-$(DEL) bootpack.map
 	-$(DEL) bootpack.bim

@@ -197,11 +197,9 @@ typedef IO_MemoryControlTag* IO_MemoryControl;
 typedef struct FIFO32 {
 	uint *buf;
 	uint p, q, size, free;
-	union FIFO32_FLAGS {
-		uint flags;
-		struct FIFO32_FLAGS_BITS {
-			unsigned overflow : 1;
-		} bit;
+	struct FIFO32_FLAGS {
+		unsigned initialized : 1;
+		unsigned overflow : 1;
 	} flags;
 } DATA_FIFO32;
 

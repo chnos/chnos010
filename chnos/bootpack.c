@@ -54,6 +54,7 @@ void CHNMain(void)
 	Drawing08_Initialise_Palette();
 	Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0xffffff, 0, 0, VGA08_VRAM_XSIZE - 1, VGA08_VRAM_YSIZE - 1);
 	Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 100, 100, VGA08_VRAM_XSIZE - 10 - 1, VGA08_VRAM_YSIZE - 10);
+	Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10, 0x000000, "Welcome to CHNOSProject!");
 
 	for(;;){
 
