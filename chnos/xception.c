@@ -33,12 +33,30 @@ void CPU_ExceptionHandler05(uint *esp)
 
 void CPU_ExceptionHandler06(uint *esp)
 {
+	IO_CallBIOSControl *callbios;
+
+	callbios = System_CallBIOS_Get_Controller();
 /*Invalid Opcode Exception*/
-	if(System_MultiTask_GetNowTask() == System_CallBIOS_Get_Controller()->CallBIOS_Task){	/*もし、例外を起こしたタスクがCallBIOSだったら*/
+	if(System_MultiTask_GetNowTask() == callbios->CallBIOS_Task){	/*もし、例外を起こしたタスクがCallBIOSだったら*/
 		#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
 			debug("Exception_0x06:UD2 Opcode Found in v8086mode.\n");
 		#endif
-		System_CallBIOS_Send_End_Of_Operation();
+		callbios->retvalue.eip = esp[0x0a];
+		callbios->retvalue.eax = esp[0x07];
+		callbios->retvalue.ecx = esp[0x06];
+		callbios->retvalue.edx = esp[0x05];
+		callbios->retvalue.ebx = esp[0x04];
+		callbios->retvalue.esp = esp[0x03];
+		callbios->retvalue.ebp = esp[0x02];
+		callbios->retvalue.esi = esp[0x01];
+		callbios->retvalue.edi = esp[0x00];
+		callbios->retvalue.es = esp[0x09];
+		callbios->retvalue.cs = esp[0x0b];
+		callbios->retvalue.ss = esp[0x0e];
+		callbios->retvalue.ds = esp[0x08];
+		callbios->retvalue.eflags.eflags = esp[0x0c];
+
+		System_CallBIOS_Send_End_Of_Operation(False);
 		System_MultiTask_Task_Sleep(System_MultiTask_GetNowTask());
 	} else{
 		Error_Report(ERROR_CPU_EXCEPTION_06, esp);

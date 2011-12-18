@@ -1,15 +1,18 @@
 
 #include "core.h"
 
+//指定サイズは、バイト単位。
+//内部サイズは、エントリ(uint=4byte)単位。
+
 DATA_FIFO32 *FIFO32_Initialise(IO_MemoryControl memctrl, uint size)
 {
 	DATA_FIFO32 *fifo;
 
 	fifo = Memory_Allocate(memctrl, sizeof(DATA_FIFO32));
 
-	fifo->size = size;
-	fifo->buf = Memory_Allocate(memctrl, size);
-	fifo->free = size;	/*freesize*/
+	fifo->size = size >> 2;
+	fifo->buf = Memory_Allocate(memctrl, fifo->size << 2);
+	fifo->free = fifo->size;	/*freesize*/
 	fifo->flags.initialized = False;
 	fifo->flags.overflow = False;
 	fifo->p = 0;	/*write*/
@@ -59,6 +62,10 @@ int FIFO32_Put_Arguments(DATA_FIFO32 *fifo, uint args, ...)
 
 	if(!fifo->flags.initialized){
 		return -1;
+	}
+
+	if(args == 0){
+		return 0;
 	}
 
 	eflags = IO_Load_EFlags();
@@ -124,7 +131,7 @@ void FIFO32_Free(DATA_FIFO32 *fifo)
 		return;
 	}
 
-	System_Memory_Free(fifo->buf, fifo->size);
+	System_Memory_Free(fifo->buf, fifo->size << 2);
 
 	fifo->size = 0;
 	fifo->buf = 0;

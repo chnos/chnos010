@@ -1,15 +1,15 @@
 
 #include "core.h"
 
-void TestTask2(void);
-
+#define MAIN_KEYBASE	0x100
 void CHNMain(void)
 {
-	//uchar s[128];
-	uint i, data;
-	UI_Task *KBCT, *test2;
+	uchar s[128];
+	uint data;
+	UI_Task *KBCT;
 	UI_Task *mytask;
-	IO_CallBIOSControl *callbiosctrl;
+	uint i;
+	IO_DisplayControl *disp_ctrl;
 
 	Initialise_System();
 
@@ -23,39 +23,61 @@ void CHNMain(void)
 	KBCT->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
 	System_MultiTask_Task_Run(KBCT);
 
-	test2 = System_MultiTask_Task_Initialise(0);
-	test2->tss->eip = (uint)&TestTask2;
-	test2->tss->cs = SYSTEM_CS << 3;
-	test2->tss->ss = SYSTEM_DS << 3;
-	test2->tss->ds = SYSTEM_DS << 3;
-	test2->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
-	System_MultiTask_Task_Run(test2);
+	disp_ctrl = System_Display_Get_Controller();
 
 	i = 0;
+	data = 0;
 
-	callbiosctrl = System_CallBIOS_Get_Controller();
-	callbiosctrl->CallBIOS_Task->tss->eax = 0x0013;
-	System_CallBIOS_Execute(0x10, mytask->fifo, 0xff);
+	Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0xffffff, 0, 0, VGA08_VRAM_XSIZE - 1, VGA08_VRAM_YSIZE - 1);
+	Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10, 0x000000, "Welcome to CHNOSProject!");
 
-	for(;;){
-		if(FIFO32_MyTaskFIFO_Status() == 0){
-			
-		} else{
-			data = FIFO32_MyTaskFIFO_Get();
-			if(data == 0xff){
-				#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
-					debug("Main:Receive BIOS Control End.\n");
-				#endif
-				break;
+	if(disp_ctrl->display_mode == DISPLAYMODE_VBE_LINEAR){
+		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 1, 0x000000, "Please Select the VideoMode Number.");
+		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 2, 0x000000, "(Use cursor Up or Down, Select Enter.)");
+		Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
+		snprintf(s, "%d:0x%X %dx%d-%dbits", sizeof(s), i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
+		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
+
+		FIFO32_Put_Arguments(KBCT->fifo, 4, FIFOCMD_KBCT_SET_FOCUS_FIFO, mytask->fifo, MAIN_KEYBASE, 0);
+
+		for(;;){
+			if(FIFO32_MyTaskFIFO_Status() == 0){
+
+			} else{
+				data = FIFO32_MyTaskFIFO_Get();
+				if(MAIN_KEYBASE <= data && data <= (MAIN_KEYBASE + 0xFFFF)){
+					data -= MAIN_KEYBASE;
+					if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
+						if((data & KEYID_MASK_ID) == KEYID_CURSOR_U){
+							if(i == 0){
+								i = disp_ctrl->VBE.list_vmode_tags - 1;
+							} else{
+								i--;
+							}
+							Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
+							snprintf(s, "%d:0x%X %dx%d-%dbits", sizeof(s), i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
+							Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
+						} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_D){
+							if(i == disp_ctrl->VBE.list_vmode_tags - 1){
+								i = 0;
+							} else{
+								i ++;
+							}
+							Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
+							snprintf(s, "%d:0x%X %dx%d-%dbits", sizeof(s), i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
+							Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
+						} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
+							if(!System_Display_VESA_Set_VideoMode(i)){
+								break;
+							}
+							Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 4 - 1);
+							Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 4, 0x000000, "Function Failed. Try again.");
+						}
+					}
+				}
 			}
 		}
 	}
-
-	Drawing08_Initialise_Palette();
-	Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0xffffff, 0, 0, VGA08_VRAM_XSIZE - 1, VGA08_VRAM_YSIZE - 1);
-	Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 100, 100, VGA08_VRAM_XSIZE - 10 - 1, VGA08_VRAM_YSIZE - 10);
-	Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10, 0x000000, "Welcome to CHNOSProject!");
-
 	for(;;){
 
 	}
@@ -65,7 +87,14 @@ void KeyboardControlTask(void)
 {
 	UI_Task *mytask;
 	uchar s[128];
-	uint data;
+	uint data, offset;
+	DATA_FIFO32 *sendto;
+	uint args[5];
+	uint i;
+
+	sendto = 0;
+	data = 0;
+	offset = 0;
 
 	mytask = System_MultiTask_GetNowTask();
 
@@ -76,31 +105,29 @@ void KeyboardControlTask(void)
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
-			
+
 		} else{
 			data = FIFO32_MyTaskFIFO_Get();
 			if(0x100 <= data && data <= 0x1ff){
 				data -= 0x100;
-				snprintf(s, "KBCT:KeyCode=0x%X\n", sizeof(s), data);
-				TextMode_Put_String(s, white);
+				data = Keyboard_Decode_KeyCode(data);
+				if(sendto != 0 && data != 0){
+					FIFO32_Put(sendto, data + offset);
+				}
+			} else if(data == FIFOCMD_KBCT_SET_FOCUS_FIFO){
+				args[0] = FIFOCMD_KBCT_SET_FOCUS_FIFO;
+				for(i = 1; i < 5; i++){
+					args[i] = FIFO32_MyTaskFIFO_Get();
+				}
+				if(args[4] == SIGNAL_ARGUMENTS_END){
+					sendto = (DATA_FIFO32 *)args[1];
+					offset = args[2];
+				} else{
+					#ifdef CHNOSPROJECT_DEBUG_KBCT
+						debug("KBCT:Invalid Arguments to Set Focus FIFO.\n");
+					#endif
+				}
 			}
 		}
-	}
-}
-
-void TestTask2(void)
-{
-	uchar s[128];
-	uint i;
-	UI_Task *mytask;
-
-	i = 0;
-
-	mytask = System_MultiTask_GetNowTask();
-
-	for(;;){
-		i++;
-		snprintf(s, "TestTask2=%d=%d", sizeof(s), mytask->count, i);
-		TextMode_Put_String_Absolute(s, white, 0, 3);
 	}
 }

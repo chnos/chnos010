@@ -3,6 +3,8 @@
 #include "coredef0.h"	/*システム定数宣言*/
 #include "coredef1.h"	/*システムデータ型宣言*/
 #include "coredef2.h"	/*システム外部リソース宣言*/
+#include "coredef3.h"	/*システムFIFOコマンド宣言*/
+#include "keyid.h"	/*KeyIdentifier キーID宣言*/
 
 /*functions*/
 /*bootpack.c 基幹部分*/
@@ -12,7 +14,7 @@ void KeyboardControlTask(void);
 
 IO_CallBIOSControl *Initialise_CallBIOS(void);
 void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn, DATA_FIFO32 *fifo, uint endsignal);
-void CallBIOS_Send_End_Of_Operation(IO_CallBIOSControl *ctrl);
+void CallBIOS_Send_End_Of_Operation(IO_CallBIOSControl *ctrl, uint abort);
 void CallBIOS_Check_Privileged_Operation(uint *esp);
 uint CallBIOS_Push_Data_To_Stack(uint *esp, ushort data);
 uint CallBIOS_Pop_Data_From_Stack(uint *esp);
@@ -32,6 +34,10 @@ uint CFunction_vsnprintf_Get_NextArgument(CFunction_vsnprintf_WorkArea *work);
 void CFunction_vsnprintf_To_String_From_Hex_Upper(CFunction_vsnprintf_WorkArea *work, uint hex);
 void CFunction_vsnprintf_To_String_From_Hex_Lower(CFunction_vsnprintf_WorkArea *work, uint hex);
 void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_WorkArea *work, uint d);
+
+/*display.c ディスプレイ制御関連*/
+IO_DisplayControl *Initialise_Display(void);
+uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index);
 
 /*drawing.c 描画関連*/
 void Drawing08_Initialise_Palette(void);
@@ -140,6 +146,7 @@ void InterruptHandler27(uint *esp);
 void Initialise_Keyboard(void);
 void InterruptHandler21(uint *esp);
 void Keyboard_Set_ReceiveFIFO(DATA_FIFO32 *fifo, uint data0);
+ushort Keyboard_Decode_KeyCode(uchar keycode);
 
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
@@ -185,8 +192,11 @@ UI_Task *System_MultiTask_GetNowTask(void);
 IO_CallBIOSControl *System_CallBIOS_Get_Controller(void);
 void System_CallBIOS_Execute(uchar intn, DATA_FIFO32 *fifo, uint endsignal);
 void System_Memory_Free(void *addr, uint size);
-void System_CallBIOS_Send_End_Of_Operation(void);
+void System_CallBIOS_Send_End_Of_Operation(uint abort);
 void System_MultiTask_Task_Sleep(UI_Task *task);
+DATA_FIFO32 *System_FIFO32_Initialise(uint size);
+uint System_Display_VESA_Set_VideoMode(uint index);
+IO_DisplayControl *System_Display_Get_Controller(void);
 
 /*timer.c タイマー関連*/
 void Initialise_ProgrammableIntervalTimer(void);

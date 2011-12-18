@@ -6,14 +6,13 @@
 //		:拡張キーID(拡張フラグが1のとき)		
 //bit07		:Make,Break種別(0:Make,1:Break)(0:種別なし)
 //bit08		:テンキー種別(0:フルキー,1:テンキー)(0:種別なし)
-//bit19		:Shiftキー状態(0:オフ,1:オン)
+//bit09		:Shiftキー状態(0:オフ,1:オン)
 //bit10		:Ctrlキー状態(0:オフ,1:オン)
 //bit11		:Altキー状態(0:オフ,1:オン)
 //bit12		:NumLock状態(0:オフ,1:オン)
 //bit13		:CapsLock状態(0:オフ,1:オン)
 //bit14		:ScrollLock状態(0:オフ,1:オン)
 //bit15		:拡張フラグ(0:ASCII,1:拡張キーコード)
-//bit09-14	:予約
 
 //つまり、FIFOで受け取って、バイアスを引いたら、KEYID_EXTENDEDフラグを調べる。
 //次に、BREAKフラグを調べる。
@@ -109,6 +108,10 @@
 #define KEYID_HIRAGANA		0x0028
 #define KEYID_HENKAN		0x0029
 #define KEYID_MUHENKAN		0x002a
+
+#define KEYID_BACKSPACE		0x0040
+#define KEYID_TAB		0x0041
+#define KEYID_ENTER		0x0042
 
 #define KEYID_KBD_ERROR		0x007e
 #define KEYID_UNKNOWN		0x007f

@@ -228,6 +228,8 @@ typedef struct CALL_BIOS_CONTROL {
 	uint codesize;
 	DATA_FIFO32 *fifo;
 	uint endsignal;
+	CPU_TaskStateSegment retvalue;
+	uint esp0;
 } IO_CallBIOSControl;
 
 /*cfunction*/
@@ -312,3 +314,83 @@ typedef struct DATA_LOCATION_2D {
 	int x;
 	int y;
 } DATA_Location2D;
+
+/*display*/
+typedef struct _INFO_VBE_BIOS {
+	uchar sign[4];
+	uchar ver_minor;
+	uchar ver_major;
+	ushort oem_string_offset;
+	ushort oem_string_segment;
+	ushort flags[2];	//パディングの関係で、本当はuintだがushort*2にしている。
+	ushort vmode_args_offset;
+	ushort vmode_args_segment;
+	ushort vram_supported_size_kb;
+} INFO_VBE_BIOS;
+
+typedef struct _INFO_VBE_VIDEO_MODE {
+	ushort	ModeAttributes;
+	uchar	WinAAttributes;
+	uchar	WinBAttributes;
+	ushort	WinGranularity;
+	ushort	WinSize;
+	ushort	WinASegment;
+	ushort	WinBSegment;
+	uint	WinFuncPtr;
+	ushort	BytesPerScanLine;
+	ushort	XResolution;
+	ushort	YResolution;
+	uchar	XCharSize;
+	uchar	YCharSize;
+	uchar	NumberOfPlanes;
+	uchar	BitsPerPixel;
+	uchar	NumberOfBanks;
+	uchar	MemoryModel;
+	uchar	BankSize;
+	uchar	NumberOfImagePages;
+	uchar	Reserved;
+	uchar	RedMaskSize;
+	uchar	RedFieldPosition;
+	uchar	GreenMaskSize;
+	uchar	GreenFieldPosition;
+	uchar	BlueMaskSize;
+	uchar	BlueFieldPosition;
+	uchar	RsvdMaskSize;
+	uchar	RsvdFieldPodition;
+	uchar	DirectColorModeInfo;
+	void*	PhysBasePtr;
+} INFO_VBE_VideoMode;
+
+typedef struct _INFO_VBE_VIDEOMODETAG {
+	ushort mode_number;
+	ushort xsize;
+	ushort ysize;
+	uchar bpp;
+	uchar memory_model;	//0x00:text 0x04:256palette 0x06:direct color
+	ushort attribute;	//bit3:1:color 0:monochrome
+				//bit4:1:graphic 0:text
+				//bit7:linear buffer support
+	ushort reserve;
+	void *vram;	//vram:0=not supported.
+} INFO_VBE_VideoModeTag;
+
+typedef struct IO_DISPLAY_CONTROL {
+	struct IO_DISPLAY_CONTROL_VBE {
+		uchar version_minor;
+		uchar version_major;
+		ushort vram_supported_size_kb;
+		uint flags;
+		uchar *oem_string;
+		ushort *vmode_args;
+		uint list_vmode_tags;
+		INFO_VBE_VideoModeTag *list_vmode;
+	} VBE;
+	ushort display_mode;	//0x0000:BIOS 0x0001:VBE Window Access(version < 2.0)(not implemented) 0x0002:VBE Linear Access
+	ushort vmode;	//0x0000:VGA 320x200 8bit
+	ushort vmode_index;
+	ushort bpp;
+	ushort xsize;
+	ushort ysize;
+	void *vram;
+	DATA_FIFO32 *bios_signal;
+} IO_DisplayControl;

@@ -85,6 +85,7 @@ typedef struct SYSTEM_COMMONDATA {
 	IO_MemoryControl MemoryController;
 	UI_TaskControl *TaskController;
 	IO_CallBIOSControl *CallBIOSController;
+	IO_DisplayControl *DisplayController;
 	struct SYSTEM_COMMONDATA_ENVIRONMENT {
 		struct SYSTEM_COMMONDATA_ENVIRONMENT_CPUID {
 			uint max_id;
@@ -122,6 +123,11 @@ void Initialise_System(void)
 	TextMode_Put_String("\tInitialising SerialPort...\n", white);
 	Initialise_SerialPort();
 	Error_Set_Enable_SerialPort(true);
+
+	#ifdef CHNOSPROJECT_DEBUG
+		debug("%s:%d\n", __FILE__, __LINE__);
+		debug("CHNOSProject is Running in Debug Mode.\n");
+	#endif
 
 	TextMode_Put_String("\tInitialising Memory...\n", white);
 	System_Check_Memory();
@@ -206,6 +212,9 @@ void Initialise_System(void)
 	TextMode_Put_String("\tSystem Initialising Phase End.\n", white);
 
 	IO_STI();
+
+	System.DisplayController = Initialise_Display();
+
 	return;
 }
 
@@ -350,9 +359,9 @@ void System_Memory_Free(void *addr, uint size)
 	return;
 }
 
-void System_CallBIOS_Send_End_Of_Operation(void)
+void System_CallBIOS_Send_End_Of_Operation(uint abort)
 {
-	CallBIOS_Send_End_Of_Operation(System.CallBIOSController);
+	CallBIOS_Send_End_Of_Operation(System.CallBIOSController, abort);
 	return;
 }
 
@@ -360,6 +369,21 @@ void System_MultiTask_Task_Sleep(UI_Task *task)
 {
 	MultiTask_Task_Sleep(System.TaskController, task);
 	return;
+}
+
+DATA_FIFO32 *System_FIFO32_Initialise(uint size)
+{
+	return FIFO32_Initialise(System.MemoryController, size);
+}
+
+uint System_Display_VESA_Set_VideoMode(uint index)
+{
+	return Display_VESA_Set_VideoMode(System.DisplayController, index);
+}
+
+IO_DisplayControl *System_Display_Get_Controller(void)
+{
+	return System.DisplayController;
 }
 
 //

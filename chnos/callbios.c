@@ -50,7 +50,8 @@ IO_CallBIOSControl *Initialise_CallBIOS(void)
 	}
 	q[i] = 0xff;
 
-	ctrl->CallBIOS_Task->tss->esp0 = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
+	ctrl->esp0 = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
+	ctrl->CallBIOS_Task->tss->esp0 = ctrl->esp0;
 	ctrl->CallBIOS_Task->tss->ss0 = SYSTEM_DS << 3;
 
 	return ctrl;
@@ -67,6 +68,8 @@ void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn, DATA_FIFO32 *fifo, u
 	ctrl->CallBIOS_Task->tss->ds = 0;
 	ctrl->CallBIOS_Task->tss->esp = 0xc200;
 
+	ctrl->CallBIOS_Task->tss->esp0 = ctrl->esp0;
+
 	ctrl->fifo = fifo;
 	ctrl->endsignal = endsignal;
 
@@ -78,10 +81,14 @@ void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn, DATA_FIFO32 *fifo, u
 	return;
 }
 
-void CallBIOS_Send_End_Of_Operation(IO_CallBIOSControl *ctrl)
+void CallBIOS_Send_End_Of_Operation(IO_CallBIOSControl *ctrl, uint abort)
 {
 	if(ctrl->fifo != 0){
-		FIFO32_Put(ctrl->fifo, ctrl->endsignal);
+		if(!abort){
+			FIFO32_Put(ctrl->fifo, ctrl->endsignal);
+		} else{
+			FIFO32_Put(ctrl->fifo, ctrl->endsignal + 1);
+		}
 	}
 	return;
 }
@@ -160,9 +167,11 @@ void CallBIOS_Check_Privileged_Operation(uint *esp)
 		#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
 			debug("CallBIOS:Privileged Operation Found in v8086mode.\n");
 			debug("Opcode[0x%X]:0x%X\n", eip, eip[0]);
-			debug("Task Sleeping...\n");
+			debug("Task Terminate...\n");
 		#endif
 	}
+
+	System_CallBIOS_Send_End_Of_Operation(True);
 
 	for(;;){
 		System_MultiTask_Task_Sleep(System_MultiTask_GetNowTask());
