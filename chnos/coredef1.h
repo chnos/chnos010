@@ -315,6 +315,11 @@ typedef struct DATA_LOCATION_2D {
 	int y;
 } DATA_Location2D;
 
+typedef struct DATA_LOCATION_2DU {
+	uint x;
+	uint y;
+} DATA_Location2DU;
+
 /*display*/
 typedef struct _INFO_VBE_BIOS {
 	uchar sign[4];

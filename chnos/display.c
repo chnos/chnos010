@@ -205,7 +205,7 @@ uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index)
 		return 4;
 	}
 
-	if(!(ctrl->VBE.list_vmode[index].bpp == 8)){
+	if(!(ctrl->VBE.list_vmode[index].bpp == 8 || ctrl->VBE.list_vmode[index].bpp == 16 || ctrl->VBE.list_vmode[index].bpp == 32)){
 		#ifdef CHNOSPROJECT_DEBUG_DISPLAY
 			debug("SetVideo:Error:This VideoMode's BitsPerPixel is Not Supported in CHNOSProject.\n");
 		#endif

@@ -39,12 +39,29 @@ void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_Wor
 IO_DisplayControl *Initialise_Display(void);
 uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index);
 
-/*drawing.c •`‰æŠÖ˜A*/
+/*draw08.c 8bit•`‰æŠÖ˜A*/
 void Drawing08_Initialise_Palette(void);
 void Drawing08_Set_Palette(uint start, uint end, uchar *rgb);
 void Drawing08_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing08_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
-void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
+
+/*draw16.c 16bit•`‰æŠÖ˜A*/
+void Drawing16_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Drawing16_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
+void Drawing16_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
+
+/*draw32.c 32bit•`‰æŠÖ˜A*/
+void Drawing32_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Drawing32_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
+void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
+
+/*drawing.c •`‰æŠÖ˜A*/
+extern void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+extern void (*Drawing_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Drawing_Invalid_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+void Drawing_Invalid_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Initialise_Drawing(void);
 uchar RGB_32_To_08(uint c32);
 uchar RGB_32_To_08_xy(uint c32, int x, int y);
 ushort RGB_32_To_16(uint c32);

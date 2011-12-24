@@ -49,3 +49,19 @@ void Timer_TaskSwitch_Invalid(void)
 {
 	return;
 }
+
+typedef struct UI_TIMER {
+	uint tick;
+	uint timeout;
+	struct UI_TIMER *root_next;
+	struct UI_TIMER *tree_next;
+	DATA_FIFO32 *fifo;
+	uint fifo_putdata;
+	union UI_TIMER_FLAGS {
+		uint flags;
+		struct UI_TIMER_FLAGS_BITS {
+			unsigned initialized : 1;
+			unsigned configured : 1;
+		} bit;
+	} flags;
+} UI_Timer;
