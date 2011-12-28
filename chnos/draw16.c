@@ -45,3 +45,9 @@ void Drawing16_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const 
 	}
 	return;
 }
+
+void Drawing16_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c)
+{
+	((ushort *)vram)[y * xsize + x] = RGB_32_To_16(c);
+	return;
+}

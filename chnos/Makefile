@@ -39,6 +39,9 @@ hankaku.bin : hankaku.txt Makefile
 hankaku.obj : hankaku.bin Makefile
 	$(BIN2OBJ) hankaku.bin hankaku.obj _hankaku
 
+chnlogo.obj : chnlogo.bmp Makefile
+	$(BIN2OBJ) chnlogo.bmp chnlogo.obj _chnlogo
+
 asmhead.bin : asmhead.nas Makefile
 	$(NASK) asmhead.nas asmhead.bin asmhead.lst
 

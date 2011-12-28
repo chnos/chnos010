@@ -43,3 +43,9 @@ void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const 
 	}
 	return;
 }
+
+void Drawing32_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c)
+{
+	((uint *)vram)[y * xsize + x] = c;
+	return;
+}

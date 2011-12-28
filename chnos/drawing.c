@@ -1,8 +1,9 @@
 
 #include "core.h"
 
-void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 void (*Drawing_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+void (*Drawing_Draw_Point)(void *vram, uint xsize, uint x, uint y, uint c);
 
 void Initialise_Drawing(void)
 {
@@ -11,21 +12,33 @@ void Initialise_Drawing(void)
 	dispctrl = System_Display_Get_Controller();
 
 	if(dispctrl->bpp == 8){
-		Drawing_Put_String	= Drawing08_Put_String;
 		Drawing_Fill_Rectangle	= Drawing08_Fill_Rectangle;
+		Drawing_Put_String	= Drawing08_Put_String;
+		Drawing_Draw_Point	= Drawing08_Draw_Point;
 	} else if(dispctrl->bpp == 16){
-		Drawing_Put_String	= Drawing16_Put_String;
 		Drawing_Fill_Rectangle	= Drawing16_Fill_Rectangle;
+		Drawing_Put_String	= Drawing16_Put_String;
+		Drawing_Draw_Point	= Drawing16_Draw_Point;
 	} else if(dispctrl->bpp == 32){
-		Drawing_Put_String	= Drawing32_Put_String;
 		Drawing_Fill_Rectangle	= Drawing32_Fill_Rectangle;
+		Drawing_Put_String	= Drawing32_Put_String;
+		Drawing_Draw_Point	= Drawing32_Draw_Point;
 	} else{
-		Drawing_Put_String	= Drawing_Invalid_Put_String;
 		Drawing_Fill_Rectangle	= Drawing_Invalid_Fill_Rectangle;
+		Drawing_Put_String	= Drawing_Invalid_Put_String;
+		Drawing_Draw_Point	= Drawing_Invalid_Draw_Point;
 		#ifdef CHNOSPROJECT_DEBUG_DRAWING
 			debug("Initalise_Drawing:Not implemented %d bpp.\n", dispctrl->bpp);
 		#endif
 	}
+	return;
+}
+
+void Drawing_Invalid_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1)
+{
+	#ifdef CHNOSPROJECT_DEBUG_DRAWING
+		debug("Drawing_Invalid_Fill_Rectangle:[0x%X] xsize:%d color:0x%X\nDrawing_Invalid_Fill_Rectangle: (%d, %d) -> (%d, %d)\n", vram, xsize, c, x0, y0, x1, y1);
+	#endif
 	return;
 }
 
@@ -36,10 +49,11 @@ void Drawing_Invalid_Put_String(void *vram, uint xsize, uint x, uint y, uint c, 
 	#endif
 	return;
 }
-void Drawing_Invalid_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1)
+
+void Drawing_Invalid_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c)
 {
 	#ifdef CHNOSPROJECT_DEBUG_DRAWING
-		debug("Drawing_Invalid_Fill_Rectangle:[0x%X] xsize:%d color:0x%X\nDrawing_Invalid_Fill_Rectangle: (%d, %d) -> (%d, %d)\n", vram, xsize, c, x0, y0, x1, y1);
+		debug("Drawing_Invalid_Draw_Point:[0x%X] xsize:%d (%d, %d) color:0x%X\n", vram, xsize, x, y, c);
 	#endif
 	return;
 }

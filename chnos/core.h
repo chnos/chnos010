@@ -45,22 +45,27 @@ void Drawing08_Set_Palette(uint start, uint end, uchar *rgb);
 void Drawing08_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing08_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
+void Drawing08_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 
 /*draw16.c 16bit描画関連*/
 void Drawing16_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing16_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing16_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
+void Drawing16_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 
 /*draw32.c 32bit描画関連*/
 void Drawing32_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing32_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
+void Drawing32_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 
 /*drawing.c 描画関連*/
-extern void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Drawing_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+extern void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
+extern void (*Drawing_Draw_Point)(void *vram, uint xsize, uint x, uint y, uint c);
 void Drawing_Invalid_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 void Drawing_Invalid_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Drawing_Invalid_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 void Initialise_Drawing(void);
 uchar RGB_32_To_08(uint c32);
 uchar RGB_32_To_08_xy(uint c32, int x, int y);
@@ -152,6 +157,9 @@ uint FIFO32_Status(DATA_FIFO32 *fifo);
 void FIFO32_Free(DATA_FIFO32 *fifo);
 uint FIFO32_MyTaskFIFO_Status(void);
 uint FIFO32_MyTaskFIFO_Get(void);
+
+/*fmt_bmp.c ビットマップ描画関連*/
+uint Format_BMP_DrawPicture(void *vram, uint xsize, uint x, uint y, uint pxsize, uint pysize, void *bmp);
 
 /*intrpt.c 割り込み関連*/
 void Initialise_ProgrammableInterruptController(void);

@@ -84,6 +84,8 @@ void CHNMain(void)
 	Drawing_Fill_Rectangle(disp_ctrl->vram, disp_ctrl->xsize, 0xffffff, 0, 0, disp_ctrl->xsize - 1, disp_ctrl->ysize - 1);
 	Drawing_Put_String(disp_ctrl->vram, disp_ctrl->xsize, 10, 10, 0x000000, "Welcome to CHNOSProject!");
 
+	Format_BMP_DrawPicture(disp_ctrl->vram, disp_ctrl->xsize, 10, 26, 0, 0, chnlogo);
+
 	for(;;){
 
 	}

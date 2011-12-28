@@ -101,3 +101,9 @@ void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const 
 	}
 	return;
 }
+
+void Drawing08_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c)
+{
+	((uchar *)vram)[y * xsize + x] = RGB_32_To_08_xy(c, x, y);
+	return;
+}
