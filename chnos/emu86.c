@@ -266,7 +266,7 @@ int Emulator_x86_Put_EmulationInformation(Emulator_x86_Environment *env, const u
 	int i;
 	uchar s[256];
 
-	i = vsnprintf(s, format, sizeof(s), (uint *)(&format + 1));
+	i = vsnprintf(s, sizeof(s), format, (uint *)(&format + 1));
 	SerialPort_Send(s);
 
 	return i;

@@ -63,7 +63,7 @@ uint Format_BMP_DrawPicture(void *vram, uint xsize, uint x, uint y, uint pxsize,
 	read32 = (uint *)(&fheader->offset_to_data[0]);
 	offset_to_data = *read32;
 
-	//snprintf(s, "size:%d offset:%d", sizeof(s), filesize, offset_to_data);
+	//snprintf(s, sizeof(s), "size:%d offset:%d", filesize, offset_to_data);
 	//Drawing_Put_String(vram, xsize, x, y, 0x000000, s);
 
 	read32 = (uint *)(bmp + 0x0e);
@@ -91,12 +91,12 @@ uint Format_BMP_DrawPicture(void *vram, uint xsize, uint x, uint y, uint pxsize,
 		if(infoheader->bpp == 24){
 			//Drawing_Put_String(vram, xsize, x, y + 16 * 4, 0x000000, "24 bpp.");
 		} else{
-			snprintf(s, "%d bpp(not implemented).", sizeof(s), infoheader->bpp);
+			snprintf(s, sizeof(s), "%d bpp(not implemented).", infoheader->bpp);
 			Drawing_Put_String(vram, xsize, x, y + 16 * 4, 0x000000, s);
 			return 6;
 		}
 
-		//snprintf(s, "xsize:%d ysize:%d", sizeof(s), infoheader->xsize, infoheader->ysize);
+		//snprintf(s, sizeof(s), "xsize:%d ysize:%d", infoheader->xsize, infoheader->ysize);
 		//Drawing_Put_String(vram, xsize, x, y + 16 * 5, 0x000000, s);
 
 		rgb24 = (DATA_Format_BMP_RGB24 *)(bmp + offset_to_data);

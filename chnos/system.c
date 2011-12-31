@@ -132,12 +132,12 @@ void Initialise_System(void)
 	TextMode_Put_String("\tInitialising Memory...\n", white);
 	System_Check_Memory();
 	i = System_Get_PhisycalMemorySize();
-	snprintf(s, "\tMemory:%uByte %uKiB %uMib\n", sizeof(s), i, i >> 10, i >> 20);
+	snprintf(s, sizeof(s), "\tMemory:%uByte %uKiB %uMib\n", i, i >> 10, i >> 20);
 	TextMode_Put_String(s, white);
 	System.MemoryController = Memory_Initialise_Control((void *)PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, i - PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, SYSTEM_MEMORY_CONTROL_TAGS);
 
 	i = Memory_Get_FreeSize(System.MemoryController);
-	snprintf(s, "\tFreeMemory:%uByte %uKiB %uMib\n", sizeof(s), i, i >> 10, i >> 20);
+	snprintf(s, sizeof(s), "\tFreeMemory:%uByte %uKiB %uMib\n", i, i >> 10, i >> 20);
 	TextMode_Put_String(s, white);
 
 	TextMode_Put_String("\tInitialising GDT...\n", white);
@@ -186,7 +186,7 @@ void Initialise_System(void)
 		TextMode_Put_String("\t\tCPUID is Enabled.\n", white);
 		CPUID(cpuid_buf, 0);
 		System.Environment.CPUID.max_id = cpuid_buf[0];
-		snprintf(s, "\t\tMaxID =0x%X\n", sizeof(s), System.Environment.CPUID.max_id);
+		snprintf(s, sizeof(s), "\t\tMaxID =0x%X\n", System.Environment.CPUID.max_id);
 		TextMode_Put_String(s, white);
 		CPUID(cpuid_buf, 0x80000000);
 		if((cpuid_buf[0] & 0x80000000) == 0){
@@ -194,7 +194,7 @@ void Initialise_System(void)
 		} else{
 			TextMode_Put_String("\t\tExtended CPUID is Enabled.\n", white);
 			System.Environment.CPUID.max_eid = cpuid_buf[0];
-			snprintf(s, "\t\tMaxEID=0x%X\n", sizeof(s), System.Environment.CPUID.max_eid);
+			snprintf(s, sizeof(s), "\t\tMaxEID=0x%X\n", System.Environment.CPUID.max_eid);
 			TextMode_Put_String(s, white);
 		}
 		CPUID(s, 0);
@@ -205,7 +205,7 @@ void Initialise_System(void)
 		CPUID(cpuid_buf, 1);
 		System.Environment.CPUID.function_flags.reg.edx = cpuid_buf[2];
 		System.Environment.CPUID.function_flags.reg.ecx = cpuid_buf[3];
-		snprintf(s, "\t\tVME:%d\n", sizeof(s), System.Environment.CPUID.function_flags.bit.VME);
+		snprintf(s, sizeof(s), "\t\tVME:%d\n", System.Environment.CPUID.function_flags.bit.VME);
 		TextMode_Put_String(s, white);
 	}
 

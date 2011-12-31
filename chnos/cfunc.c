@@ -1,8 +1,33 @@
-//引数(uchar s[], const uchar format[], uint n, ...)
+
+#include "core.h"
+
+uint system_seed;
+
+#define RAND_A	((10 << 3) + 5)
+#define RAND_B	((15 << 1) + 1)
+#define RAND_C	(1 << 24)
+
+void srand(uint seed)
+{
+	system_seed = seed;
+	return;
+}
+
+uint rand(void)
+{
+	uint seed2;
+
+	system_seed = ((system_seed * RAND_A) + RAND_B) % RAND_C;
+	seed2 = ((system_seed * RAND_A) + RAND_B) % RAND_C;
+	system_seed = (system_seed & 0xff5688) | ((seed2 >> 8) & 0xa977) | ((system_seed & 0x000ff000) << 12);
+	return system_seed;
+}
+
+//引数(uchar s[], uint n, const uchar format[], ...)
 //	s	:結果を書き込む文字列の先頭アドレスを指定します。
-//	format	:書式指定文字列の先頭アドレスを指定します。終端は0x00である必要があります。
 //	n	:s[]の大きさを指定します。(n - 1)番目以降の文字は書き込まれません。
 //		:ただし、ゼロを指定した場合は、何も出力しません。この場合、s[]は0(null)を指定することもできます。
+//	format	:書式指定文字列の先頭アドレスを指定します。終端は0x00である必要があります。
 //	...	:可変長引数です。
 //
 //誤ったフォーマットが指定された場合、その部分のフォーマット解釈を終了し、
@@ -27,19 +52,17 @@
 //	n	:このフォーマット指定子を含むフォーマット指定に達するまで、今回出力した文字数を、
 //		:データをuint *として解釈し、ポインタが指し示す先のuint型変数に代入します。
 
-#include "core.h"
-
-int snprintf(uchar s[], const uchar format[], uint n, ...)
+int snprintf(uchar s[], uint n, const uchar format[], ...)
 {
-	return CFunction_vsnprintf(s, format, n, (uint *)(&n + 1));
+	return CFunction_vsnprintf(s, n, format, (uint *)(&format + 1));
 }
 
-int vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
+int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 {
-	return CFunction_vsnprintf(s, format, n, vargs);
+	return CFunction_vsnprintf(s, n, format, vargs);
 }
 
-int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[])
+int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 {
 	uchar c;
 	uint i;
@@ -339,6 +362,4 @@ void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_Wor
 	}
 	return;
 }
-
-
 

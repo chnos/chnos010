@@ -35,7 +35,7 @@ void CHNMain(void)
 		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 1, 0x000000, "Please Select the VideoMode Number.");
 		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 2, 0x000000, "(Use cursor Up or Down, Select Enter.)");
 		Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
-		snprintf(s, "%d:0x%X %dx%d-%dbits", sizeof(s), i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
+		snprintf(s, sizeof(s), "%d:0x%X %dx%d-%dbits", i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
 		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
 
 		FIFO32_Put_Arguments(KBCT->fifo, 4, FIFOCMD_KBCT_SET_FOCUS_FIFO, mytask->fifo, MAIN_KEYBASE, 0);
@@ -55,7 +55,7 @@ void CHNMain(void)
 								i--;
 							}
 							Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
-							snprintf(s, "%d:0x%X %dx%d-%dbits", sizeof(s), i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
+							snprintf(s, sizeof(s), "%d:0x%X %dx%d-%dbits", i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
 							Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
 						} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_D){
 							if(i == disp_ctrl->VBE.list_vmode_tags - 1){
@@ -64,7 +64,7 @@ void CHNMain(void)
 								i ++;
 							}
 							Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
-							snprintf(s, "%d:0x%X %dx%d-%dbits", sizeof(s), i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
+							snprintf(s, sizeof(s), "%d:0x%X %dx%d-%dbits", i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
 							Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
 						} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
 							if(!System_Display_VESA_Set_VideoMode(i)){
@@ -86,6 +86,11 @@ void CHNMain(void)
 
 	Format_BMP_DrawPicture(disp_ctrl->vram, disp_ctrl->xsize, 10, 26, 0, 0, chnlogo);
 
+	srand(123456);
+	for(i = 0; i < 10; i++){
+		Drawing_Draw_Line_PQ(disp_ctrl->vram, disp_ctrl->xsize, rand(), 100, 300 + (rand() % 50), 300, 220 + (rand() % 180));
+	}
+
 	for(;;){
 
 	}
@@ -106,7 +111,7 @@ void KeyboardControlTask(void)
 
 	mytask = System_MultiTask_GetNowTask();
 
-	snprintf(s, "KBCT:KeyboardControlTask Start Running.\nKBCT:UI_Task=0x%X\n", sizeof(s), mytask);
+	snprintf(s, sizeof(s), "KBCT:KeyboardControlTask Start Running.\nKBCT:UI_Task=0x%X\n", mytask);
 	TextMode_Put_String(s, white);
 
 	Keyboard_Set_ReceiveFIFO(mytask->fifo, 0x100);

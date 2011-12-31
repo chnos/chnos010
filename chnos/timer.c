@@ -20,13 +20,13 @@ void Initialise_ProgrammableIntervalTimer(void)
 
 void InterruptHandler20(uint *esp)
 {
-	uchar s[32];
+	//uchar s[32];
 
 	ProgrammableInterruptController_InterruptRequest_Complete(0x00);
 	PIT_10ms_Tick++;
 
-	snprintf(s, "10ms_Tick:%u", sizeof(s), PIT_10ms_Tick);
-	TextMode_Put_String_Absolute(s, white, 50, 0);
+	//snprintf(s, sizeof(s), "10ms_Tick:%u", PIT_10ms_Tick);
+	//TextMode_Put_String_Absolute(s, white, 50, 0);
 
 	if((PIT_10ms_Tick & 0x00000002) == 0){
 		TaskSwitch();

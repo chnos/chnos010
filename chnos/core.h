@@ -20,10 +20,12 @@ uint CallBIOS_Push_Data_To_Stack(uint *esp, ushort data);
 uint CallBIOS_Pop_Data_From_Stack(uint *esp);
 
 /*cfunc.c vsnprintf‚Ì“ÆŽ©ŽÀ‘•“™*/
-int snprintf(uchar s[], const uchar format[], uint n, ...);
-int vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[]);
+void srand(uint seed);
+uint rand(void);
+int snprintf(uchar s[], uint n, const uchar format[], ...);
+int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
 //
-int CFunction_vsnprintf(uchar s[], const uchar format[], uint n, uint vargs[]);
+int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
 void CFunction_vsnprintf_Initialise_WorkArea(CFunction_vsnprintf_WorkArea *work, uchar s[], const uchar format[], uint n, uint vargs[]);
 int CFunction_vsnprintf_Check_FormatBuffer(CFunction_vsnprintf_WorkArea *work);
 int CFunction_vsnprintf_Check_DestinationBuffer(CFunction_vsnprintf_WorkArea *work);
@@ -46,26 +48,31 @@ void Drawing08_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, 
 void Drawing08_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing08_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
+void Drawing08_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*draw16.c 16bit•`‰æŠÖ˜A*/
 void Drawing16_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing16_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing16_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing16_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
+void Drawing16_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*draw32.c 32bit•`‰æŠÖ˜A*/
 void Drawing32_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing32_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing32_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
+void Drawing32_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*drawing.c •`‰æŠÖ˜A*/
 extern void (*Drawing_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 extern void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Drawing_Draw_Point)(void *vram, uint xsize, uint x, uint y, uint c);
+extern void (*Drawing_Draw_Line_PQ)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing_Invalid_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 void Drawing_Invalid_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing_Invalid_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
+void Drawing_Invalid_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Initialise_Drawing(void);
 uchar RGB_32_To_08(uint c32);
 uchar RGB_32_To_08_xy(uint c32, int x, int y);

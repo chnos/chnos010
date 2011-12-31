@@ -179,7 +179,7 @@ int Error_Put_String(const uchar format[], ...)
 	int i;
 	uchar s[256];
 
-	i = vsnprintf(s, format, sizeof(s), (uint *)(&format + 1));
+	i = vsnprintf(s, sizeof(s), format, (uint *)(&format + 1));
 	if(Error_Output_Enable_SerialPort){
 		SerialPort_Send(s);
 	}
