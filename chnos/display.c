@@ -43,6 +43,9 @@ IO_DisplayControl *Initialise_Display(void)
 	ctrl->vram = VGA_VRAM_ADR;
 
 	Drawing08_Initialise_Palette();
+	Error_Set_Enable_Display_TextMode(false);
+	Error_Set_Enable_Display_GraphicMode(true, ctrl->vram, ctrl->xsize, ctrl->ysize >> 4);
+
 
 	//Ÿ‚ÉAVBE‚ÌBIOSî•ñ‚ğ“¾‚éB
 
@@ -264,6 +267,8 @@ uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index)
 			}
 			debug("\n");
 		#endif
+		Initialise_Drawing();
+		Error_Set_Enable_Display_GraphicMode(true, ctrl->vram, ctrl->xsize, ctrl->ysize >> 4);
 		return 0;
 	}
 

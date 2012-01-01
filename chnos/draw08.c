@@ -59,6 +59,12 @@ void Drawing08_Set_Palette(uint start, uint end, uchar *rgb)
 void Drawing08_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1)
 {
 	uint x, y;
+
+//if negative position
+	if((x0 & 0x80000000) != 0 || (y0 & 0x80000000) != 0 || (x1 & 0x80000000) != 0 || (y1 & 0x80000000) != 0){
+		return;
+	}
+
 	c = RGB_32_To_08(c);
 	for(y = y0; y <= y1; y++){
 		for(x = x0; x <= x1; x++){
@@ -73,6 +79,11 @@ void Drawing08_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uc
 	int i;
 	uchar d;
 	uchar *p;
+
+//if negative position
+	if((x & 0x80000000) != 0 || (y & 0x80000000) != 0){
+		return;
+	}
 
 	for (i = 0; i < 16; i++) {
 		p = (uchar *)(vram + (y + i) * xsize + x);
@@ -91,6 +102,11 @@ void Drawing08_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uc
 
 void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[])
 {
+//if negative position
+	if((x & 0x80000000) != 0 || (y & 0x80000000) != 0){
+		return;
+	}
+
 	c = RGB_32_To_08(c);
 	for(; *s != 0x00; s++){
 		if(x > xsize - 8){
@@ -104,77 +120,11 @@ void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const 
 
 void Drawing08_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c)
 {
-	((uchar *)vram)[y * xsize + x] = RGB_32_To_08_xy(c, x, y);
-	return;
-}
-
-void Drawing08_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1)
-{
-	uint lx;
-	uint i, j;
-	uint a;
-	uint c8;
-
-	c8 = RGB_32_To_08(c);
-
-	if(x1 < x0){
-		lx = x0;
-		x0 = x1;
-		x1 = lx;
-
-		lx = y0;
-		y0 = y1;
-		y1 = lx;
-	} else if(x1 == x0){
-		if(y0 <= y1){
-			for(i = 0; i < y1 - y0 + 1; i++){
-				((uchar *)vram)[(y0 + i) * xsize + x0] = c8;
-			}
-		} else{
-			for(i = 0; i < y0 - y1 + 1; i++){
-				((uchar *)vram)[(y0 - i) * xsize + x0] = c8;
-			}
-		}
+//if negative position
+	if((x & 0x80000000) != 0 || (y & 0x80000000) != 0){
 		return;
 	}
 
-	lx = x1 - x0;
-	if(lx == 0){
-		lx = 1;
-	}
-
-	if(y0 <= y1){	//+a
-		a = ((y1 - y0) << 10) / lx;
-		for(i = 0; i < lx; i++){
-			((uchar *)vram)[(y0 + ((i * a) >> 10)) * xsize + (x0 + i)] = c8;
-			for(j = ((i * a) >> 10) + 1; j < ((i + 1) * a) >> 10; j++){
-				((uchar *)vram)[(y0 + j) * xsize + (x0 + i)] = c8;
-			}
-		}
-		for(j = ((i * a) >> 10) + 1; j < ((i + 1) * a) >> 10; j++){
-			((uchar *)vram)[(y0 + j) * xsize + (x0 + i)] = c8;
-			if(y1 >= y0 + j){
-				break;
-			}
-		}
-	} else{	//-a
-		a = ((y0 - y1) << 10) / lx;
-		for(i = 0; i < lx; i++){
-			((uchar *)vram)[(y0 - ((i * a) >> 10)) * xsize + (x0 + i)] = c8;
-			for(j = ((i * a) >> 10) + 1; j < ((i + 1) * a) >> 10; j++){
-				((uchar *)vram)[(y0 - j) * xsize + (x0 + i)] = c8;
-			}
-		}
-		for(j = ((i * a) >> 10) + 1; j < ((i + 1) * a) >> 10; j++){
-			((uchar *)vram)[(y0 - j) * xsize + (x0 + i)] = c8;
-			if(y1 <= y0 - j){
-				break;
-			}
-		}
-	}
-
-	((uchar *)vram)[y1 * xsize + x1] = c8;
-
+	((uchar *)vram)[y * xsize + x] = RGB_32_To_08_xy(c, x, y);
 	return;
 }
-

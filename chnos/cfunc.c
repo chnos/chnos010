@@ -23,6 +23,103 @@ uint rand(void)
 	return system_seed;
 }
 
+uint isqrt(uint n)
+{
+	uint x;
+
+//Overflow Check
+	if(n >= (uint)0xffff * (uint)0xffff){
+		return 0xffff;
+	}
+
+	x = (1 << 15);
+
+	if(n > x * x){
+		x += (1 << 14);
+	} else{
+		x -= (1 << 14);
+	}
+	if(n > x * x){
+		x += (1 << 13);
+	} else{
+		x -= (1 << 13);
+	}
+	if(n > x * x){
+		x += (1 << 12);
+	} else{
+		x -= (1 << 12);
+	}
+	if(n > x * x){
+		x += (1 << 11);
+	} else{
+		x -= (1 << 11);
+	}
+	if(n > x * x){
+		x += (1 << 10);
+	} else{
+		x -= (1 << 10);
+	}
+	if(n > x * x){
+		x += (1 << 9);
+	} else{
+		x -= (1 << 9);
+	}
+	if(n > x * x){
+		x += (1 << 8);
+	} else{
+		x -= (1 << 8);
+	}
+	if(n > x * x){
+		x += (1 << 7);
+	} else{
+		x -= (1 << 7);
+	}
+	if(n > x * x){
+		x += (1 << 6);
+	} else{
+		x -= (1 << 6);
+	}
+	if(n > x * x){
+		x += (1 << 5);
+	} else{
+		x -= (1 << 5);
+	}
+	if(n > x * x){
+		x += (1 << 4);
+	} else{
+		x -= (1 << 4);
+	}
+	if(n > x * x){
+		x += (1 << 3);
+	} else{
+		x -= (1 << 3);
+	}
+	if(n > x * x){
+		x += (1 << 2);
+	} else{
+		x -= (1 << 2);
+	}
+	if(n > x * x){
+		x += (1 << 1);
+	} else{
+		x -= (1 << 1);
+	}
+	if(n > x * x){
+		x += (1 << 0);
+	} else{
+		x -= (1 << 0);
+	}
+
+	if(n > x * x){
+		x++;
+	}
+	if(n < x * x){
+		x--;
+	}
+
+	return x;
+}
+
 //引数(uchar s[], uint n, const uchar format[], ...)
 //	s	:結果を書き込む文字列の先頭アドレスを指定します。
 //	n	:s[]の大きさを指定します。(n - 1)番目以降の文字は書き込まれません。
@@ -65,12 +162,17 @@ int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 {
 	uchar c;
-	uint i;
+	uint i, j;
 	const uchar *d;
+	uint flag_fill_zero;
+	uint fill_length;
 
 	CFunction_vsnprintf_WorkArea work;
 
-	CFunction_vsnprintf_Initialise_WorkArea(&work, s, format, n, vargs);
+	CFunction_vsnprintf_Initialise_WorkArea(&work, s, format, n, vargs);	
+
+	flag_fill_zero = False;
+	fill_length = 0xffffffff;
 
 	for(;;){
 		if(CFunction_vsnprintf_Check_FormatBuffer(&work) == -1){
@@ -136,13 +238,26 @@ int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 					CFunction_vsnprintf_Write_DestinationBuffer(&work, work.temporary_data[i]);
 				}
 			} else if(c == 'X'){	/*データを16進数で出力します。X:アルファベット大文字。*/
+				/*標準精度は一桁以上、ゼロフィルです。*/
+				if(fill_length == 0xffffffff){
+					fill_length = 1;
+					flag_fill_zero = True;
+				}
 				CFunction_vsnprintf_To_String_From_Hex_Upper(&work, CFunction_vsnprintf_Get_NextArgument(&work));
 				for(i = 0; i < 8; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
-					if(i >= 8 - 1){
-						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
+				}
+				if((8 - i) < fill_length && fill_length != 0xffffffff){
+					if(flag_fill_zero){
+						for(j = 0; j < (fill_length - (8 - i)); j++){
+							CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
+						}
+					} else{
+						for(j = 0; j < (fill_length - (8 - i)); j++){
+							CFunction_vsnprintf_Write_DestinationBuffer(&work, ' ');
+						}
 					}
 				}
 				for(; i < 8; i++){
@@ -204,12 +319,25 @@ int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 			} else if(c == 'p'){	/*データを何らかのポインタと解釈して、その指し示すアドレスを出力します。*/
 			} else if(c == 'n'){	/*このフォーマット指定子を含むフォーマット指定に達するまで、今回出力した文字数を、データをuint *として解釈し、ポインタが指し示す先のuint型変数に代入します。*/
 			} else if(0x30 <= c && c <= 0x39){	/*数字*/
+				c -= 0x30;
+				if(fill_length == 0xffffffff && c == 0){	/*最初のゼロ:ゼロ充填を要求*/
+					flag_fill_zero = True;
+					fill_length = 0;
+				} else{
+					if(fill_length == 0xffffffff){
+						fill_length = c;
+					} else{
+						fill_length = (fill_length * 10) + c;
+					}
+				}
 			} else{
 				CFunction_vsnprintf_Write_DestinationBuffer(&work, c);
 				work.format_phase = 0;
 			}
 		} else{	/*一般文字かも*/
 			if(c == '%'){	/*次からは書式指定*/
+				flag_fill_zero = False;
+				fill_length = 0xffffffff;
 				work.format_phase = 1;
 			} else{	/*一般文字出力中*/
 				CFunction_vsnprintf_Write_DestinationBuffer(&work, c);

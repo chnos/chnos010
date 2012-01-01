@@ -22,6 +22,7 @@ uint CallBIOS_Pop_Data_From_Stack(uint *esp);
 /*cfunc.c vsnprintfの独自実装等*/
 void srand(uint seed);
 uint rand(void);
+uint isqrt(uint n);
 int snprintf(uchar s[], uint n, const uchar format[], ...);
 int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
 //
@@ -48,27 +49,23 @@ void Drawing08_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, 
 void Drawing08_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing08_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
-void Drawing08_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*draw16.c 16bit描画関連*/
 void Drawing16_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing16_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing16_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing16_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
-void Drawing16_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*draw32.c 32bit描画関連*/
 void Drawing32_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing32_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing32_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
-void Drawing32_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 
 /*drawing.c 描画関連*/
 extern void (*Drawing_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 extern void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Drawing_Draw_Point)(void *vram, uint xsize, uint x, uint y, uint c);
-extern void (*Drawing_Draw_Line_PQ)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing_Invalid_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 void Drawing_Invalid_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing_Invalid_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
@@ -77,6 +74,9 @@ void Initialise_Drawing(void);
 uchar RGB_32_To_08(uint c32);
 uchar RGB_32_To_08_xy(uint c32, int x, int y);
 ushort RGB_32_To_16(uint c32);
+void Drawing_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
+void Drawing_Draw_Circle(void *vram, uint xsize, uint x, uint y, uint c, uint r);
+void Drawing_Fill_Circle(void *vram, uint xsize, uint x, uint y, uint c, uint r);
 
 /*dsctbl.c セグメント・ゲートディスクリプタ関連*/
 void Initialise_GlobalDescriptorTable(void);
@@ -151,6 +151,7 @@ uint Error_Report(uint error_no, ...);
 void Error_Abort(void);
 void Error_Set_Enable_SerialPort(bool serial);
 void Error_Set_Enable_Display_TextMode(bool tdisp);
+void Error_Set_Enable_Display_GraphicMode(bool gdisp, void *vram, uint xsize, uint lines);
 int Error_Put_String(const uchar format[], ...);
 void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp);
 void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp);

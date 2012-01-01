@@ -79,18 +79,15 @@ void CHNMain(void)
 		}
 	}
 
-	Initialise_Drawing();
-
 	Drawing_Fill_Rectangle(disp_ctrl->vram, disp_ctrl->xsize, 0xffffff, 0, 0, disp_ctrl->xsize - 1, disp_ctrl->ysize - 1);
 	Drawing_Put_String(disp_ctrl->vram, disp_ctrl->xsize, 10, 10, 0x000000, "Welcome to CHNOSProject!");
 
 	Format_BMP_DrawPicture(disp_ctrl->vram, disp_ctrl->xsize, 10, 26, 0, 0, chnlogo);
 
-	srand(123456);
-	for(i = 0; i < 10; i++){
-		Drawing_Draw_Line_PQ(disp_ctrl->vram, disp_ctrl->xsize, rand(), 100, 300 + (rand() % 50), 300, 220 + (rand() % 180));
+	Drawing_Fill_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0x00c600, 45);
+	for(i = 0; i < 50; i += 5){
+		Drawing_Draw_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0xc6c6c6, i);
 	}
-
 	for(;;){
 
 	}
