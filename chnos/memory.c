@@ -144,6 +144,10 @@ void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size)
 
 	IO_Store_EFlags(eflags);
 
+	#ifdef CHNOSPROJECT_DEBUG_MEMORY_ALLOCATE_AND_FREE
+		debug("Memory_Free:ctrl:[0x%X] addr:[0x%X] size:0x%X\n", ctrl, addr, size);
+	#endif
+
 	return;
 }
 
@@ -237,6 +241,13 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size)
 				ctrl[1].size -= size;
 			}
 			IO_Store_EFlags(eflags);
+			//ÉÅÉÇÉäÇÉ[ÉçÉNÉäÉAÅB
+			MOVSD_ZeroFill(addr, size);
+
+			#ifdef CHNOSPROJECT_DEBUG_MEMORY_ALLOCATE_AND_FREE
+						debug("Memory_Alloc:ctrl:[0x%X] addr:[0x%X] size:0x%X\n", ctrl, addr, size);
+			#endif
+
 			return addr;
 		}
 	}

@@ -206,6 +206,13 @@ void SerialPort_Send(const uchar s[]);
 void debug(const uchar format[], ...);
 #endif
 
+/*sheet.c シート関連*/
+UI_Sheet *Sheet_Initialise(void);
+uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
+uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent);
+uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py);
+uint Sheet_Refresh_Sheet(UI_Sheet *sheet);
+
 /*system.c システムデータ・初期化関連*/
 void Initialise_System(void);
 void System_Set_RunningPhase(uint phase);
@@ -329,6 +336,7 @@ uint DIV_64_32(uint dividend_low, uint dividend_high, uint divisor);
 					//=((dividend_high << 32) | dividend_low) / divisor
 uint MOD_64_32(uint dividend_low, uint dividend_high, uint divisor);
 					//=((dividend_high << 32) | dividend_low) % divisor
+void MOVSD_ZeroFill(void *addr, uint bytes);	//4Byte単位でゼロフィルする。
 /*nasfunc1.nas 他の関数に依存するアセンブラ関数群*/
 void asm_CPU_ExceptionHandler00(void);
 void asm_CPU_ExceptionHandler01(void);

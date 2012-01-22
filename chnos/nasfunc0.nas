@@ -25,6 +25,7 @@
 	GLOBAL	_Memory_Test_Sub
 	GLOBAL	_INT_3
 	GLOBAL	_DIV_64_32, _MOD_64_32
+	GLOBAL	_MOVSD_ZeroFill
 
 [SECTION .text]
 
@@ -273,5 +274,20 @@ _MOD_64_32:
 	mov	edx,[esp+8]
 	div	dword[esp+12]
 	mov	eax,edx
+	ret
+
+_MOVSD_ZeroFill:
+	cld
+	push	esi
+	push	edi
+	mov	ax, ds
+	mov	es, ax
+	mov	eax, 0x00000000
+	mov	edi, [esp+8+4]
+	mov	ecx, [esp+8+8]
+	shr	ecx, 2
+	rep stosd
+	pop	edi
+	pop	esi
 	ret
 

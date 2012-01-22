@@ -399,3 +399,25 @@ typedef struct IO_DISPLAY_CONTROL {
 	void *vram;
 	DATA_FIFO32 *bios_signal;
 } IO_DisplayControl;
+
+/*sheet*/
+typedef struct UI_SHEET {
+	struct UI_SHEET *parent;	//one sheet has one parent(if vramseet then:0)
+	struct UI_SHEET *next;		//same level sheet link
+	struct UI_SHEET *child;		//children lowest height
+	DATA_Location2D location;
+	DATA_Location2DU size;
+	ushort bpp;	//0:Text(16col) 1:8bit 2:16bit 3:32bit
+	union UI_SHEET_FLAGS {
+		ushort flags;
+		struct UI_SHEET_FLAGS_BITS {
+			unsigned initialized : 1;
+			unsigned buffer_configured : 1;
+			unsigned visible : 1;
+			unsigned map : 1;
+		} bit;
+	} flags;
+	void *vram;
+	void *map;
+	uint vramsize;
+} UI_Sheet;

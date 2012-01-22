@@ -5,19 +5,24 @@
 #define CHNOSPROJECT_DEBUG		/*定義するとデバッグモードで実行。それぞれのデバッグオプションも有効にする必要がある*/
 
 #ifdef CHNOSPROJECT_DEBUG
-	//#define CHNOSPROJECT_DEBUG_MEMORY	/*定義するとメモリ関連のデバッグをオンにする*/
+	//#define CHNOSPROJECT_DEBUG_MEMORY
+	#define CHNOSPROJECT_DEBUG_MEMORY_ALLOCATE_AND_FREE
 	//#define CHNOSPROJECT_DEBUG_EMULATOR_X86
 	//#define CHNOSPROJECT_DEBUG_CALLBIOS
 	//#define CHNOSPROJECT_DEBUG_FIFO
 	//#define CHNOSPROJECT_DEBUG_KBCT
 	//#define CHNOSPROJECT_DEBUG_DISPLAY
 	#define CHNOSPROJECT_DEBUG_DRAWING
+	#define CHNOSPROJECT_DEBUG_SHEET
 #endif
 
 /*defines*/
 /*boolean*/
 #define True	1
 #define False	0
+
+/*null*/
+#define Null	0
 
 /*descriptors*/
 #define AR_DATA32_RW	0x4092	//AR_32+AR_PRESENT+AR_CODE_OR_DATA+AR_TYPE_DATA_RW
@@ -311,4 +316,9 @@
 #define EXCEPTION_INFO_USER_ESP		0x0e
 #define EXCEPTION_INFO_USER_SS		0x0f
 
+/*sheet*/
+#define SHEET_MAX_XSIZE	65535
+#define SHEET_MAX_YSIZE	65535
+#define SHEET_MAX_CHILDREN	255
+#define SHEET_LOCATION_NOCHANGE	0x7ffffffe
 

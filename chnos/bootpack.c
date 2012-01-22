@@ -10,6 +10,8 @@ void CHNMain(void)
 	UI_Task *mytask;
 	uint i;
 	IO_DisplayControl *disp_ctrl;
+	UI_Sheet *vramsheet, *testsheet, *testsheet2;
+	int x, y;
 
 	Initialise_System();
 
@@ -88,8 +90,61 @@ void CHNMain(void)
 	for(i = 0; i < 50; i += 5){
 		Drawing_Draw_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0xc6c6c6, i);
 	}
-	for(;;){
 
+	vramsheet = Sheet_Initialise();
+	testsheet = Sheet_Initialise();
+	testsheet2 = Sheet_Initialise();
+
+	Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
+	Sheet_SetBuffer(testsheet, System_Memory_Allocate(128 * 64 * 1), 128, 64, 8);
+	Sheet_SetBuffer(testsheet2, System_Memory_Allocate(160 * 100 * 1), 160, 100, 8);
+
+	for(y = 0; y < testsheet->size.y; y++){
+		for(x = 0; x < testsheet->size.x; x++){
+			((uchar*)testsheet->vram)[y * testsheet->size.x + x] = x * 2;
+		}
+	}
+	for(y = 0; y < testsheet2->size.y; y++){
+		for(x = 0; x < testsheet2->size.x; x++){
+			((uchar*)testsheet2->vram)[y * testsheet2->size.x + x] = y * 2 + x;
+		}
+	}
+
+	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 4, 4, 0xffffff, "TestSheet");
+	Drawing08_Put_String(testsheet2->vram, testsheet2->size.x, 4, 4, 0xffffff, "TestSheet2");
+
+	Sheet_SetParent(testsheet, vramsheet);
+	Sheet_Show(testsheet, 0, 10, 10);
+
+	Sheet_SetParent(testsheet2, vramsheet);
+	Sheet_Show(testsheet2, 1, 20, 20);
+
+	for(;;){
+		if(FIFO32_MyTaskFIFO_Status() == 0){
+
+		} else{
+			data = FIFO32_MyTaskFIFO_Get();
+			if(MAIN_KEYBASE <= data && data <= (MAIN_KEYBASE + 0xFFFF)){
+				data -= MAIN_KEYBASE;
+				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
+					if((data & KEYID_MASK_ID) == KEYID_CURSOR_U){
+						testsheet->location.y -= 5;
+						Sheet_Refresh_Sheet(testsheet);
+					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_D){
+						testsheet->location.y += 5;
+						Sheet_Refresh_Sheet(testsheet);
+					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_L){
+						testsheet->location.x -= 5;
+						Sheet_Refresh_Sheet(testsheet);
+					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_R){
+						testsheet->location.x += 5;
+						Sheet_Refresh_Sheet(testsheet);
+					} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
+
+					}
+				}
+			}
+		}
 	}
 }
 
