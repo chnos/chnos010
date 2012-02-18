@@ -1,3 +1,3 @@
 
-OBJS_BOOTPACK = nasfunc0.obj nasfunc1.obj nasfunc2.obj hankaku.obj chnlogo.obj callbios.obj cfunc.obj display.obj draw08.obj draw16.obj draw32.obj drawing.obj dsctbl.obj emu86.obj emu86asm.obj error.obj fifo.obj fmt_bmp.obj intrpt.obj keyboard.obj memory.obj mtask.obj serial.obj sheet.obj system.obj timer.obj vgatmode.obj xception.obj bootpack.obj
+OBJS_BOOTPACK = nasfunc0.obj nasfunc1.obj nasfunc2.obj hankaku.obj chnlogo.obj callbios.obj cfunc.obj display.obj draw08.obj draw16.obj draw32.obj drawing.obj dsctbl.obj emu86.obj emu86asm.obj error.obj fifo.obj fmt_bmp.obj intrpt.obj keyboard.obj memory.obj mtask.obj serial.obj sheet.obj shtfunc.obj system.obj timer.obj vgatmode.obj xception.obj bootpack.obj
 HEADS_BOOTPACK = core.h coredef0.h coredef1.h coredef2.h coredef3.h keyid.h

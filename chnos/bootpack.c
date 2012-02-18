@@ -10,7 +10,7 @@ void CHNMain(void)
 	UI_Task *mytask;
 	uint i;
 	IO_DisplayControl *disp_ctrl;
-	UI_Sheet *vramsheet, *testsheet, *testsheet2;
+	UI_Sheet *vramsheet, *testsheet, *testsheet2, *sheet_desktop;
 	int x, y;
 
 	Initialise_System();
@@ -94,10 +94,18 @@ void CHNMain(void)
 	vramsheet = Sheet_Initialise();
 	testsheet = Sheet_Initialise();
 	testsheet2 = Sheet_Initialise();
+	sheet_desktop = Sheet_Initialise();
 
 	Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 	Sheet_SetBuffer(testsheet, System_Memory_Allocate(128 * 64 * 1), 128, 64, 8);
 	Sheet_SetBuffer(testsheet2, System_Memory_Allocate(160 * 100 * 1), 160, 100, 8);
+	Sheet_SetBuffer(sheet_desktop, System_Memory_Allocate(disp_ctrl->xsize * disp_ctrl->ysize * (disp_ctrl->bpp >> 3)), disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
+
+	for(y = 0; y < disp_ctrl->ysize; y++){
+		for(x = 0; x < disp_ctrl->xsize; x++){
+			((uchar*)sheet_desktop->vram)[y * sheet_desktop->size.x + x] = ((uchar *)disp_ctrl->vram)[y * disp_ctrl->xsize + x];
+		}
+	}
 
 	for(y = 0; y < testsheet->size.y; y++){
 		for(x = 0; x < testsheet->size.x; x++){
@@ -113,11 +121,14 @@ void CHNMain(void)
 	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 4, 4, 0xffffff, "TestSheet");
 	Drawing08_Put_String(testsheet2->vram, testsheet2->size.x, 4, 4, 0xffffff, "TestSheet2");
 
+	Sheet_SetParent(sheet_desktop, vramsheet);
+	Sheet_Show(sheet_desktop, 0, 0, 0);
+
 	Sheet_SetParent(testsheet, vramsheet);
-	Sheet_Show(testsheet, 0, 10, 10);
+	Sheet_Show(testsheet, 1, 10, 10);
 
 	Sheet_SetParent(testsheet2, vramsheet);
-	Sheet_Show(testsheet2, 1, 20, 20);
+	Sheet_Show(testsheet2, 2, 20, 20);
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
@@ -128,19 +139,15 @@ void CHNMain(void)
 				data -= MAIN_KEYBASE;
 				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
 					if((data & KEYID_MASK_ID) == KEYID_CURSOR_U){
-						testsheet->location.y -= 5;
-						Sheet_Refresh_Sheet(testsheet);
+						Sheet_Slide_Relative(testsheet, 0, -5);
 					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_D){
-						testsheet->location.y += 5;
-						Sheet_Refresh_Sheet(testsheet);
+						Sheet_Slide_Relative(testsheet, 0, 5);
 					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_L){
-						testsheet->location.x -= 5;
-						Sheet_Refresh_Sheet(testsheet);
+						Sheet_Slide_Relative(testsheet, -5, 0);
 					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_R){
-						testsheet->location.x += 5;
-						Sheet_Refresh_Sheet(testsheet);
+						Sheet_Slide_Relative(testsheet, 5, 0);
 					} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
-
+						Sheet_Slide_Absolute(testsheet, disp_ctrl->xsize >> 1, disp_ctrl->ysize >> 1);
 					}
 				}
 			}

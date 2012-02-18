@@ -1,6 +1,8 @@
 
 #include "core.h"
 
+//各シートの左上をP、左下をQ、右下をR、右上をS（すべて書き込める座標）とする。
+
 UI_Sheet *Sheet_Initialise(void)
 {
 	UI_Sheet *sheet;
@@ -14,6 +16,58 @@ UI_Sheet *Sheet_Initialise(void)
 	#endif
 
 	return sheet;
+}
+
+uint Sheet_Free(UI_Sheet *sheet)
+{
+	UI_Sheet **search;
+	uint i;
+
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Free:Null sheet.\n");
+		#endif
+		return 0;
+	}
+	if(!sheet->flags.bit.initialized){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Free:Not Initialised sheet.\n");
+		#endif
+		return 1;
+	}
+
+//親への子登録を削除する
+	if(sheet->parent != Null){
+		search = &sheet->parent->child;
+		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+			if(*search == sheet){
+				*search = sheet->next;
+				sheet->parent = Null;
+				break;
+			}
+			search = &(*search)->next;
+		}
+		if(i == SHEET_MAX_CHILDREN){
+			#ifdef CHNOSPROJECT_DEBUG_SHEET
+				debug("Sheet_Free:TRAP:Sheet not found in the link for the parent.\n");
+			#endif
+			INT_3();
+		}
+	}
+
+//子への親登録を削除する
+	if(sheet->child != Null){
+		search = &sheet->child;
+		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+			if(search == Null){
+				break;
+			}
+			(*search)->parent = Null;
+			search = &(*search)->child;
+		}
+	}
+
+	return 0;
 }
 
 uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp)
@@ -102,6 +156,10 @@ uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent)
 
 	sheet->parent = parent;
 
+	if(!parent->flags.bit.using_map){
+		Sheet_Internal_MapInitialise(sheet->parent);
+	}
+
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
 		debug("Sheet_SetParent:[0x%08X] parent:[0x%08X]\n", sheet, parent);
 	#endif
@@ -173,14 +231,21 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 	*search = sheet;
 
 	sheet->flags.bit.visible = True;
-	if(px != SHEET_LOCATION_NOCHANGE){
-		sheet->location.x = px;
-	}
-	if(py != SHEET_LOCATION_NOCHANGE){
-		sheet->location.y = py;
+	if(px != SHEET_LOCATION_NOCHANGE && py != SHEET_LOCATION_NOCHANGE){
+		Sheet_Slide_Absolute(sheet, px, py);
+	} else{
+		if(px != SHEET_LOCATION_NOCHANGE){
+			Sheet_Slide_Absolute(sheet, px, sheet->location.y);
+		}
+		if(py != SHEET_LOCATION_NOCHANGE){
+			Sheet_Slide_Absolute(sheet, sheet->location.x, py);
+		}
+		if(px == SHEET_LOCATION_NOCHANGE && py == SHEET_LOCATION_NOCHANGE){
+			Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + sheet->size.x - 1, sheet->location.y + sheet->size.y - 1, False);
+		}
 	}
 
-	Sheet_Refresh_Sheet(sheet);
+	Sheet_RefreshSheet_All(sheet);
 
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
 		debug("Sheet_Show:[0x%08X] height:%d\n", sheet, i);
@@ -189,69 +254,120 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 	return 0;
 }
 
-uint Sheet_Refresh_Sheet(UI_Sheet *sheet)
+uint Sheet_RefreshSheet_All(UI_Sheet *sheet)
 {
-	UI_Sheet *now;
-	int x, y;
-	int apx0, apy0;
-	uchar *vram;
-	int vxsize, vysize;
-	int xsize, ysize;
+	return Sheet_RefreshSheet(sheet, 0, 0, sheet->size.x - 1, sheet->size.y - 1);
+}
+
+uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy)
+{
+	uint retv;
 
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_Refresh_Sheet:Null sheet.\n");
+			debug("Sheet_Slide_Absolute:Null sheet.\n");
 		#endif
 		return 1;
 	}
 
 	if(sheet->parent == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_Refresh_Sheet:Null parent.\n");
+			debug("Sheet_Slide_Absolute:Null parent.\n");
 		#endif
 		return 2;
 	}
 
-	vram = (uchar *)sheet->parent->vram;
-	vxsize = (int)sheet->parent->size.x;
-	vysize = (int)sheet->parent->size.y;
-	for(now = sheet; now != Null; now = now->next){
-		if(now->location.x < vxsize && now->location.y < vysize && now->location.x + (int)now->size.x > 0 && now->location.y + (int)now->size.y > 0 && now->flags.bit.visible){
-			if((now->location.x + now->size.x) > vxsize){
-				xsize = now->size.x - ((now->location.x + now->size.x) - vxsize);
-			} else{
-				xsize = now->size.x;
-			}
-			if((now->location.y + now->size.y) > vysize){
-				ysize = now->size.y - ((now->location.y + now->size.y) - vysize);
-			} else{
-				ysize = now->size.y;
-			}
-			if(now->location.x < 0){
-				xsize += now->location.x;
-				apx0 = 0;
-			} else{
-				apx0 = now->location.x;
-			}
-			if(now->location.y < 0){
-				ysize += now->location.y;
-				apy0 = 0;
-			} else{
-				apy0 = now->location.y;
-			}
+	if(!sheet->flags.bit.visible){
+		sheet->location.x = apx;
+		sheet->location.y = apy;
+		return 0;
+	}
 
-			#ifdef CHNOSPROJECT_DEBUG_SHEET
-				debug("Sheet_Refresh_Sheet:[0x%08X]\n", sheet);
-				debug("Sheet_Refresh_Sheet:apx0:%d apy0:%d xsize:%d ysize:%d\n", apx0, apy0, xsize, ysize);
-			#endif
+	sheet->flags.bit.visible = False;
+	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1, True);
+	Sheet_RefreshAllInRange(sheet->parent, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1);
 
-			for(y = apy0; y < ysize + apy0; y++){
-				for(x = apx0; x < xsize + apx0; x++){
-					vram[y * vxsize + x] = ((uchar *)now->vram)[(y - now->location.y) * now->size.x + (x - now->location.x)];
-				}
-			}
-		}
+	sheet->location.x = apx;
+	sheet->location.y = apy;
+
+	sheet->flags.bit.visible = True;
+	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1, False);
+
+	retv = Sheet_RefreshSheet_All(sheet);
+
+	if(retv != 0){
+		return retv + 2;
 	}
 
 	return 0;
 }
+
+uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy)
+{
+	uint retv;
+
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Slide_Relative:Null sheet.\n");
+		#endif
+		return 1;
+	}
+
+	if(sheet->parent == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Slide_Relative:Null parent.\n");
+		#endif
+		return 2;
+	}
+
+	if(!sheet->flags.bit.visible){
+		sheet->location.x += rpx;
+		sheet->location.y += rpy;
+		return 0;
+	}
+
+	sheet->flags.bit.visible = False;
+
+	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1, True);
+	Sheet_RefreshAllInRange(sheet->parent, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1);
+
+	sheet->location.x += rpx;
+	sheet->location.y += rpy;
+
+	sheet->flags.bit.visible = True;
+	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1, False);
+
+	retv = Sheet_RefreshSheet_All(sheet);
+
+	if(retv != 0){
+		return retv + 2;
+	}
+
+	return 0;
+}
+
+uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py1)
+{
+	uint i;
+	UI_Sheet *search;
+
+	search = parent->child;
+	for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+		if(search == Null){
+			break;
+		}
+		if(Sheet_Internal_IsRangeOverlappedWithSheet(search, px0, py0, px1, py1)){
+			Sheet_Internal_RefreshSheet(search, px0, py0, px1, py1);
+		}
+		search = search->next;
+	}
+
+	return 0;
+}
+
+uint Sheet_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
+{
+	return Sheet_Internal_RefreshSheet(sheet, px0 + sheet->location.x, py0 + sheet->location.y, px1 + sheet->location.x, py1 + sheet->location.y);
+}
+
+

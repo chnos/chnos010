@@ -208,10 +208,29 @@ void debug(const uchar format[], ...);
 
 /*sheet.c シート関連*/
 UI_Sheet *Sheet_Initialise(void);
+uint Sheet_Free(UI_Sheet *sheet);
 uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
 uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent);
 uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py);
-uint Sheet_Refresh_Sheet(UI_Sheet *sheet);
+uint Sheet_RefreshSheet_All(UI_Sheet *sheet);
+uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy);
+uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy);
+uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py1);
+uint Sheet_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+
+/*shtfunc.c シート内部関数*/
+uint Sheet_Internal_GetLocationP(UI_Sheet *sheet, DATA_Location2D *dest);
+uint Sheet_Internal_GetLocationQ(UI_Sheet *sheet, DATA_Location2D *dest);
+uint Sheet_Internal_GetLocationR(UI_Sheet *sheet, DATA_Location2D *dest);
+uint Sheet_Internal_GetLocationS(UI_Sheet *sheet, DATA_Location2D *dest);
+uint Sheet_Internal_MapInitialise(UI_Sheet *parent);
+uint Sheet_Internal_MapWriteFromSheet(UI_Sheet *sheet, bool force, int px0, int py0, int px1, int py1);
+bool Sheet_Internal_IsLocationInRangeOfSheet(UI_Sheet *sheet, int px, int py);
+bool Sheet_Internal_IsRangeOverlappedWithSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+UI_Sheet *Sheet_Internal_GetSheetFromLocation(UI_Sheet *parent, int px, int py);
+uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int py1);
+uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1, bool nolocationchanged);
+uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 
 /*system.c システムデータ・初期化関連*/
 void Initialise_System(void);

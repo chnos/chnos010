@@ -1,9 +1,9 @@
 
 #include "core.h"
 
-bool Error_Output_Enable_SerialPort = false;
-bool Error_Output_Enable_Display_TextMode = false;
-uint Error_Output_Enable_Display_GraphicMode = false;
+bool Error_Output_Enable_SerialPort = False;
+bool Error_Output_Enable_Display_TextMode = False;
+uint Error_Output_Enable_Display_GraphicMode = False;
 
 void *Error_Output_Display_GraphicMode_VRAM = 0;
 uint Error_Output_Display_GraphicMode_Lines = 0;

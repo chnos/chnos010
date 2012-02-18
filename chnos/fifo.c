@@ -17,7 +17,7 @@ DATA_FIFO32 *FIFO32_Initialise(IO_MemoryControl memctrl, uint size)
 	fifo->flags.overflow = False;
 	fifo->p = 0;	/*write*/
 	fifo->q = 0;	/*read*/
-	fifo->flags.initialized = true;
+	fifo->flags.initialized = True;
 	return fifo;
 }
 

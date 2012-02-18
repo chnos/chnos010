@@ -136,7 +136,7 @@ void MultiTask_Task_Sleep(UI_TaskControl *ctrl, UI_Task *task)
 	IO_CLI();
 
 	*find = task->next;
-	task->flags.linked = false;
+	task->flags.linked = False;
 
 	if(ctrl->now == task){
 		MultiTask_TaskSwitch(ctrl);

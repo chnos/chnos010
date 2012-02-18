@@ -114,7 +114,7 @@ void Initialise_System(void)
 	IO_CLI();
 
 	TextMode_Clear_Screen();
-	Error_Set_Enable_Display_TextMode(true);
+	Error_Set_Enable_Display_TextMode(True);
 
 	TextMode_Put_String("Welcome to CHNOSProject!\n", green);
 
@@ -122,7 +122,7 @@ void Initialise_System(void)
 
 	TextMode_Put_String("\tInitialising SerialPort...\n", white);
 	Initialise_SerialPort();
-	Error_Set_Enable_SerialPort(true);
+	Error_Set_Enable_SerialPort(True);
 
 	#ifdef CHNOSPROJECT_DEBUG
 		debug("%s:%d\n", __FILE__, __LINE__);

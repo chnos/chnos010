@@ -2,7 +2,8 @@
 /*システムデータ型宣言*/
 
 /*new object types*/
-typedef enum _bool { false, true} bool;
+//typedef enum _bool { false, true} bool;
+typedef unsigned char bool;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
@@ -414,10 +415,11 @@ typedef struct UI_SHEET {
 			unsigned initialized : 1;
 			unsigned buffer_configured : 1;
 			unsigned visible : 1;
-			unsigned map : 1;
+			unsigned using_map : 1;
 		} bit;
 	} flags;
 	void *vram;
-	void *map;
+	uint *map;
 	uint vramsize;
+	uint mapsize;
 } UI_Sheet;
