@@ -16,7 +16,7 @@
 
 //つまり、FIFOで受け取って、バイアスを引いたら、KEYID_EXTENDEDフラグを調べる。
 //次に、BREAKフラグを調べる。
-//そして、下位8ビットのみを参照する。
+//そして、下位7ビットのみを参照する。
 
 #define KEYID_MASK_ID			0x007f
 #define KEYID_MASK_BREAK		0x0080

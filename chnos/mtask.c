@@ -17,6 +17,8 @@ UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl)
 	ctrl->start = maintask;
 	ctrl->now = maintask;
 
+	maintask->flags.linked = True;
+
 	return ctrl;
 }
 
@@ -77,7 +79,8 @@ UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_siz
 	task->next = 0;
 	task->count = 0;
 
-	task->fifo = FIFO32_Initialise(ctrl->sysmemctrl, 128);
+	task->fifo = FIFO32_Initialise(ctrl->sysmemctrl, TASK_FIFOSIZE);
+	FIFO32_Set_Task(task->fifo, task);
 
 	task->flags.initialized = True;
 	task->flags.linked = False;
@@ -87,23 +90,45 @@ UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_siz
 
 void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task)
 {
-	UI_Task *last;
+	UI_Task **last;
 
-	for(last = ctrl->start; last->next != 0; last = last->next){
-		if(last == task){	/*すでにタスク実行リンクに入っていたら*/
+	#ifdef CHNOSPROJECT_DEBUG_MULTITASK
+		debug("MultiTask_Task_Run:Start Running Rq(sel:0x%X).\n", task->selector);
+	#endif
+
+	if(task->flags.linked){
+		#ifdef CHNOSPROJECT_DEBUG_MULTITASK
+			debug("MultiTask_Task_Run:Task has already been running(sel:0x%X).\n", task->selector);
+		#endif
+		return;
+	}
+
+	for(last = &ctrl->start; ; last = &(*last)->next){
+		if(*last == task){
+			#ifdef CHNOSPROJECT_DEBUG_MULTITASK
+				debug("MultiTask_Task_Run:Task has already been running2(sel:0x%X).\n", task->selector);
+			#endif
 			return;
+		}
+		if(*last == Null){
+			break;
 		}
 	}
 
-	task->next = 0;
-	last->next = task;
+	#ifdef CHNOSPROJECT_DEBUG_MULTITASK
+		debug("MultiTask_Task_Run:Start Running(sel:0x%X last:0x%X start:0x%X).\n", task->selector, last, ctrl->start);
+	#endif
+
+	task->next = Null;
+	*last = task;
 	task->flags.linked = True;
+
 	return;
 }
 
 void MultiTask_TaskSwitch(UI_TaskControl *ctrl)
 {
-	if(ctrl->now->next == 0){	//タスクリンクの終端
+	if(ctrl->now->next == Null){	//タスクリンクの終端
 		if(ctrl->start != ctrl->now){	//同一タスクでなければタスクスイッチ
 			ctrl->now = ctrl->start;
 			ctrl->now->count++;
@@ -123,14 +148,28 @@ void MultiTask_Task_Sleep(UI_TaskControl *ctrl, UI_Task *task)
 
 	uint eflags;
 
-	for(find = &ctrl->start; (*find) != 0; find = &(*find)->next){
+	if(task == ctrl->now && task == ctrl->start){
+		eflags = IO_Load_EFlags();
+		IO_STIHLT();
+		IO_Store_EFlags(eflags);
+		return;
+	}
+
+	for(find = &ctrl->start; (*find) != Null; find = &(*find)->next){
 		if(*find == task){	/*タスク実行リンクからみつけたら*/
 			break;
 		}
 	}
 	if((*find) == 0){	/*見つけたのでなく、終端だったら*/
+		#ifdef CHNOSPROJECT_DEBUG_MULTITASK
+			debug("MultiTask_Task_Sleep:Task sleep Failed(sel:0x%X).\n", task->selector);
+		#endif
 		return;
 	}
+
+	#ifdef CHNOSPROJECT_DEBUG_MULTITASK
+		debug("MultiTask_Task_Sleep:Task sleep (sel:0x%X).\n", task->selector);
+	#endif
 
 	eflags = IO_Load_EFlags();
 	IO_CLI();

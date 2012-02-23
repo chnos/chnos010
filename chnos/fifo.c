@@ -33,6 +33,9 @@ int FIFO32_Put(DATA_FIFO32 *fifo, uint data)
 	IO_CLI();
 
 	if(fifo->free == 0){
+		#ifdef CHNOSPROJECT_DEBUG_FIFO
+			debug("FIFO32_Put:Overflow data.\n");
+		#endif
 		fifo->flags.overflow = True;
 		return -1;
 	}
@@ -42,13 +45,21 @@ int FIFO32_Put(DATA_FIFO32 *fifo, uint data)
 		fifo->p = 0;
 	}
 	fifo->free--;
-/*
-	if(fifo->task != 0){
-		if(fifo->task->state != inuse){
-			MultiTask_Task_Run(fifo->task);
+
+
+	if(fifo->task != Null){
+		if(!fifo->task->flags.linked){
+			#ifdef CHNOSPROJECT_DEBUG_FIFO
+				debug("FIFO32_Put:Task run start.\n");
+			#endif
+			System_MultiTask_Task_Run(fifo->task);
+			#ifdef CHNOSPROJECT_DEBUG_FIFO
+				debug("FIFO32_Put:Task run end.\n");
+			#endif
+
 		}
 	}
-*/
+
 	IO_Store_EFlags(eflags);
 
 	return 0;
@@ -86,13 +97,13 @@ int FIFO32_Put_Arguments(DATA_FIFO32 *fifo, uint args, ...)
 
 	return i; 
 }
-/*
+
 void FIFO32_Set_Task(DATA_FIFO32 *fifo, UI_Task *task)
 {
 	fifo->task = task;
 	return;
 }
-*/
+
 uint FIFO32_Get(DATA_FIFO32 *fifo)
 {
 	int data;

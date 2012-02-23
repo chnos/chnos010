@@ -202,6 +202,7 @@ typedef struct FIFO32 {
 		unsigned initialized : 1;
 		unsigned overflow : 1;
 	} flags;
+	struct UI_TASK *task;
 } DATA_FIFO32;
 
 /*task*/
@@ -423,3 +424,31 @@ typedef struct UI_SHEET {
 	uint vramsize;
 	uint mapsize;
 } UI_Sheet;
+
+/*timer*/
+typedef struct UI_TIMER {
+	uint tick;
+	uint timeout;
+	struct UI_TIMER *root_next;
+	struct UI_TIMER *tree_next;
+	DATA_FIFO32 *fifo;
+	uint fifo_putdata;
+	union UI_TIMER_FLAGS {
+		uint flags;
+		struct UI_TIMER_FLAGS_BITS {
+			unsigned initialized : 1;
+			unsigned configured : 1;
+			unsigned running : 1;
+			unsigned interval : 1;
+		} bit;
+	} flags;
+} UI_Timer;
+
+typedef struct UI_TIMER_CONTROL {
+	uint tick_10ms;
+	void (*TaskSwitch)(void);
+	UI_Timer *timer_root;
+} UI_TimerControl;
+
+
+

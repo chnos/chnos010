@@ -218,6 +218,10 @@ void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp)
 {
 	uint i;
 
+	IO_SegmentDescriptor *gdt;
+
+	gdt = (IO_SegmentDescriptor *)0x00270000;
+
 	Error_Put_String("#PUSHAD by _asm_CPU_ExceptionHandler");
 	for(i = 0; i < 4; i++){
 		Error_Put_String("%s:0x%08X %s:0x%08X", cpu_exception_infos[i << 1], esp[i << 1], cpu_exception_infos[(i << 1) + 1], esp[(i << 1) + 1]);
@@ -228,7 +232,7 @@ void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp)
 		Error_Put_String("%s:0x%08X %s:0x%08X", cpu_exception_infos[i << 1], esp[i << 1], cpu_exception_infos[(i << 1) + 1], esp[(i << 1) + 1]);
 	}
 
-	Error_Put_String("#PUSH by CPU\n");
+	Error_Put_String("#PUSH by CPU");
 	for(; i < 8; i++){
 		Error_Put_String("%s:0x%08X %s:0x%08X", cpu_exception_infos[i << 1], esp[i << 1], cpu_exception_infos[(i << 1) + 1], esp[(i << 1) + 1]);
 	}
@@ -239,13 +243,17 @@ void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp)
 	Error_Put_String("CR3 = 0x%08X", Load_CR3());
 	Error_Put_String("CR4 = 0x%08X", Load_CR4());
 
-	Error_Put_String("Opcode[0x%X]:0x%X", esp[0x0b], ((uchar *)(esp[0x0b]))[0]);
+	Error_Put_String("Opcode[0x%X:0x%X]:0x%X", SegmentDescriptor_Get_Base(&gdt[esp[0x0c] >> 3]), esp[0x0b], ((uchar *)(SegmentDescriptor_Get_Base(&gdt[esp[0x0c] >> 3])))[esp[0x0b]]);
 	return;
 }
 
 void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp)
 {
 	uint i;
+
+	IO_SegmentDescriptor *gdt;
+
+	gdt = (IO_SegmentDescriptor *)0x00270000;
 
 	Error_Put_String("#PUSHAD by _asm_CPU_ExceptionHandler");
 	for(i = 0; i < 4; i++){
@@ -268,5 +276,7 @@ void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp)
 	Error_Put_String("CR0 = 0x%08X", Load_CR0());
 	Error_Put_String("CR2 = 0x%08X", Load_CR2());
 	Error_Put_String("CR3 = 0x%08X", Load_CR3());
+
+	Error_Put_String("Opcode[0x%X:0x%X]:0x%X", SegmentDescriptor_Get_Base(&gdt[esp[0x0b] >> 3]), esp[0x0a], ((uchar *)(SegmentDescriptor_Get_Base(&gdt[esp[0x0b] >> 3])))[esp[0x0a]]);
 	return;
 }

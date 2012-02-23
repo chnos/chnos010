@@ -12,6 +12,8 @@ void CHNMain(void)
 	IO_DisplayControl *disp_ctrl;
 	UI_Sheet *vramsheet, *testsheet, *testsheet2, *sheet_desktop;
 	int x, y;
+	UI_Timer *timer1, *timer2, *timer3;
+	uint counter1, counter2, counter3;
 
 	Initialise_System();
 
@@ -44,7 +46,7 @@ void CHNMain(void)
 
 		for(;;){
 			if(FIFO32_MyTaskFIFO_Status() == 0){
-
+				System_MultiTask_Task_Sleep(mytask);
 			} else{
 				data = FIFO32_MyTaskFIFO_Get();
 				if(MAIN_KEYBASE <= data && data <= (MAIN_KEYBASE + 0xFFFF)){
@@ -97,8 +99,8 @@ void CHNMain(void)
 	sheet_desktop = Sheet_Initialise();
 
 	Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
-	Sheet_SetBuffer(testsheet, System_Memory_Allocate(128 * 64 * 1), 128, 64, 8);
-	Sheet_SetBuffer(testsheet2, System_Memory_Allocate(160 * 100 * 1), 160, 100, 8);
+	Sheet_SetBuffer(testsheet, System_Memory_Allocate(256 * 128 * 1), 256, 128, 8);
+	Sheet_SetBuffer(testsheet2, System_Memory_Allocate(128 * 64 * 1), 128, 64, 8);
 	Sheet_SetBuffer(sheet_desktop, System_Memory_Allocate(disp_ctrl->xsize * disp_ctrl->ysize * (disp_ctrl->bpp >> 3)), disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 
 	for(y = 0; y < disp_ctrl->ysize; y++){
@@ -112,11 +114,14 @@ void CHNMain(void)
 			((uchar*)testsheet->vram)[y * testsheet->size.x + x] = x * 2;
 		}
 	}
+	Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 4, 24, testsheet->size.x - 4 - 1, testsheet->size.y - 4 - 1);
+
 	for(y = 0; y < testsheet2->size.y; y++){
 		for(x = 0; x < testsheet2->size.x; x++){
 			((uchar*)testsheet2->vram)[y * testsheet2->size.x + x] = y * 2 + x;
 		}
 	}
+	Drawing08_Fill_Rectangle(testsheet2->vram, testsheet2->size.x, 0xc6c6c6, 4, 24, testsheet2->size.x - 4 - 1, testsheet2->size.y - 4 - 1);
 
 	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 4, 4, 0xffffff, "TestSheet");
 	Drawing08_Put_String(testsheet2->vram, testsheet2->size.x, 4, 4, 0xffffff, "TestSheet2");
@@ -128,28 +133,80 @@ void CHNMain(void)
 	Sheet_Show(testsheet, 1, 10, 10);
 
 	Sheet_SetParent(testsheet2, vramsheet);
-	Sheet_Show(testsheet2, 2, 20, 20);
+	Sheet_Show(testsheet2, 2, 80, 80);
+
+	timer1 = Timer_Initialise();
+	Timer_Config(timer1, 50, mytask->fifo, 11, True);
+	counter1 = 0;
+	Timer_Run(timer1);
+
+	timer2 = Timer_Initialise();
+	Timer_Config(timer2, 50, mytask->fifo, 12, False);
+	counter2 = 0;
+	Timer_Run(timer2);
+
+	timer3 = Timer_Initialise();
+	Timer_Config(timer3, 200, mytask->fifo, 13, True);
+	counter3 = 0;
+	Timer_Run(timer3);
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
-
+			System_MultiTask_Task_Sleep(mytask);
 		} else{
 			data = FIFO32_MyTaskFIFO_Get();
 			if(MAIN_KEYBASE <= data && data <= (MAIN_KEYBASE + 0xFFFF)){
 				data -= MAIN_KEYBASE;
 				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
 					if((data & KEYID_MASK_ID) == KEYID_CURSOR_U){
-						Sheet_Slide_Relative(testsheet, 0, -5);
+						if(data & KEYID_MASK_STATE_SHIFT){
+							Sheet_Slide_Relative(testsheet, 5, -5);
+						} else{
+							Sheet_Slide_Relative(testsheet, 0, -5);
+						}
 					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_D){
-						Sheet_Slide_Relative(testsheet, 0, 5);
+						if(data & KEYID_MASK_STATE_SHIFT){
+							Sheet_Slide_Relative(testsheet, -5, 5);
+						} else{
+							Sheet_Slide_Relative(testsheet, 0, 5);
+						}
 					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_L){
-						Sheet_Slide_Relative(testsheet, -5, 0);
+						if(data & KEYID_MASK_STATE_SHIFT){
+							Sheet_Slide_Relative(testsheet, -5, -5);
+						} else{
+							Sheet_Slide_Relative(testsheet, -5, 0);
+						}
 					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_R){
-						Sheet_Slide_Relative(testsheet, 5, 0);
+						if(data & KEYID_MASK_STATE_SHIFT){
+							Sheet_Slide_Relative(testsheet, 5, 5);
+						} else{
+							Sheet_Slide_Relative(testsheet, 5, 0);
+						}
 					} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
 						Sheet_Slide_Absolute(testsheet, disp_ctrl->xsize >> 1, disp_ctrl->ysize >> 1);
 					}
 				}
+			} else if(data == 11){
+				Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 8, 24, 8 + (20 * 8) - 1, 24 + (16 * 2) - 1);
+				snprintf(s, sizeof(s), "Tick :%d", Timer_GetTick());
+				Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24, 0xffffff, s);
+				snprintf(s, sizeof(s), "Tick1:%d", counter1);
+				Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24 + 16, 0xffffff, s);
+				Sheet_RefreshSheet(testsheet, 8, 24, 8 + (20 * 8) - 1, 24 + (16 * 2) - 1);
+				counter1++;
+			} else if(data == 12){
+				Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 8, 24 + 16 * 2, 8 + (20 * 8) - 1, 24 + (16 * 3) - 1);
+				snprintf(s, sizeof(s), "Tick2:%d", counter2);
+				Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24 + 16 * 2, 0xffffff, s);
+				Sheet_RefreshSheet(testsheet, 8, 24 + 16 * 2, 8 + (20 * 8) - 1, 24 + (16 * 3) - 1);
+				Timer_Run(timer2);
+				counter2++;
+			} else if(data == 13){
+				Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 8, 24 + 16 * 3, 8 + (20 * 8) - 1, 24 + (16 * 4) - 1);
+				snprintf(s, sizeof(s), "Tick3:%d", counter3);
+				Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24 + 16 * 3, 0xffffff, s);
+				Sheet_RefreshSheet(testsheet, 8, 24 + 16 * 3, 8 + (20 * 8) - 1, 24 + (16 * 4) - 1);
+				counter3++;
 			}
 		}
 	}
@@ -177,9 +234,12 @@ void KeyboardControlTask(void)
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
-
+			System_MultiTask_Task_Sleep(mytask);
 		} else{
 			data = FIFO32_MyTaskFIFO_Get();
+			#ifdef CHNOSPROJECT_DEBUG_KBCT
+				debug("KBCT:Receive data from FIFO(data:0x%X).\n", data);
+			#endif
 			if(0x100 <= data && data <= 0x1ff){
 				data -= 0x100;
 				data = Keyboard_Decode_KeyCode(data);

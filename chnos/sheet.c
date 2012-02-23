@@ -171,6 +171,9 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 {
 	UI_Sheet **search;
 	uint i;
+	bool no_change_height;
+
+	no_change_height = False;
 
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
@@ -191,12 +194,19 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		}
 		return 2;
 	}
+	if(sheet->flags.bit.visible == True){
+		return 3;
+	}
 
 //At First, clear old height link.
 
 	search = &sheet->parent->child;
 	for(i = 0; i < SHEET_MAX_CHILDREN; i++){
 		if(*search == sheet){
+			if(i == height){
+				no_change_height = True;
+				break;
+			}
 			*search = sheet->next;
 			break;
 		}
@@ -204,46 +214,42 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 	}
 
 //Next, set new height link.
-	search = &sheet->parent->child;
-	for(i = 0; i < SHEET_MAX_CHILDREN; i++){
-		if(i == height){
-			#ifdef CHNOSPROJECT_DEBUG_SHEET
-				debug("Sheet_Show:Search:Break(height).\n");
-			#endif
-			break;
+	if(!no_change_height){
+		search = &sheet->parent->child;
+		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+			if(i == height){
+				#ifdef CHNOSPROJECT_DEBUG_SHEET
+					debug("Sheet_Show:Search:Break(height).\n");
+				#endif
+				break;
+			}
+			if(*search == Null){
+				#ifdef CHNOSPROJECT_DEBUG_SHEET
+					debug("Sheet_Show:Search:Break(End of link).\n");
+				#endif
+				break;
+			}
+			search = &(*search)->next;
 		}
-		if(*search == Null){
+		if(i == SHEET_MAX_CHILDREN){
 			#ifdef CHNOSPROJECT_DEBUG_SHEET
-				debug("Sheet_Show:Search:Break(End of link).\n");
+				debug("Sheet_Show:Number of sheets is over SHEET_MAX_CHILDREN.\n");
 			#endif
-			break;
+			return 3;
 		}
-		search = &(*search)->next;
-	}
-	if(i == SHEET_MAX_CHILDREN){
-		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_Show:Number of sheets is over SHEET_MAX_CHILDREN.\n");
-		#endif
-		return 3;
+
+		sheet->next = *search;
+		*search = sheet;
 	}
 
-	sheet->next = *search;
-	*search = sheet;
-
+	if(px != SHEET_LOCATION_NOCHANGE){
+		sheet->location.x = px;
+	}
+	if(py != SHEET_LOCATION_NOCHANGE){
+		sheet->location.y = px;
+	}
 	sheet->flags.bit.visible = True;
-	if(px != SHEET_LOCATION_NOCHANGE && py != SHEET_LOCATION_NOCHANGE){
-		Sheet_Slide_Absolute(sheet, px, py);
-	} else{
-		if(px != SHEET_LOCATION_NOCHANGE){
-			Sheet_Slide_Absolute(sheet, px, sheet->location.y);
-		}
-		if(py != SHEET_LOCATION_NOCHANGE){
-			Sheet_Slide_Absolute(sheet, sheet->location.x, py);
-		}
-		if(px == SHEET_LOCATION_NOCHANGE && py == SHEET_LOCATION_NOCHANGE){
-			Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + sheet->size.x - 1, sheet->location.y + sheet->size.y - 1, False);
-		}
-	}
+	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + sheet->size.x - 1, sheet->location.y + sheet->size.y - 1, False);
 
 	Sheet_RefreshSheet_All(sheet);
 
@@ -283,17 +289,7 @@ uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy)
 		return 0;
 	}
 
-	sheet->flags.bit.visible = False;
-	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1, True);
-	Sheet_RefreshAllInRange(sheet->parent, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1);
-
-	sheet->location.x = apx;
-	sheet->location.y = apy;
-
-	sheet->flags.bit.visible = True;
-	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1, False);
-
-	retv = Sheet_RefreshSheet_All(sheet);
+	retv = Sheet_Internal_SlideSub(sheet, apx - sheet->location.x, apy - sheet->location.y);
 
 	if(retv != 0){
 		return retv + 2;
@@ -326,18 +322,7 @@ uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy)
 		return 0;
 	}
 
-	sheet->flags.bit.visible = False;
-
-	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1, True);
-	Sheet_RefreshAllInRange(sheet->parent, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1);
-
-	sheet->location.x += rpx;
-	sheet->location.y += rpy;
-
-	sheet->flags.bit.visible = True;
-	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1, False);
-
-	retv = Sheet_RefreshSheet_All(sheet);
+	retv = Sheet_Internal_SlideSub(sheet, rpx, rpy);
 
 	if(retv != 0){
 		return retv + 2;

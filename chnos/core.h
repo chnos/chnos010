@@ -160,6 +160,7 @@ void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp);
 DATA_FIFO32 *FIFO32_Initialise(IO_MemoryControl memctrl, uint size);
 int FIFO32_Put(DATA_FIFO32 *fifo, uint data);
 int FIFO32_Put_Arguments(DATA_FIFO32 *fifo, uint args, ...);
+void FIFO32_Set_Task(DATA_FIFO32 *fifo, UI_Task *task);
 uint FIFO32_Get(DATA_FIFO32 *fifo);
 uint FIFO32_Status(DATA_FIFO32 *fifo);
 void FIFO32_Free(DATA_FIFO32 *fifo);
@@ -231,6 +232,7 @@ UI_Sheet *Sheet_Internal_GetSheetFromLocation(UI_Sheet *parent, int px, int py);
 uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int py1);
 uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1, bool nolocationchanged);
 uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy);
 
 /*system.c システムデータ・初期化関連*/
 void Initialise_System(void);
@@ -258,10 +260,15 @@ uint System_Display_VESA_Set_VideoMode(uint index);
 IO_DisplayControl *System_Display_Get_Controller(void);
 
 /*timer.c タイマー関連*/
-void Initialise_ProgrammableIntervalTimer(void);
+UI_TimerControl *Initialise_ProgrammableIntervalTimer(void);
 void InterruptHandler20(uint *esp);
 void Timer_Set_TaskSwitch(void (*TaskSwitchFunction)(void));
 void Timer_TaskSwitch_Invalid(void);
+UI_Timer *Timer_Initialise(void);
+uint Timer_Config(UI_Timer *timer, uint tick_ms, DATA_FIFO32 *fifo, uint fifo_putdata, bool interval);
+uint Timer_Run(UI_Timer *timer);
+uint Timer_TimeOut(void);
+uint Timer_GetTick(void);
 
 /*vgatmode.c VGAテキストモード関連*/
 uchar VGA_CRTController_ReadRegister(uchar regno);
