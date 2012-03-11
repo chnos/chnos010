@@ -389,8 +389,7 @@ uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int p
 //親グローバル座標でのシートvramリフレッシュ。
 uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
-	DATA_Location2D p, r;
-	int x, y;
+	uint retv;
 
 	if(sheet->parent == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
@@ -399,52 +398,28 @@ uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int
 		return 1;
 	}
 
-	if(sheet->parent->map == Null){
+	if(!sheet->parent->flags.bit.buffer_configured){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_Internal_RefreshSheet:Null map.\n");
+			debug("Sheet_RefreshSheet:Not buffer_configured parent.\n");
 		#endif
 		return 2;
+	}
+
+	if(sheet->RefreshSheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Internal_RefreshSheet:Null Refresh function.\n");
+		#endif
+		return 3;
 	}
 
 	if(!sheet->flags.bit.visible){
 		return 0;
 	}
 
-	Sheet_Internal_GetLocationP(sheet, &p);
-	Sheet_Internal_GetLocationR(sheet, &r);
+	retv = sheet->RefreshSheet(sheet, px0, py0, px1, py1);
 
-	if(p.x < px0){
-		p.x = px0;
-	}
-	if(p.y < py0){
-		p.y = py0;
-	}
-	if(r.x > px1){
-		r.x = px1;
-	}
-	if(r.y > py1){
-		r.y = py1;
-	}
-
-	if(p.x < 0){
-		p.x = 0;
-	}
-	if(p.y < 0){
-		p.y = 0;
-	}
-	if(r.x >= (int)sheet->parent->size.x){
-		r.x = (int)sheet->parent->size.x - 1;
-	}
-	if(r.y >= (int)sheet->parent->size.y){
-		r.y = (int)sheet->parent->size.y - 1;
-	}
-
-	for(y = p.y; y <= r.y; y++){
-		for(x = p.x; x <= r.x; x++){
-			if(sheet->parent->map[y * sheet->parent->size.x + x] == (uint)sheet){
-				((uchar *)sheet->parent->vram)[y * sheet->parent->size.x + x] = ((uchar *)sheet->vram)[(y - sheet->location.y) * sheet->size.x + (x - sheet->location.x)];
-			}
-		}
+	if(retv != 0){
+		return 10 + retv;
 	}
 
 	return 0;

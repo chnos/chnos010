@@ -38,6 +38,16 @@ void CFunction_vsnprintf_To_String_From_Hex_Upper(CFunction_vsnprintf_WorkArea *
 void CFunction_vsnprintf_To_String_From_Hex_Lower(CFunction_vsnprintf_WorkArea *work, uint hex);
 void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_WorkArea *work, uint d);
 
+/*color.c 色関連*/
+extern uint RGB_Table_08[16];
+ushort RGB_08_To_16(uchar c8);
+uint RGB_08_To_32(uchar c8);
+uchar RGB_16_To_08(ushort c16);
+uint RGB_16_To_32(ushort c16);
+uchar RGB_32_To_08(uint c32);
+uchar RGB_32_To_08_xy(uint c32, int x, int y);
+ushort RGB_32_To_16(uint c32);
+
 /*display.c ディスプレイ制御関連*/
 IO_DisplayControl *Initialise_Display(void);
 uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index);
@@ -71,9 +81,6 @@ void Drawing_Invalid_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uin
 void Drawing_Invalid_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 void Drawing_Invalid_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Initialise_Drawing(void);
-uchar RGB_32_To_08(uint c32);
-uchar RGB_32_To_08_xy(uint c32, int x, int y);
-ushort RGB_32_To_16(uint c32);
 void Drawing_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing_Draw_Circle(void *vram, uint xsize, uint x, uint y, uint c, uint r);
 void Drawing_Fill_Circle(void *vram, uint xsize, uint x, uint y, uint c, uint r);
@@ -219,6 +226,27 @@ uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy);
 uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py1);
 uint Sheet_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 
+/*sht08.c 8bitカラー シート関連*/
+uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
+uint Sheet08_Config_Functions(UI_Sheet *sheet);
+uint Sheet08_Internal_RefreshSheet_To_08(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet08_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet08_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+
+/*sht16.c 16bitカラー シート関連*/
+uint Sheet16_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
+uint Sheet16_Config_Functions(UI_Sheet *sheet);
+uint Sheet16_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet16_Internal_RefreshSheet_To_08(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet16_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+
+/*sht32.c 32bitカラー シート関連*/
+uint Sheet32_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
+uint Sheet32_Config_Functions(UI_Sheet *sheet);
+uint Sheet32_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet32_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet32_Internal_RefreshSheet_To_08_xy(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+
 /*shtfunc.c シート内部関数*/
 uint Sheet_Internal_GetLocationP(UI_Sheet *sheet, DATA_Location2D *dest);
 uint Sheet_Internal_GetLocationQ(UI_Sheet *sheet, DATA_Location2D *dest);
@@ -258,6 +286,7 @@ void System_MultiTask_Task_Sleep(UI_Task *task);
 DATA_FIFO32 *System_FIFO32_Initialise(uint size);
 uint System_Display_VESA_Set_VideoMode(uint index);
 IO_DisplayControl *System_Display_Get_Controller(void);
+uint System_Memory_Get_FreeSize(void);
 
 /*timer.c タイマー関連*/
 UI_TimerControl *Initialise_ProgrammableIntervalTimer(void);

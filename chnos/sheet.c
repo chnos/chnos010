@@ -67,11 +67,20 @@ uint Sheet_Free(UI_Sheet *sheet)
 		}
 	}
 
+	if(sheet->flags.bit.vram_auto_allocated){
+		System_Memory_Free(sheet->vram, sheet->vramsize);
+	}
+
+	System_Memory_Free(sheet, sizeof(UI_Sheet));
+
 	return 0;
 }
 
+//vram==Null:Auto allocate
 uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp)
 {
+	uint retv;
+
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_SetBuffer:Null sheet.\n");
@@ -84,38 +93,27 @@ uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint b
 		#endif
 		return 2;
 	}
-	if(vram == Null){
+
+	retv = 0;
+	if(bpp == 8){
+		retv = Sheet08_Internal_SetBuffer(sheet, vram, xsize, ysize, bpp);
+	} else if(bpp == 16){
+		retv = Sheet16_Internal_SetBuffer(sheet, vram, xsize, ysize, bpp);
+	} else if(bpp == 32){
+		retv = Sheet32_Internal_SetBuffer(sheet, vram, xsize, ysize, bpp);
+	} else{
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_SetBuffer:Null VRAM.\n");
+			debug("Sheet_SetBuffer:Not implemented %d bpp. Abort.\n", bpp);
 		#endif
-		return 3;
-	}
-	if(xsize > SHEET_MAX_XSIZE){
-		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_SetBuffer:Too large xsize.\n");
-		#endif
-		return 4;
-	}
-	if(ysize > SHEET_MAX_YSIZE){
-		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_SetBuffer:Too large ysize.\n");
-		#endif
-		return 5;
-	}
-	if(bpp != 8 && bpp != 16 && bpp != 32){
-		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_SetBuffer:Not implemented %d bpp.\n", bpp);
-		#endif
-		return 6;
+		INT_3();
 	}
 
-	sheet->size.x = xsize;
-	sheet->size.y = ysize;
-	sheet->bpp = bpp;
-	sheet->vram = vram;
-	sheet->vramsize = xsize * ysize * bpp;
-
-	sheet->flags.bit.buffer_configured = True;
+	if(retv != 0){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_SetBuffer:Function Failed.\n");
+		#endif
+		return 10 + retv;
+	}
 
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
 		debug("Sheet_SetBuffer:[0x%08X]\n", sheet);
@@ -127,6 +125,8 @@ uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint b
 
 uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent)
 {
+	uint retv;
+
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_SetParent:Null sheet.\n");
@@ -164,6 +164,12 @@ uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent)
 		debug("Sheet_SetParent:[0x%08X] parent:[0x%08X]\n", sheet, parent);
 	#endif
 
+	retv = sheet->Config_Functions(sheet);
+
+	if(retv != 0){
+		return 10 + retv;
+	}
+
 	return 0;
 }
 
@@ -181,6 +187,12 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		#endif
 		return 1;
 	}
+	if(!sheet->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Show:Not buffer_configured sheet.\n");
+		#endif
+		return 2;
+	}
 	if(sheet->parent == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_Show:Null parent.\n");
@@ -192,10 +204,10 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		if(py != SHEET_LOCATION_NOCHANGE){
 			sheet->location.y = py;
 		}
-		return 2;
+		return 3;
 	}
 	if(sheet->flags.bit.visible == True){
-		return 3;
+		return 4;
 	}
 
 //At First, clear old height link.
@@ -246,7 +258,7 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		sheet->location.x = px;
 	}
 	if(py != SHEET_LOCATION_NOCHANGE){
-		sheet->location.y = px;
+		sheet->location.y = py;
 	}
 	sheet->flags.bit.visible = True;
 	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + sheet->size.x - 1, sheet->location.y + sheet->size.y - 1, False);
@@ -275,14 +287,18 @@ uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy)
 		#endif
 		return 1;
 	}
-
+	if(!sheet->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Slide_Absolute:Not buffer_configured sheet.\n");
+		#endif
+		return 2;
+	}
 	if(sheet->parent == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_Slide_Absolute:Null parent.\n");
 		#endif
-		return 2;
+		return 3;
 	}
-
 	if(!sheet->flags.bit.visible){
 		sheet->location.x = apx;
 		sheet->location.y = apy;
@@ -292,7 +308,7 @@ uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy)
 	retv = Sheet_Internal_SlideSub(sheet, apx - sheet->location.x, apy - sheet->location.y);
 
 	if(retv != 0){
-		return retv + 2;
+		return 10 + retv;
 	}
 
 	return 0;
@@ -308,14 +324,18 @@ uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy)
 		#endif
 		return 1;
 	}
-
+	if(!sheet->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Slide_Relative:Not buffer_configured sheet.\n");
+		#endif
+		return 2;
+	}
 	if(sheet->parent == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_Slide_Relative:Null parent.\n");
 		#endif
-		return 2;
+		return 3;
 	}
-
 	if(!sheet->flags.bit.visible){
 		sheet->location.x += rpx;
 		sheet->location.y += rpy;
@@ -325,7 +345,7 @@ uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy)
 	retv = Sheet_Internal_SlideSub(sheet, rpx, rpy);
 
 	if(retv != 0){
-		return retv + 2;
+		return 10 + retv;
 	}
 
 	return 0;
@@ -335,6 +355,13 @@ uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py
 {
 	uint i;
 	UI_Sheet *search;
+
+	if(!parent->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_RefreshAllInRange:Not buffer_configured sheet.\n");
+		#endif
+		return 1;
+	}
 
 	search = parent->child;
 	for(i = 0; i < SHEET_MAX_CHILDREN; i++){
@@ -352,6 +379,13 @@ uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py
 
 uint Sheet_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
+	if(!sheet->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_RefreshSheet:Not buffer_configured sheet.\n");
+		#endif
+		return 1;
+	}
+
 	return Sheet_Internal_RefreshSheet(sheet, px0 + sheet->location.x, py0 + sheet->location.y, px1 + sheet->location.x, py1 + sheet->location.y);
 }
 

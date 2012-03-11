@@ -417,12 +417,15 @@ typedef struct UI_SHEET {
 			unsigned buffer_configured : 1;
 			unsigned visible : 1;
 			unsigned using_map : 1;
+			unsigned vram_auto_allocated : 1;
 		} bit;
 	} flags;
 	void *vram;
 	uint *map;
 	uint vramsize;
 	uint mapsize;
+	uint (*Config_Functions)(struct UI_SHEET *sheet);
+	uint (*RefreshSheet)(struct UI_SHEET *sheet, int px0, int py0, int px1, int py1);
 } UI_Sheet;
 
 /*timer*/
@@ -450,5 +453,14 @@ typedef struct UI_TIMER_CONTROL {
 	UI_Timer *timer_root;
 } UI_TimerControl;
 
+/*color*/
 
-
+typedef union RGB_32BIT {
+	uint c32;
+	struct RGB_32BIT_RGBA {
+		uchar b;
+		uchar g;
+		uchar r;
+		uchar a;
+	} bit;
+} RGB32;

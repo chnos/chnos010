@@ -11,6 +11,7 @@ void CHNMain(void)
 	uint i;
 	IO_DisplayControl *disp_ctrl;
 	UI_Sheet *vramsheet, *testsheet, *testsheet2, *sheet_desktop;
+	UI_Sheet *sheet08, *sheet16, *sheet32;
 	int x, y;
 	UI_Timer *timer1, *timer2, *timer3;
 	uint counter1, counter2, counter3;
@@ -97,34 +98,60 @@ void CHNMain(void)
 	testsheet = Sheet_Initialise();
 	testsheet2 = Sheet_Initialise();
 	sheet_desktop = Sheet_Initialise();
+	sheet08 = Sheet_Initialise();
+	sheet16 = Sheet_Initialise();
+	sheet32 = Sheet_Initialise();
 
 	Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
-	Sheet_SetBuffer(testsheet, System_Memory_Allocate(256 * 128 * 1), 256, 128, 8);
-	Sheet_SetBuffer(testsheet2, System_Memory_Allocate(128 * 64 * 1), 128, 64, 8);
-	Sheet_SetBuffer(sheet_desktop, System_Memory_Allocate(disp_ctrl->xsize * disp_ctrl->ysize * (disp_ctrl->bpp >> 3)), disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
+	Sheet_SetBuffer(testsheet, Null, 256, 128, 8);
+	Sheet_SetBuffer(testsheet2, Null, 128, 64, 8);
+	Sheet_SetBuffer(sheet_desktop, Null, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
+	Sheet_SetBuffer(sheet08, Null, 128, 128, 8);
+	Sheet_SetBuffer(sheet16, Null, 128, 128, 16);
+	Sheet_SetBuffer(sheet32, Null, 128, 128, 32);
 
-	for(y = 0; y < disp_ctrl->ysize; y++){
-		for(x = 0; x < disp_ctrl->xsize; x++){
-			((uchar*)sheet_desktop->vram)[y * sheet_desktop->size.x + x] = ((uchar *)disp_ctrl->vram)[y * disp_ctrl->xsize + x];
-		}
+	for(i = 0; i < sheet_desktop->vramsize; i++){
+		((uchar *)sheet_desktop->vram)[i] = ((uchar *)disp_ctrl->vram)[i];
 	}
 
 	for(y = 0; y < testsheet->size.y; y++){
 		for(x = 0; x < testsheet->size.x; x++){
-			((uchar*)testsheet->vram)[y * testsheet->size.x + x] = x * 2;
+			((uchar *)testsheet->vram)[y * testsheet->size.x + x] = x * 2;
 		}
 	}
 	Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 4, 24, testsheet->size.x - 4 - 1, testsheet->size.y - 4 - 1);
 
 	for(y = 0; y < testsheet2->size.y; y++){
 		for(x = 0; x < testsheet2->size.x; x++){
-			((uchar*)testsheet2->vram)[y * testsheet2->size.x + x] = y * 2 + x;
+			((uchar *)testsheet2->vram)[y * testsheet2->size.x + x] = y * 2 + x;
 		}
 	}
 	Drawing08_Fill_Rectangle(testsheet2->vram, testsheet2->size.x, 0xc6c6c6, 4, 24, testsheet2->size.x - 4 - 1, testsheet2->size.y - 4 - 1);
 
 	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 4, 4, 0xffffff, "TestSheet");
+	snprintf(s, sizeof(s), "Memory:%d Bytes", System_Get_PhisycalMemorySize());
+	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24 + 16 * 4, 0xffffff, s);
+
 	Drawing08_Put_String(testsheet2->vram, testsheet2->size.x, 4, 4, 0xffffff, "TestSheet2");
+
+
+	for(y = 0; y < sheet08->size.y; y++){
+		for(x = 0; x < sheet08->size.x; x++){
+			((uchar *)sheet08->vram)[y * sheet08->size.x + x] = RGB_32_To_08(((x * 2) << 16) | ((y * 2) << 8) | (x + y));
+		}
+	}
+
+	for(y = 0; y < sheet16->size.y; y++){
+		for(x = 0; x < sheet16->size.x; x++){
+			((ushort *)sheet16->vram)[y * sheet16->size.x + x] = RGB_32_To_16(((x * 2) << 16) | ((y * 2) << 8) | (x + y));
+		}
+	}
+
+	for(y = 0; y < sheet32->size.y; y++){
+		for(x = 0; x < sheet32->size.x; x++){
+			((uint *)sheet32->vram)[y * sheet32->size.x + x] = ((x * 2) << 16) | ((y * 2) << 8) | (x + y);
+		}
+	}
 
 	Sheet_SetParent(sheet_desktop, vramsheet);
 	Sheet_Show(sheet_desktop, 0, 0, 0);
@@ -134,6 +161,15 @@ void CHNMain(void)
 
 	Sheet_SetParent(testsheet2, vramsheet);
 	Sheet_Show(testsheet2, 2, 80, 80);
+
+	Sheet_SetParent(sheet08, vramsheet);
+	Sheet_Show(sheet08, 3, 20, vramsheet->size.y >> 1);
+
+	Sheet_SetParent(sheet16, vramsheet);
+	Sheet_Show(sheet16, 2, 220, vramsheet->size.y >> 1);
+
+	Sheet_SetParent(sheet32, vramsheet);
+	Sheet_Show(sheet32, 2, 420, vramsheet->size.y >> 1);
 
 	timer1 = Timer_Initialise();
 	Timer_Config(timer1, 50, mytask->fifo, 11, True);
@@ -207,6 +243,11 @@ void CHNMain(void)
 				Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24 + 16 * 3, 0xffffff, s);
 				Sheet_RefreshSheet(testsheet, 8, 24 + 16 * 3, 8 + (20 * 8) - 1, 24 + (16 * 4) - 1);
 				counter3++;
+
+				Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 8, 24 + 16 * 5, 8 + (20 * 8) - 1, 24 + (16 * 6) - 1);
+				snprintf(s, sizeof(s), "Free  :%d Bytes", System_Memory_Get_FreeSize());
+				Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24 + 16 * 5, 0xffffff, s);
+				Sheet_RefreshSheet(testsheet, 8, 24 + 16 * 5, 8 + (20 * 8) - 1, 24 + (16 * 6) - 1);
 			}
 		}
 	}

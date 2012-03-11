@@ -386,6 +386,11 @@ IO_DisplayControl *System_Display_Get_Controller(void)
 	return System.DisplayController;
 }
 
+uint System_Memory_Get_FreeSize(void)
+{
+	return Memory_Get_FreeSize(System.MemoryController);
+}
+
 //
 void System_Check_Memory(void)
 {
