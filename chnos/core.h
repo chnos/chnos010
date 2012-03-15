@@ -188,6 +188,9 @@ void Initialise_Keyboard(void);
 void InterruptHandler21(uint *esp);
 void Keyboard_Set_ReceiveFIFO(DATA_FIFO32 *fifo, uint data0);
 ushort Keyboard_Decode_KeyCode(uchar keycode);
+void KeyboardController_SetLED(uchar leds);
+void KeyboardController_Wait_SendReady(void);
+void KeyboardController_SendData(uchar data);
 
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
@@ -225,6 +228,10 @@ uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy);
 uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy);
 uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py1);
 uint Sheet_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet_RefreshMap(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+uint Sheet_RefreshMap_All(UI_Sheet *sheet);
+uint Sheet_EnableInvisibleColor(UI_Sheet *sheet, uint invcol);
+uint Sheet_DisableInvisibleColor(UI_Sheet *sheet);
 
 /*sht08.c 8bitカラー シート関連*/
 uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
@@ -232,6 +239,7 @@ uint Sheet08_Config_Functions(UI_Sheet *sheet);
 uint Sheet08_Internal_RefreshSheet_To_08(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet08_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet08_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+bool Sheet08_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py);
 
 /*sht16.c 16bitカラー シート関連*/
 uint Sheet16_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
@@ -239,6 +247,7 @@ uint Sheet16_Config_Functions(UI_Sheet *sheet);
 uint Sheet16_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet16_Internal_RefreshSheet_To_08(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet16_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+bool Sheet16_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py);
 
 /*sht32.c 32bitカラー シート関連*/
 uint Sheet32_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
@@ -246,6 +255,7 @@ uint Sheet32_Config_Functions(UI_Sheet *sheet);
 uint Sheet32_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet32_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet32_Internal_RefreshSheet_To_08_xy(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
+bool Sheet32_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py);
 
 /*shtfunc.c シート内部関数*/
 uint Sheet_Internal_GetLocationP(UI_Sheet *sheet, DATA_Location2D *dest);
@@ -261,6 +271,7 @@ uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int 
 uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1, bool nolocationchanged);
 uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy);
+bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py);
 
 /*system.c システムデータ・初期化関連*/
 void Initialise_System(void);

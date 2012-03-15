@@ -7,9 +7,9 @@ DATA_FIFO32 *kbd_fifo;
 union  STATE_KEYLOCK {
 	uchar keylock;
 	struct STATE_KEYLOCK_KEY {
+		unsigned scroll : 1;
 		unsigned num : 1;
 		unsigned caps : 1;
-		unsigned scroll : 1;
 	} key;
 } state_keylock;
 
@@ -41,6 +41,7 @@ ushort state_shift;
 
 uint key_decode_phase;
 uchar key_decode_buf[4];
+uchar kbc_retv;
 
 /*キーコード変換テーブル*/
 ushort Keyboard_KeyCodeTable[0x80] = {
@@ -338,12 +339,16 @@ void InterruptHandler21(uint *esp)
 {
 	uint data;
 
-	data = IO_In8(KEYB_DATA);
+	data = IO_In8(PORT_KEYDATA);
 
 	ProgrammableInterruptController_InterruptRequest_Complete(0x01);
 
 	if(kbd_fifo != 0){
 		FIFO32_Put(kbd_fifo, data + kbd_data0);
+	}
+
+	if(data == KEYDATA_ACK || data == KEYDATA_RESEND){
+		kbc_retv = data;
 	}
 
 	return;
@@ -430,6 +435,7 @@ ushort Keyboard_Decode_KeyCode(uchar keycode)
 							} else{
 								state_keylock.key.caps = True;
 							}
+							KeyboardController_SetLED(state_keylock.keylock);
 						}
 					} else if(keyid == (KEYID_MASK_EXTENDED | KEYID_LOCK_NUM)){
 						if(!(key_decode_buf[0] & KEYID_MASK_BREAK)){
@@ -438,6 +444,7 @@ ushort Keyboard_Decode_KeyCode(uchar keycode)
 							} else{
 								state_keylock.key.num = True;
 							}
+							KeyboardController_SetLED(state_keylock.keylock);
 						}
 					} else if(keyid == (KEYID_MASK_EXTENDED | KEYID_LOCK_SCROOL)){
 						if(!(key_decode_buf[0] & KEYID_MASK_BREAK)){
@@ -446,6 +453,7 @@ ushort Keyboard_Decode_KeyCode(uchar keycode)
 							} else{
 								state_keylock.key.scroll = True;
 							}
+							KeyboardController_SetLED(state_keylock.keylock);
 						}
 					}
 				}
@@ -541,4 +549,55 @@ ushort Keyboard_Decode_KeyCode(uchar keycode)
 	}
 
 	return keyid;
+}
+
+void KeyboardController_SetLED(uchar leds)
+{
+	KeyboardController_SendData(KEYCMD_LED);
+	KeyboardController_SendData(leds);
+	return;
+}
+
+void KeyboardController_Wait_SendReady(void)
+{
+	for(;;){
+		if((IO_In8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
+			break;
+		}
+	}
+	return;
+}
+
+void KeyboardController_SendData(uchar data)
+{
+	for(;;){
+		kbc_retv = 0;
+		KeyboardController_Wait_SendReady();
+		IO_Out8(PORT_KEYDATA, data);
+		for(;;){
+			if(kbc_retv == KEYDATA_ACK){
+				return;
+			}
+			if(kbc_retv == KEYDATA_RESEND){
+				break;
+			}
+		}
+	}
+}
+
+void KeyboardController_SendCommand(uchar cmd)
+{
+	for(;;){
+		kbc_retv = 0;
+		KeyboardController_Wait_SendReady();
+		IO_Out8(PORT_KEYCMD, cmd);
+		for(;;){
+			if(kbc_retv == KEYDATA_ACK){
+				return;
+			}
+			if(kbc_retv == KEYDATA_RESEND){
+				break;
+			}
+		}
+	}
 }

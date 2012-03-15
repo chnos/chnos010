@@ -37,6 +37,7 @@ int FIFO32_Put(DATA_FIFO32 *fifo, uint data)
 			debug("FIFO32_Put:Overflow data.\n");
 		#endif
 		fifo->flags.overflow = True;
+		Error_Report(ERROR_FIFO_BUFFER_OVERFLOW, fifo);
 		return -1;
 	}
 	fifo->buf[fifo->p] = data;

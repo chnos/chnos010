@@ -418,14 +418,17 @@ typedef struct UI_SHEET {
 			unsigned visible : 1;
 			unsigned using_map : 1;
 			unsigned vram_auto_allocated : 1;
+			unsigned using_invcol : 1;
 		} bit;
 	} flags;
 	void *vram;
 	uint *map;
 	uint vramsize;
 	uint mapsize;
+	uint invcol;
 	uint (*Config_Functions)(struct UI_SHEET *sheet);
 	uint (*RefreshSheet)(struct UI_SHEET *sheet, int px0, int py0, int px1, int py1);
+	bool (*IsVisiblePixel)(struct UI_SHEET *sheet, int px, int py);
 } UI_Sheet;
 
 /*timer*/

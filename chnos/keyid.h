@@ -9,9 +9,9 @@
 //bit09		:Shiftキー状態(0:オフ,1:オン)
 //bit10		:Ctrlキー状態(0:オフ,1:オン)
 //bit11		:Altキー状態(0:オフ,1:オン)
-//bit12		:NumLock状態(0:オフ,1:オン)
-//bit13		:CapsLock状態(0:オフ,1:オン)
-//bit14		:ScrollLock状態(0:オフ,1:オン)
+//bit12		:ScrollLock状態(0:オフ,1:オン)
+//bit13		:NumLock状態(0:オフ,1:オン)
+//bit14		:CapsLock状態(0:オフ,1:オン)
 //bit15		:拡張フラグ(0:ASCII,1:拡張キーコード)
 
 //つまり、FIFOで受け取って、バイアスを引いたら、KEYID_EXTENDEDフラグを調べる。
@@ -24,9 +24,9 @@
 #define KEYID_MASK_STATE_SHIFT		0x0200
 #define KEYID_MASK_STATE_CTRL		0x0400
 #define KEYID_MASK_STATE_ALT		0x0800
-#define KEYID_MASK_STATE_LOCK_NUM	0x1000
-#define KEYID_MASK_STATE_LOCK_CAPS	0x2000
-#define KEYID_MASK_STATE_LOCK_SCROOL	0x4000
+#define KEYID_MASK_STATE_LOCK_SCROOL	0x1000
+#define KEYID_MASK_STATE_LOCK_NUM	0x2000
+#define KEYID_MASK_STATE_LOCK_CAPS	0x4000
 #define KEYID_MASK_EXTENDED		0x8000
 
 #define KEYID_ASCII_NUL		0x0000

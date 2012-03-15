@@ -194,7 +194,7 @@
 #define PIC1_ICW4	0x00a1
 
 /*KBD io port*/
-#define KEYB_DATA		0x0060
+#define PORT_KEYDATA		0x0060
 #define PORT_KEYSTA		0x0064
 #define KEYSTA_SEND_NOTREADY	0x02
 #define KEYCMD_WRITE_MODE	0x60
@@ -202,6 +202,8 @@
 #define PORT_KEYCMD		0x0064
 #define KEYCMD_SENDTO_MOUSE	0xd4
 #define KEYCMD_LED		0xed
+#define KEYDATA_ACK	0xfa
+#define KEYDATA_RESEND	0xfe
 
 /*COM1 io port*/
 #define COM1_RX		0x03f8
@@ -288,11 +290,12 @@
 #define ERROR_CPU_EXCEPTION_1F			0x0000001f	//int *esp
 #define ERROR_CPU_EXCEPTIONS			0x0000001f
 
-#define ERROR_NO_MORE_SEGMENT			0x00000020	//uint *retaddr
+#define ERROR_NO_MORE_SEGMENT				0x00000020	//uint *retaddr
 #define ERROR_NOT_ENOUGH_FREE_MEMORY		0x00000021	//IO_MemoryControl ctrl, uint size
 #define ERROR_MEMORY_FREE_RANGE_OVERLAPPED	0x00000022	//IO_MemoryControl ctrl, uint tagno
-#define ERROR_NO_MORE_FREE_TAG			0x00000023	//IO_MemoryControl ctrl
+#define ERROR_NO_MORE_FREE_TAG				0x00000023	//IO_MemoryControl ctrl
 #define ERROR_INVALID_FREE_MEMORY_INDEX		0x00000024	//IO_MemoryControl ctrl, uint tagno
+#define ERROR_FIFO_BUFFER_OVERFLOW			0x00000025	//DATA_FIFO32 *fifo
 
 /*FIFO buffer*/
 #define SIGNAL_ARGUMENTS_END	0xfefe1234

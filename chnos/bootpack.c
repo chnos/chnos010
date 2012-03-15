@@ -156,9 +156,6 @@ void CHNMain(void)
 	Sheet_SetParent(sheet_desktop, vramsheet);
 	Sheet_Show(sheet_desktop, 0, 0, 0);
 
-	Sheet_SetParent(testsheet, vramsheet);
-	Sheet_Show(testsheet, 1, 10, 10);
-
 	Sheet_SetParent(testsheet2, vramsheet);
 	Sheet_Show(testsheet2, 2, 80, 80);
 
@@ -170,6 +167,9 @@ void CHNMain(void)
 
 	Sheet_SetParent(sheet32, vramsheet);
 	Sheet_Show(sheet32, 2, 420, vramsheet->size.y >> 1);
+
+	Sheet_SetParent(testsheet, vramsheet);
+	Sheet_Show(testsheet, 6, 10, 10);
 
 	timer1 = Timer_Initialise();
 	Timer_Config(timer1, 50, mytask->fifo, 11, True);

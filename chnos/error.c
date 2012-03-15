@@ -152,16 +152,21 @@ uint Error_Report(uint error_no, ...)
 			Error_Put_String("No More Free Tag(Control:0x%08X).", *va_args);
 		} else if(error_no == ERROR_INVALID_FREE_MEMORY_INDEX){
 			Error_Put_String("Invalid Free Memory Index(Control:0x%08X TagIndex:%u).", *va_args, *(va_args + 1));
+		} else if(error_no == ERROR_FIFO_BUFFER_OVERFLOW){
+			Error_Put_String("FIFO Buffer Overflow(FIFO:0x%08X).", *va_args);
 		} else{
 			Error_Put_String("Unknown Error Number.");
 			Error_Abort();
 		}
 	}
+	Error_Put_String("Continue.");
+	Error_Output_Display_GraphicMode_UsedLines = 0;
 	return 0;
 }
 
 void Error_Abort(void)
 {
+	Error_Put_String("Abort.");
 	IO_CLI();
 	for(;;){
 		IO_HLT();
@@ -199,7 +204,7 @@ int Error_Put_String(const uchar format[], ...)
 	if(Error_Output_Enable_Display_GraphicMode){
 		if(Error_Output_Display_GraphicMode_Lines > Error_Output_Display_GraphicMode_UsedLines){
 			Drawing_Fill_Rectangle(Error_Output_Display_GraphicMode_VRAM, Error_Output_Display_GraphicMode_ResolutionX, 0xc6c6c6, 0, Error_Output_Display_GraphicMode_UsedLines << 4, Error_Output_Display_GraphicMode_ResolutionX - 1, (Error_Output_Display_GraphicMode_UsedLines << 4) + 16 - 1);
-			Drawing_Put_String(Error_Output_Display_GraphicMode_VRAM, Error_Output_Display_GraphicMode_ResolutionX, 0, Error_Output_Display_GraphicMode_UsedLines << 4, 0x000000, s);
+			Drawing_Put_String(Error_Output_Display_GraphicMode_VRAM, Error_Output_Display_GraphicMode_ResolutionX, 0, Error_Output_Display_GraphicMode_UsedLines << 4, 0xffffff, s);
 			Error_Output_Display_GraphicMode_UsedLines++;
 		}
 	}
