@@ -148,10 +148,20 @@ uint Sheet_Internal_MapWriteFromSheet(UI_Sheet *sheet, bool force, int px0, int 
 			}
 		}
 	} else{
-		for(y = p.y; y <= r.y; y++){
-			for(x = p.x; x <= r.x; x++){
-				if(sheet->parent->map[y * sheet->parent->size.x + x] == Null){
-					sheet->parent->map[y * sheet->parent->size.x + x] = (uint)sheet;
+		if(sheet->flags.bit.using_invcol){
+			for(y = p.y; y <= r.y; y++){
+				for(x = p.x; x <= r.x; x++){
+					if(sheet->parent->map[y * sheet->parent->size.x + x] == Null && sheet->IsVisiblePixel(sheet, x, y)){
+						sheet->parent->map[y * sheet->parent->size.x + x] = (uint)sheet;
+					}
+				}
+			}
+		} else{
+			for(y = p.y; y <= r.y; y++){
+				for(x = p.x; x <= r.x; x++){
+					if(sheet->parent->map[y * sheet->parent->size.x + x] == Null){
+						sheet->parent->map[y * sheet->parent->size.x + x] = (uint)sheet;
+					}
 				}
 			}
 		}
@@ -332,13 +342,17 @@ uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int 
 //uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 //その範囲内のマップを、sheetに変更があったとして、最小限で再構成する。
 //座標はmap(parent)なので注意。
-//nolocationchanged==Trueで、sheetの移動が無いものとみなし、書き込み対象を元々シートがあった場所のみに限定する。
-//nolocationchanged==Falseで、sheetの高さまではすべて再構成する。
-uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1, bool nolocationchanged)
+//sheetの高さまではすべて再構成する。
+//同時に、更新したシートに対して再描画をかける。
+uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	UI_Sheet *search;
-	int x, y;
-	uint i; 
+	//int x, y;
+	uint i;
+	UI_Sheet **write_sheet;
+	uint write_sheets;
+
+	write_sheet = (UI_Sheet **)System_Memory_Allocate(4 * SHEET_MAX_CHILDREN);
 
 	if(px0 < 0){
 		px0 = 0;
@@ -353,24 +367,32 @@ uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int p
 		py1 = (int)sheet->parent->size.y - 1;
 	}
 
-	if(!nolocationchanged){
-		search = sheet->parent->child;
-		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
-			if(search == Null){
-				break;
-			}
-			if(Sheet_Internal_IsRangeOverlappedWithSheet(search, px0, py0, px1, py1)){
-				Sheet_Internal_MapClearFromSheet(search, False, px0, py0, px1, py1);
-			}
-			if(search == sheet){
-				break;
-			}
-			search = search->next;
+	write_sheets = 0;
+
+	search = sheet->parent->child;
+	for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+		if(search == Null){
+			break;
 		}
-	} else{
-		Sheet_Internal_MapClearFromSheet(sheet, False, px0, py0, px1, py1);
+		if(Sheet_Internal_IsRangeOverlappedWithSheet(search, px0, py0, px1, py1)){
+			Sheet_Internal_MapClearFromSheet(search, False, px0, py0, px1, py1);
+			write_sheet[write_sheets] = search;
+			write_sheets++;
+		}
+		if(search == sheet){
+			break;
+		}
+		search = search->next;
 	}
 
+
+	for(; write_sheets != 0; ){
+		write_sheets--;
+		Sheet_Internal_MapWriteFromSheet(write_sheet[write_sheets], False, px0, py0, px1, py1);
+		Sheet_Internal_RefreshSheet(write_sheet[write_sheets], px0, py0, px1, py1);
+	}
+
+/*
 	for(y = py0; y <= py1; y++){
 		for(x = px0; x <= px1; x++){
 			if(sheet->parent->map[y * sheet->parent->size.x + x] == Null){
@@ -381,6 +403,9 @@ uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int p
 			}
 		}
 	}
+*/
+
+	System_Memory_Free(write_sheet, 4 * SHEET_MAX_CHILDREN);
 
 	return 0;
 }
@@ -451,12 +476,11 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 	sheet->flags.bit.visible = False;
 
 	if(apx >= xsize || apy >= ysize){
-		Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + xsize - 1, sheet->location.y + ysize - 1, True);
-		Sheet_RefreshAllInRange(sheet->parent, sheet->location.x, sheet->location.y, sheet->location.x + xsize - 1, sheet->location.y + ysize - 1);
+		Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + xsize - 1, sheet->location.y + ysize - 1);
 		sheet->location.x += rpx;
 		sheet->location.y += rpy;
 		sheet->flags.bit.visible = True;
-		Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + xsize - 1, sheet->location.y + ysize - 1, False);
+		Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + xsize - 1, sheet->location.y + ysize - 1);
 
 		Sheet_RefreshSheet_All(sheet);
 		return 0;
@@ -468,24 +492,22 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			//yの負の方向に移動=上方向
 			A.x = sheet->location.x;
 			A.y = sheet->location.y + ysize - apy;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, True);
-			Sheet_RefreshAllInRange(sheet->parent, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 			sheet->location.x += rpx;
 			sheet->location.y += rpy;
 			sheet->flags.bit.visible = True;
 			A.y -= ysize;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, False);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 		} else if(rpy > 0){
 			//yの正の方向に移動=下方向
 			A.x = sheet->location.x;
 			A.y = sheet->location.y;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, True);
-			Sheet_RefreshAllInRange(sheet->parent, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 			sheet->location.x += rpx;
 			sheet->location.y += rpy;
 			sheet->flags.bit.visible = True;
 			A.y += ysize;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, False);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 		} else{
 			//y方向にも移動しない=そのまま
 			sheet->flags.bit.visible = True;
@@ -498,47 +520,42 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			A.y = sheet->location.y + ysize - apy;
 			B.x = sheet->location.x + xsize - apx;
 			B.y = sheet->location.y;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, True);
-			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy, True);
-			Sheet_RefreshAllInRange(sheet->parent, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
-			Sheet_RefreshAllInRange(sheet->parent, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 			sheet->location.x += rpx;
 			sheet->location.y += rpy;
 			sheet->flags.bit.visible = True;
 			A.x -= apx;
 			A.y -= ysize;
 			B.x -= xsize;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, False);
-			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy, False);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 		} else if(rpy > 0){
 			//yの正の方向に移動=左下方向
 			A.x = sheet->location.x;
 			A.y = sheet->location.y;
 			B.x = sheet->location.x + xsize - apx;
 			B.y = sheet->location.y + apy;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, True);
-			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy, True);
-			Sheet_RefreshAllInRange(sheet->parent, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
-			Sheet_RefreshAllInRange(sheet->parent, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 			sheet->location.x += rpx;
 			sheet->location.y += rpy;
 			sheet->flags.bit.visible = True;
 			A.x -= apx;
 			A.y += ysize;
 			B.x -= xsize;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, False);
-			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy, False);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 		} else{
 			//y方向に移動しない=左方向
 			A.x = sheet->location.x + xsize - apx;
 			A.y = sheet->location.y;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1, True);
-			Sheet_RefreshAllInRange(sheet->parent, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
 			sheet->location.x += rpx;
 			sheet->location.y += rpy;
 			sheet->flags.bit.visible = True;
 			A.x -= xsize;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1, False);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
 		}
 	} else{
 		//xの正の方向に移動
@@ -548,51 +565,55 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			A.y = sheet->location.y + ysize - apy;
 			B.x = sheet->location.x;
 			B.y = sheet->location.y;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, True);
-			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy, True);
-			Sheet_RefreshAllInRange(sheet->parent, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
-			Sheet_RefreshAllInRange(sheet->parent, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 			sheet->location.x += rpx;
 			sheet->location.y += rpy;
 			sheet->flags.bit.visible = True;
 			A.x += apx;
 			A.y -= ysize;
 			B.x += xsize;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, False);
-			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy, False);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 		} else if(rpy > 0){
 			//yの正の方向に移動=右下方向
 			A.x = sheet->location.x;
 			A.y = sheet->location.y;
 			B.x = sheet->location.x;
 			B.y = sheet->location.y + apy;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, True);
-			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy, True);
-			Sheet_RefreshAllInRange(sheet->parent, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
-			Sheet_RefreshAllInRange(sheet->parent, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 			sheet->location.x += rpx;
 			sheet->location.y += rpy;
 			sheet->flags.bit.visible = True;
 			A.x += apx;
 			A.y += ysize;
 			B.x += xsize;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1, False);
-			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy, False);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
+			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 		} else{
 			//y方向に移動しない=右方向
 			A.x = sheet->location.x;
 			A.y = sheet->location.y;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1, True);
-			Sheet_RefreshAllInRange(sheet->parent, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
 			sheet->location.x += rpx;
 			sheet->location.y += rpy;
 			sheet->flags.bit.visible = True;
 			A.x += xsize;
-			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1, False);
+			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
 		}
 	}
 
-	Sheet_RefreshSheet_All(sheet);
+	Sheet_RefreshMap_All(sheet);
 	return 0;
 }
 
+//SheetXX_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py)
+//親シート内座標における、指定されたシートのピクセル(px, py)が可視状態であるかどうかを返す。
+//引数チェックはすべて省略しているので、呼び出し元で厳密にチェックする必要がある。
+
+//下の関数は、透明色モードオフ時に指定される、ダミー関数である。
+bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py)
+{
+	return True;
+}

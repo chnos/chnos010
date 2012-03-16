@@ -36,7 +36,7 @@ uint Sheet_Free(UI_Sheet *sheet)
 		return 1;
 	}
 
-//e‚Ö‚ÌŽq“o˜^‚ðíœ‚·‚é
+//e‚ÌŽq“o˜^‚ðíœ‚·‚é
 	if(sheet->parent != Null){
 		search = &sheet->parent->child;
 		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
@@ -55,7 +55,7 @@ uint Sheet_Free(UI_Sheet *sheet)
 		}
 	}
 
-//Žq‚Ö‚Ìe“o˜^‚ðíœ‚·‚é
+//Žq‚Ìe“o˜^‚ðíœ‚·‚é
 	if(sheet->child != Null){
 		search = &sheet->child;
 		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
@@ -261,7 +261,7 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		sheet->location.y = py;
 	}
 	sheet->flags.bit.visible = True;
-	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + sheet->size.x - 1, sheet->location.y + sheet->size.y - 1, False);
+	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + sheet->size.x - 1, sheet->location.y + sheet->size.y - 1);
 
 	Sheet_RefreshSheet_All(sheet);
 
@@ -274,6 +274,13 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 
 uint Sheet_RefreshSheet_All(UI_Sheet *sheet)
 {
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_RefreshSheet_All:Null sheet.\n");
+		#endif
+		return 1;
+	}
+
 	return Sheet_RefreshSheet(sheet, 0, 0, sheet->size.x - 1, sheet->size.y - 1);
 }
 
@@ -356,11 +363,17 @@ uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py
 	uint i;
 	UI_Sheet *search;
 
+	if(parent == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_RefreshAllInRange:Null parent.\n");
+		#endif
+		return 1;
+	}
 	if(!parent->flags.bit.buffer_configured){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_RefreshAllInRange:Not buffer_configured sheet.\n");
 		#endif
-		return 1;
+		return 2;
 	}
 
 	search = parent->child;
@@ -379,14 +392,101 @@ uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py
 
 uint Sheet_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_RefreshSheet:Null sheet.\n");
+		#endif
+		return 1;
+	}
 	if(!sheet->flags.bit.buffer_configured){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_RefreshSheet:Not buffer_configured sheet.\n");
 		#endif
-		return 1;
+		return 2;
 	}
 
 	return Sheet_Internal_RefreshSheet(sheet, px0 + sheet->location.x, py0 + sheet->location.y, px1 + sheet->location.x, py1 + sheet->location.y);
 }
 
+uint Sheet_RefreshMap(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
+{
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_RefreshMap:Null sheet.\n");
+		#endif
+		return 1;
+	}
+	if(!sheet->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_RefreshMap:Not buffer_configured sheet.\n");
+		#endif
+		return 2;
+	}
 
+	return Sheet_Internal_MapRefresh(sheet, px0 + sheet->location.x, py0 + sheet->location.y, px1 + sheet->location.x, py1 + sheet->location.y);
+}
+
+uint Sheet_RefreshMap_All(UI_Sheet *sheet)
+{
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_RefreshMap_All:Null sheet.\n");
+		#endif
+		return 1;
+	}
+
+	return Sheet_RefreshMap(sheet, 0, 0, sheet->size.x - 1, sheet->size.y - 1);
+}
+
+uint Sheet_Enable_InvisibleColor(UI_Sheet *sheet, uint invcol)
+{
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Enable_InvisibleColor:Null sheet.\n");
+		#endif
+		return 1;
+	}
+	if(!sheet->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Enable_InvisibleColor:Not buffer_configured sheet.\n");
+		#endif
+		return 2;
+	}
+
+	if(sheet->bpp == 8){
+		sheet->invcol = RGB_32_To_08(invcol);
+		sheet->IsVisiblePixel = &Sheet08_Internal_IsVisiblePixel;
+	} else if(sheet->bpp == 16){
+		sheet->invcol = RGB_32_To_16(invcol);
+		sheet->IsVisiblePixel = &Sheet16_Internal_IsVisiblePixel;
+	} else if(sheet->bpp == 32){
+		sheet->invcol = invcol;
+		sheet->IsVisiblePixel = &Sheet32_Internal_IsVisiblePixel;
+	} else{
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Enable_InvisibleColor:Not implemented invisible-color in %d bpp.\n", sheet->bpp);
+		#endif
+		return 3;
+	}
+	sheet->flags.bit.using_invcol = True;
+	return 0;
+}
+
+uint Sheet_Disable_InvisibleColor(UI_Sheet *sheet)
+{
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Disable_InvisibleColor:Null sheet.\n");
+		#endif
+		return 1;
+	}
+	if(!sheet->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Disable_InvisibleColor:Not buffer_configured sheet.\n");
+		#endif
+		return 2;
+	}
+	sheet->flags.bit.using_invcol = False;
+	sheet->IsVisiblePixel = &Sheet_Internal_IsVisiblePixel_Invalid;
+	return sheet->invcol;
+}

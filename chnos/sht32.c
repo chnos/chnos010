@@ -32,6 +32,8 @@ uint Sheet32_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ys
 
 	sheet->vramsize = xsize * ysize * 4;
 	sheet->Config_Functions = &Sheet32_Config_Functions;
+	sheet->IsVisiblePixel = &Sheet_Internal_IsVisiblePixel_Invalid;
+	sheet->flags.bit.using_invcol = False;
 
 	sheet->flags.bit.buffer_configured = True;
 
@@ -223,4 +225,17 @@ uint Sheet32_Internal_RefreshSheet_To_08_xy(UI_Sheet *sheet, int px0, int py0, i
 	}
 
 	return 0;
+}
+
+bool Sheet32_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py)
+{
+	if(((uint *)(sheet->vram))[(py - sheet->location.y) * (int)sheet->size.x + (px - sheet->location.x)] >> 24 == 0xff){
+		return False;
+	}
+
+	if(((uint *)(sheet->vram))[(py - sheet->location.y) * (int)sheet->size.x + (px - sheet->location.x)] == sheet->invcol){
+		return False;
+	}
+
+	return True;
 }

@@ -230,8 +230,8 @@ uint Sheet_RefreshAllInRange(UI_Sheet *parent, int px0, int py0, int px1, int py
 uint Sheet_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_RefreshMap(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_RefreshMap_All(UI_Sheet *sheet);
-uint Sheet_EnableInvisibleColor(UI_Sheet *sheet, uint invcol);
-uint Sheet_DisableInvisibleColor(UI_Sheet *sheet);
+uint Sheet_Enable_InvisibleColor(UI_Sheet *sheet, uint invcol);
+uint Sheet_Disable_InvisibleColor(UI_Sheet *sheet);
 
 /*sht08.c 8bitカラー シート関連*/
 uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
@@ -268,7 +268,7 @@ bool Sheet_Internal_IsLocationInRangeOfSheet(UI_Sheet *sheet, int px, int py);
 bool Sheet_Internal_IsRangeOverlappedWithSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 UI_Sheet *Sheet_Internal_GetSheetFromLocation(UI_Sheet *parent, int px, int py);
 uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int py1);
-uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1, bool nolocationchanged);
+uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy);
 bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py);
