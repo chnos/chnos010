@@ -35,20 +35,28 @@ uint Memory_Test(uint start, uint end)
 	return i;
 }
 
+//Memory Control System
+//ctrl[0].addr = 0;
+//ctrl[0].size = tags;
+//Memory Control配列は、管理対象のメモリの終端に配置される。
+
 IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags)
 {
 	IO_MemoryControl ctrl;
 
 	size = (size + 7) & ~7;
 
+//Memory Control配列が入る分より多く、管理対象のメモリを与えられているかチェック。
 	if((tags * sizeof(IO_MemoryControlTag)) > size){
 		return 0;
 	}
 
+//管理の都合上、3タグ以上ないと管理が成立しないので、そのチェック。
 	if(tags < 3){
 		return 0;
 	}
 
+//管理対象メモリ範囲の最後から、Memory Control配列の大きさ分だけさかのぼった地点をMemoryControl配列の先頭とする。
 	ctrl = (IO_MemoryControl)(start + (size - (tags * sizeof(IO_MemoryControlTag))));
 	ctrl[0].addr = 0;
 	ctrl[0].size = tags;
@@ -227,18 +235,21 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size)
 			addr = ctrl[i].addr;
 			if(ctrl[i].size == size){	/*ぴったりだったので空き情報を破棄*/
 				for(; i < ctrl[0].size - 1; i++){
+					//終端を発見したらBreak.
 					if(ctrl[i].size == 0xffffffff){
 						break;
 					}
+					//タグをコピーして前に詰める。
 					ctrl[i] = ctrl[i + 1];
 				}
-				if(i != ctrl[0].size - 1){
-					ctrl[i].addr = 0;
-					ctrl[i].size = 0xffffffff;
-				}
+				//詰めた結果、終端タグが必要だったら追加する（そんなことないはずだよね？…）
+				//if(i != ctrl[0].size){
+				//	ctrl[i].addr = 0;
+				//	ctrl[i].size = 0xffffffff;
+				//}
 			} else{	/*まだ残っているので空き情報を調整*/
 				ctrl[i].addr += size;
-				ctrl[1].size -= size;
+				ctrl[i].size -= size;
 			}
 			IO_Store_EFlags(eflags);
 			//メモリをゼロクリア。
@@ -298,4 +309,6 @@ uint Memory_Get_FreeSize(IO_MemoryControl ctrl)
 
 	return size;
 }
+
+
 

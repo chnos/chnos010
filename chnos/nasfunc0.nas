@@ -12,6 +12,12 @@
 	GLOBAL	_Load_CR2, _Store_CR2
 	GLOBAL	_Load_CR3, _Store_CR3
 	GLOBAL	_Load_CR4, _Store_CR4
+	GLOBAL	_Load_DR0, _Store_DR0
+	GLOBAL	_Load_DR1, _Store_DR1
+	GLOBAL	_Load_DR2, _Store_DR2
+	GLOBAL	_Load_DR3, _Store_DR3
+	GLOBAL	_Load_DR6, _Store_DR6
+	GLOBAL	_Load_DR7, _Store_DR7
 	GLOBAL	_Load_GDTR
 	GLOBAL	_Load_IDTR
 	GLOBAL	_Load_TR
@@ -126,6 +132,60 @@ _Load_CR4:
 _Store_CR4:
 	mov	eax,[esp+4]
 	mov	cr4,eax
+	ret
+
+_Load_DR0:
+	mov	eax,dr0
+	ret
+
+_Store_DR0:
+	mov	eax,[esp+4]
+	mov	dr0,eax
+	ret
+
+_Load_DR1:
+	mov	eax,dr1
+	ret
+
+_Store_DR1:
+	mov	eax,[esp+4]
+	mov	dr1,eax
+	ret
+
+_Load_DR2:
+	mov	eax,dr2
+	ret
+
+_Store_DR2:
+	mov	eax,[esp+4]
+	mov	dr2,eax
+	ret
+
+_Load_DR3:
+	mov	eax,dr3
+	ret
+
+_Store_DR3:
+	mov	eax,[esp+4]
+	mov	dr3,eax
+	ret
+
+_Load_DR6:
+	mov	eax,dr6
+	ret
+
+_Store_DR6:
+	mov	eax,[esp+4]
+	mov	dr6,eax
+	ret
+
+_Load_DR7:
+	mov	eax,dr7
+	ret
+
+_Store_DR7:
+	mov	eax,[esp+4]
+	mov	dr7,eax
 	ret
 
 _Load_GDTR:

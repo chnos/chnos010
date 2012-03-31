@@ -15,6 +15,12 @@ UI_Sheet *Sheet_Initialise(void)
 		debug("Sheet_Initialise:[0x%08X]\n", sheet);
 	#endif
 
+	sheet->Drawing.Fill_Rectangle = &Sheet_Drawing_Fill_Rectangle_Invalid;
+	sheet->Drawing.Put_String = &Sheet_Drawing_Put_String_Invalid;
+	sheet->Drawing.Draw_Point = &Sheet_Drawing_Draw_Point_Invalid;
+
+	sheet->RefreshSheet = &Sheet_Internal_RefreshSheet_Invalid;
+
 	return sheet;
 }
 
@@ -80,6 +86,7 @@ uint Sheet_Free(UI_Sheet *sheet)
 uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp)
 {
 	uint retv;
+	UI_Sheet *search;
 
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
@@ -92,6 +99,10 @@ uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint b
 			debug("Sheet_SetBuffer:Not Initialised sheet.\n");
 		#endif
 		return 2;
+	}
+
+	for(search = sheet->child; search != Null; search = search->next){
+		search->RefreshSheet = &Sheet_Internal_RefreshSheet_Invalid;
 	}
 
 	retv = 0;
@@ -115,6 +126,15 @@ uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint b
 		return 10 + retv;
 	}
 
+	if(sheet->flags.bit.using_map){
+		Sheet_Internal_MapInitialise(sheet);
+	}
+
+	for(search = sheet->child; search != Null; search = search->next){
+		search->Config_Functions(search);
+		Sheet_RefreshSheet_All(search);
+	}
+
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
 		debug("Sheet_SetBuffer:[0x%08X]\n", sheet);
 		debug("Sheet_SetBuffer:vram:[0x%08X] xsize:%d ysize:%d bpp:%d\n", vram, xsize, ysize, bpp);
@@ -125,8 +145,6 @@ uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint b
 
 uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent)
 {
-	uint retv;
-
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_SetParent:Null sheet.\n");
@@ -156,19 +174,9 @@ uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent)
 
 	sheet->parent = parent;
 
-	if(!parent->flags.bit.using_map){
-		Sheet_Internal_MapInitialise(sheet->parent);
-	}
-
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
 		debug("Sheet_SetParent:[0x%08X] parent:[0x%08X]\n", sheet, parent);
 	#endif
-
-	retv = sheet->Config_Functions(sheet);
-
-	if(retv != 0){
-		return 10 + retv;
-	}
 
 	return 0;
 }
@@ -177,9 +185,7 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 {
 	UI_Sheet **search;
 	uint i;
-	bool no_change_height;
-
-	no_change_height = False;
+	uint retv;
 
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
@@ -210,15 +216,17 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		return 4;
 	}
 
+	retv = sheet->Config_Functions(sheet);
+
+	if(retv != 0){
+		return 10 + retv;
+	}
+
 //At First, clear old height link.
 
 	search = &sheet->parent->child;
 	for(i = 0; i < SHEET_MAX_CHILDREN; i++){
 		if(*search == sheet){
-			if(i == height){
-				no_change_height = True;
-				break;
-			}
 			*search = sheet->next;
 			break;
 		}
@@ -226,7 +234,7 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 	}
 
 //Next, set new height link.
-	if(!no_change_height){
+	if(!sheet->flags.bit.topmost){
 		search = &sheet->parent->child;
 		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
 			if(i == height){
@@ -241,18 +249,34 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 				#endif
 				break;
 			}
+			if((*search)->flags.bit.topmost){
+				#ifdef CHNOSPROJECT_DEBUG_SHEET
+					debug("Sheet_Show:Search:Break(Under topmost sheet).\n");
+				#endif
+				break;
+			}
 			search = &(*search)->next;
 		}
-		if(i == SHEET_MAX_CHILDREN){
-			#ifdef CHNOSPROJECT_DEBUG_SHEET
-				debug("Sheet_Show:Number of sheets is over SHEET_MAX_CHILDREN.\n");
-			#endif
-			return 3;
+	} else{	/*topmost sheet. ignore height.*/
+		search = &sheet->parent->child;
+		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+			if(*search == Null){
+				#ifdef CHNOSPROJECT_DEBUG_SHEET
+					debug("Sheet_Show:Search:Break(Top most).\n");
+				#endif
+				break;
+			}
+			search = &(*search)->next;
 		}
-
-		sheet->next = *search;
-		*search = sheet;
 	}
+	if(i == SHEET_MAX_CHILDREN){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Show:Number of sheets is over SHEET_MAX_CHILDREN.\n");
+		#endif
+		return 3;
+	}
+	sheet->next = *search;
+	*search = sheet;
 
 	if(px != SHEET_LOCATION_NOCHANGE){
 		sheet->location.x = px;
@@ -261,6 +285,11 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		sheet->location.y = py;
 	}
 	sheet->flags.bit.visible = True;
+
+	if(!sheet->parent->flags.bit.using_map){
+		Sheet_Internal_MapInitialise(sheet->parent);
+	}
+
 	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + sheet->size.x - 1, sheet->location.y + sheet->size.y - 1);
 
 	Sheet_RefreshSheet_All(sheet);
@@ -274,6 +303,10 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 
 uint Sheet_RefreshSheet_All(UI_Sheet *sheet)
 {
+	#ifdef CHNOSPROJECT_DEBUG_CALLLINK
+		debug("Sheet_RefreshSheet_All:Called from[0x%08X].\n", *((uint *)(&sheet - 1)));
+	#endif
+
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_RefreshSheet_All:Null sheet.\n");
@@ -287,6 +320,10 @@ uint Sheet_RefreshSheet_All(UI_Sheet *sheet)
 uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy)
 {
 	uint retv;
+
+	#ifdef CHNOSPROJECT_DEBUG_CALLLINK
+		debug("Sheet_Slide_Absolute:Called from[0x%08X].\n", *((uint *)(&sheet - 1)));
+	#endif
 
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
@@ -324,6 +361,10 @@ uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy)
 uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy)
 {
 	uint retv;
+
+	#ifdef CHNOSPROJECT_DEBUG_CALLLINK
+		debug("Sheet_Slide_Relative:Called from[0x%08X].\n", *((uint *)(&sheet - 1)));
+	#endif
 
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
@@ -394,13 +435,13 @@ uint Sheet_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	if(sheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_RefreshSheet:Null sheet.\n");
+			debug("Sheet_RefreshSheet:[0x%08X]Null sheet.\n", sheet);
 		#endif
 		return 1;
 	}
 	if(!sheet->flags.bit.buffer_configured){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_RefreshSheet:Not buffer_configured sheet.\n");
+			debug("Sheet_RefreshSheet:[0x%08X]Not buffer_configured sheet.\n", sheet);
 		#endif
 		return 2;
 	}
@@ -489,4 +530,17 @@ uint Sheet_Disable_InvisibleColor(UI_Sheet *sheet)
 	sheet->flags.bit.using_invcol = False;
 	sheet->IsVisiblePixel = &Sheet_Internal_IsVisiblePixel_Invalid;
 	return sheet->invcol;
+}
+
+uint Sheet_SetTopmost(UI_Sheet *sheet, bool topmost)
+{
+	if(topmost){
+		sheet->flags.bit.topmost = True;
+		if(sheet->flags.bit.visible){
+			Sheet_Show(sheet, SHEET_MAX_CHILDREN, SHEET_LOCATION_NOCHANGE, SHEET_LOCATION_NOCHANGE);
+		}
+	} else{
+		sheet->flags.bit.topmost = False;
+	}
+	return 0;
 }

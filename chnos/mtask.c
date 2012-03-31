@@ -1,6 +1,8 @@
 
 #include "core.h"
 
+//FIFOによるタスクの自動起動は既定で有効ですが、タスクが明示的に実行されるまでは無効になっています。
+
 UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl)
 {
 	UI_TaskControl *ctrl;
@@ -18,6 +20,8 @@ UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl)
 	ctrl->now = maintask;
 
 	maintask->flags.linked = True;
+	maintask->flags.first_run = False;
+	FIFO32_Set_Task(maintask->fifo, maintask);
 
 	return ctrl;
 }
@@ -80,10 +84,10 @@ UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_siz
 	task->count = 0;
 
 	task->fifo = FIFO32_Initialise(ctrl->sysmemctrl, TASK_FIFOSIZE);
-	FIFO32_Set_Task(task->fifo, task);
 
 	task->flags.initialized = True;
 	task->flags.linked = False;
+	task->flags.first_run = True;
 
 	return task;
 }
@@ -91,6 +95,10 @@ UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_siz
 void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task)
 {
 	UI_Task **last;
+
+	#ifdef CHNOSPROJECT_DEBUG_CALLLINK
+		debug("MultiTask_Task_Run:Called from[0x%08X].\n", *((uint *)(&ctrl - 1)));
+	#endif
 
 	#ifdef CHNOSPROJECT_DEBUG_MULTITASK
 		debug("MultiTask_Task_Run:Start Running Rq(sel:0x%X).\n", task->selector);
@@ -118,6 +126,14 @@ void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task)
 	#ifdef CHNOSPROJECT_DEBUG_MULTITASK
 		debug("MultiTask_Task_Run:Start Running(sel:0x%X last:0x%X start:0x%X).\n", task->selector, last, ctrl->start);
 	#endif
+
+	if(task->flags.first_run){
+		#ifdef CHNOSPROJECT_DEBUG_MULTITASK
+			debug("MultiTask_Task_Run:FIFO task autorun is enabled.\n");
+		#endif
+		FIFO32_Set_Task(task->fifo, task);
+		task->flags.first_run = False;
+	}
 
 	task->next = Null;
 	*last = task;
@@ -191,4 +207,18 @@ UI_Task *MultiTask_GetNowTask(UI_TaskControl *ctrl)
 	return ctrl->now;
 }
 
+uint MultiTask_Push_Arguments(UI_Task *task, uint args, ...)
+{
+	uint *vargs;
+	uint i;
 
+	vargs = (uint *)(&args + 1);
+
+	task->tss->esp -= 4 * (args + 1);
+
+	for(i = 1; i < args + 1; i++){
+		*((uint *)(task->tss->esp + (i * 4))) = vargs[i - 1];
+	}
+
+	return 0;
+}

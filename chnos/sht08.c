@@ -20,6 +20,11 @@ uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ys
 	sheet->size.y = ysize;
 	sheet->bpp = bpp;
 
+	if(sheet->flags.bit.vram_auto_allocated){
+		System_Memory_Free(sheet->vram, sheet->vramsize);
+		sheet->flags.bit.vram_auto_allocated = False;
+	}
+
 	if(vram == Null){
 		sheet->vram = System_Memory_Allocate(xsize * ysize * 1);
 		sheet->flags.bit.vram_auto_allocated = True;
@@ -34,6 +39,10 @@ uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ys
 	sheet->Config_Functions = &Sheet08_Config_Functions;
 	sheet->IsVisiblePixel = &Sheet_Internal_IsVisiblePixel_Invalid;
 	sheet->flags.bit.using_invcol = False;
+
+	sheet->Drawing.Fill_Rectangle = &Sheet08_Drawing_Fill_Rectangle;
+	sheet->Drawing.Put_String = &Sheet08_Drawing_Put_String;
+	sheet->Drawing.Draw_Point = &Sheet08_Drawing_Draw_Point;
 
 	sheet->flags.bit.buffer_configured = True;
 

@@ -12,7 +12,7 @@ uint Error_Output_Display_GraphicMode_UsedLines = 0;
 
 uchar *cpu_exceptions[0x20] = {
 	"Divided by zero.",
-	"Reserved.",
+	"Debug.",
 	"Nonmaskable interrupt.",
 	"Breakpoint.",
 	"Overflow.",
@@ -72,11 +72,17 @@ uint Error_Report(uint error_no, ...)
 	va_args = &error_no + 1;
 
 	if(error_no <= ERROR_CPU_EXCEPTIONS){
+		#ifdef CHNOSPROJECT_DEBUG
+			if(error_no == ERROR_CPU_EXCEPTION_01){
+				Debug_ExceptionHandler((uint *)*va_args);
+				return 0;
+			}
+		#endif
 		Error_Put_String("Exception 0x%02X:%s", error_no, cpu_exceptions[error_no]);
 		if(error_no == ERROR_CPU_EXCEPTION_00){
 			Error_CPU_Exception_Put_Registers_Without_ErrorCode((uint *)*va_args);
 		} else if(error_no == ERROR_CPU_EXCEPTION_01){
-			Error_CPU_Exception_Put_Registers_Without_ErrorCode((uint *)*va_args);
+				Error_CPU_Exception_Put_Registers_Without_ErrorCode((uint *)*va_args);
 		} else if(error_no == ERROR_CPU_EXCEPTION_02){
 			Error_CPU_Exception_Put_Registers_Without_ErrorCode((uint *)*va_args);
 		} else if(error_no == ERROR_CPU_EXCEPTION_03){
@@ -225,7 +231,7 @@ void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp)
 
 	IO_SegmentDescriptor *gdt;
 
-	gdt = (IO_SegmentDescriptor *)0x00270000;
+	gdt = (IO_SegmentDescriptor *)ADR_GDT;
 
 	Error_Put_String("#PUSHAD by _asm_CPU_ExceptionHandler");
 	for(i = 0; i < 4; i++){
@@ -258,7 +264,7 @@ void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp)
 
 	IO_SegmentDescriptor *gdt;
 
-	gdt = (IO_SegmentDescriptor *)0x00270000;
+	gdt = (IO_SegmentDescriptor *)ADR_GDT;
 
 	Error_Put_String("#PUSHAD by _asm_CPU_ExceptionHandler");
 	for(i = 0; i < 4; i++){

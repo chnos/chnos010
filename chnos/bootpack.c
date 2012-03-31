@@ -2,11 +2,15 @@
 #include "core.h"
 
 #define MAIN_KEYBASE	0x100
+
+void KeyboardControlTask(void);
+void MouseControlTask(UI_MouseCursor *mcursor);
+
 void CHNMain(void)
 {
 	uchar s[128];
 	uint data;
-	UI_Task *KBCT;
+	UI_Task *KBCT, *MCT;
 	UI_Task *mytask;
 	uint i;
 	IO_DisplayControl *disp_ctrl;
@@ -15,10 +19,30 @@ void CHNMain(void)
 	int x, y;
 	UI_Timer *timer1, *timer2, *timer3;
 	uint counter1, counter2, counter3;
+	UI_MouseCursor *mcursor;
+
+	i = 0;
+	data = 0;
 
 	Initialise_System();
 
 	mytask = System_MultiTask_GetNowTask();
+	disp_ctrl = System_Display_Get_Controller();
+
+	vramsheet = Sheet_Initialise();
+	Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
+
+	testsheet2 = Sheet_Initialise();
+	Sheet_SetBuffer(testsheet2, Null, 128, 64, 8);
+	for(y = 0; y < testsheet2->size.y; y++){
+		for(x = 0; x < testsheet2->size.x; x++){
+			((uchar *)testsheet2->vram)[y * testsheet2->size.x + x] = y * 2 + x;
+		}
+	}
+	Drawing08_Fill_Rectangle(testsheet2->vram, testsheet2->size.x, 0xc6c6c6, 4, 24, testsheet2->size.x - 4 - 1, testsheet2->size.y - 4 - 1);
+	Drawing08_Put_String(testsheet2->vram, testsheet2->size.x, 4, 4, 0xffffff, "TestSheet2");
+	Sheet_SetParent(testsheet2, vramsheet);
+	Sheet_Show(testsheet2, 2, 80, 80);
 
 	KBCT = System_MultiTask_Task_Initialise(0);
 	KBCT->tss->eip = (uint)&KeyboardControlTask;
@@ -28,20 +52,28 @@ void CHNMain(void)
 	KBCT->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
 	System_MultiTask_Task_Run(KBCT);
 
-	disp_ctrl = System_Display_Get_Controller();
+//Debug_Set_Breakpoint(0, KBCT, DR7_RW_WRITE_DATA, DR7_LEN_BYTE);
 
-	i = 0;
-	data = 0;
+	mcursor = MouseCursor_Initialise(vramsheet);
 
-	Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0xffffff, 0, 0, VGA08_VRAM_XSIZE - 1, VGA08_VRAM_YSIZE - 1);
-	Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10, 0x000000, "Welcome to CHNOSProject!");
+	MCT = System_MultiTask_Task_Initialise(0);
+	MCT->tss->eip = (uint)&MouseControlTask;
+	MCT->tss->cs = SYSTEM_CS << 3;
+	MCT->tss->ss = SYSTEM_DS << 3;
+	MCT->tss->ds = SYSTEM_DS << 3;
+	MCT->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
+	MultiTask_Push_Arguments(MCT, 1, mcursor);
+	System_MultiTask_Task_Run(MCT);
+
+	Sheet_Drawing_Fill_Rectangle(vramsheet, 0xffffff, 0, 0, vramsheet->size.x - 1, vramsheet->size.y - 1);
+	Sheet_Drawing_Put_String(vramsheet, 10, 10, 0x000000, "Welcome to CHNOSProject!");
 
 	if(disp_ctrl->display_mode == DISPLAYMODE_VBE_LINEAR){
-		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 1, 0x000000, "Please Select the VideoMode Number.");
-		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 2, 0x000000, "(Use cursor Up or Down, Select Enter.)");
-		Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
+		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 1, 0x000000, "Please Select the VideoMode Number.");
+		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 2, 0x000000, "(Use cursor Up or Down, Select Enter.)");
+		Sheet_Drawing_Fill_Rectangle(vramsheet, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
 		snprintf(s, sizeof(s), "%d:0x%X %dx%d-%dbits", i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
-		Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
+		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 3, 0x000000, s);
 
 		FIFO32_Put_Arguments(KBCT->fifo, 4, FIFOCMD_KBCT_SET_FOCUS_FIFO, mytask->fifo, MAIN_KEYBASE, 0);
 
@@ -59,24 +91,25 @@ void CHNMain(void)
 							} else{
 								i--;
 							}
-							Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
+							Sheet_Drawing_Fill_Rectangle(vramsheet, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
 							snprintf(s, sizeof(s), "%d:0x%X %dx%d-%dbits", i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
-							Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
+							Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 3, 0x000000, s);
 						} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_D){
 							if(i == disp_ctrl->VBE.list_vmode_tags - 1){
 								i = 0;
 							} else{
 								i ++;
 							}
-							Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
+							Sheet_Drawing_Fill_Rectangle(vramsheet, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
 							snprintf(s, sizeof(s), "%d:0x%X %dx%d-%dbits", i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
-							Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 3, 0x000000, s);
+							Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 3, 0x000000, s);
 						} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
-							if(!System_Display_VESA_Set_VideoMode(i)){
+							if(System_Display_VESA_Set_VideoMode(i) == 0){
+								Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 								break;
 							}
-							Drawing08_Fill_Rectangle(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 4 - 1);
-							Drawing08_Put_String(VGA_VRAM_ADR, VGA08_VRAM_XSIZE, 10, 10 + 16 * 4, 0x000000, "Function Failed. Try again.");
+							Sheet_Drawing_Fill_Rectangle(vramsheet, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 4 - 1);
+							Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 4, 0x000000, "Function Failed. Try again.");
 						}
 					}
 				}
@@ -84,8 +117,8 @@ void CHNMain(void)
 		}
 	}
 
-	Drawing_Fill_Rectangle(disp_ctrl->vram, disp_ctrl->xsize, 0xffffff, 0, 0, disp_ctrl->xsize - 1, disp_ctrl->ysize - 1);
-	Drawing_Put_String(disp_ctrl->vram, disp_ctrl->xsize, 10, 10, 0x000000, "Welcome to CHNOSProject!");
+	Sheet_Drawing_Fill_Rectangle(vramsheet, 0xffffff, 0, 0, disp_ctrl->xsize - 1, disp_ctrl->ysize - 1);
+	Sheet_Drawing_Put_String(vramsheet, 10, 10, 0x000000, "Welcome to CHNOSProject!");
 
 	Format_BMP_DrawPicture(disp_ctrl->vram, disp_ctrl->xsize, 10, 26, 0, 0, chnlogo);
 
@@ -94,17 +127,13 @@ void CHNMain(void)
 		Drawing_Draw_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0xc6c6c6, i);
 	}
 
-	vramsheet = Sheet_Initialise();
 	testsheet = Sheet_Initialise();
-	testsheet2 = Sheet_Initialise();
 	sheet_desktop = Sheet_Initialise();
 	sheet08 = Sheet_Initialise();
 	sheet16 = Sheet_Initialise();
 	sheet32 = Sheet_Initialise();
 
-	Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 	Sheet_SetBuffer(testsheet, Null, 256, 128, 8);
-	Sheet_SetBuffer(testsheet2, Null, 128, 64, 8);
 	Sheet_SetBuffer(sheet_desktop, Null, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 	Sheet_SetBuffer(sheet08, Null, 128, 128, 8);
 	Sheet_SetBuffer(sheet16, Null, 128, 128, 16);
@@ -119,21 +148,12 @@ void CHNMain(void)
 			((uchar *)testsheet->vram)[y * testsheet->size.x + x] = x * 2;
 		}
 	}
-	Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 4, 24, testsheet->size.x - 4 - 1, testsheet->size.y - 4 - 1);
 
-	for(y = 0; y < testsheet2->size.y; y++){
-		for(x = 0; x < testsheet2->size.x; x++){
-			((uchar *)testsheet2->vram)[y * testsheet2->size.x + x] = y * 2 + x;
-		}
-	}
-	Drawing08_Fill_Rectangle(testsheet2->vram, testsheet2->size.x, 0xc6c6c6, 4, 24, testsheet2->size.x - 4 - 1, testsheet2->size.y - 4 - 1);
+	Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 4, 24, testsheet->size.x - 4 - 1, testsheet->size.y - 4 - 1);
 
 	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 4, 4, 0xffffff, "TestSheet");
 	snprintf(s, sizeof(s), "Memory:%d Bytes", System_Get_PhisycalMemorySize());
 	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24 + 16 * 4, 0xffffff, s);
-
-	Drawing08_Put_String(testsheet2->vram, testsheet2->size.x, 4, 4, 0xffffff, "TestSheet2");
-
 
 	for(y = 0; y < sheet08->size.y; y++){
 		for(x = 0; x < sheet08->size.x; x++){
@@ -155,9 +175,6 @@ void CHNMain(void)
 
 	Sheet_SetParent(sheet_desktop, vramsheet);
 	Sheet_Show(sheet_desktop, 0, 0, 0);
-
-	Sheet_SetParent(testsheet2, vramsheet);
-	Sheet_Show(testsheet2, 2, 80, 80);
 
 	Sheet_SetParent(sheet08, vramsheet);
 	Sheet_Show(sheet08, 3, 20, vramsheet->size.y >> 1);
@@ -186,6 +203,8 @@ void CHNMain(void)
 	Timer_Config(timer3, 200, mytask->fifo, 13, True);
 	counter3 = 0;
 	Timer_Run(timer3);
+
+	MouseCursor_Move_Relative(mcursor, vramsheet->size.x >> 1, vramsheet->size.y >> 1);
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
@@ -257,7 +276,6 @@ void CHNMain(void)
 void KeyboardControlTask(void)
 {
 	UI_Task *mytask;
-	uchar s[128];
 	uint data, offset;
 	DATA_FIFO32 *sendto;
 	uint args[5];
@@ -269,8 +287,9 @@ void KeyboardControlTask(void)
 
 	mytask = System_MultiTask_GetNowTask();
 
-	snprintf(s, sizeof(s), "KBCT:KeyboardControlTask Start Running.\nKBCT:UI_Task=0x%X\n", mytask);
-	TextMode_Put_String(s, white);
+	#ifdef CHNOSPROJECT_DEBUG
+		debug("KBCT:KeyboardControlTask Start Running.\nKBCT:UI_Task=0x%X\n", mytask);
+	#endif
 
 	Keyboard_Set_ReceiveFIFO(mytask->fifo, 0x100);
 
@@ -305,3 +324,35 @@ void KeyboardControlTask(void)
 		}
 	}
 }
+
+void MouseControlTask(UI_MouseCursor *mcursor)
+{
+	UI_Task *mytask;
+	uint data;
+
+	data = 0;
+
+	mytask = System_MultiTask_GetNowTask();
+
+	#ifdef CHNOSPROJECT_DEBUG
+		debug("MCT:MouseControlTask Start Running.\nMCT:UI_Task=0x%X\n", mytask);
+	#endif
+
+	MouseCursor_Show(mcursor);
+
+	for(;;){
+		if(FIFO32_MyTaskFIFO_Status() == 0){
+			System_MultiTask_Task_Sleep(mytask);
+		} else{
+			data = FIFO32_MyTaskFIFO_Get();
+			#ifdef CHNOSPROJECT_DEBUG_KBCT
+				debug("MCT:Receive data from FIFO(data:0x%X).\n", data);
+			#endif
+			if(0x100 <= data && data <= 0x1ff){
+
+			}
+		}
+	}
+}
+
+

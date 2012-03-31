@@ -5,6 +5,7 @@
 #define CHNOSPROJECT_DEBUG		/*定義するとデバッグモードで実行。それぞれのデバッグオプションも有効にする必要がある*/
 
 #ifdef CHNOSPROJECT_DEBUG
+	//#define CHNOSPROJECT_DEBUG_CALLLINK
 	//#define CHNOSPROJECT_DEBUG_MEMORY
 	//#define CHNOSPROJECT_DEBUG_MEMORY_ALLOCATE_AND_FREE
 	//#define CHNOSPROJECT_DEBUG_EMULATOR_X86
@@ -68,6 +69,16 @@
 #define AR_TYPE_CODE_ER			0x000a
 #define AR_TYPE_CODE_E_CONFORMING	0x000c
 #define AR_TYPE_CODE_ER_CONFORMING	0x000e
+
+/*DebugRegister Settings*/
+#define DR7_RW_EXECUTE_INSTRUCTION	0
+#define DR7_RW_WRITE_DATA			1
+#define DR7_RW_IO_RW				2
+#define DR7_RW_DATA_RW				3
+
+#define DR7_LEN_BYTE	0
+#define DR7_LEN_WORD	1
+#define DR7_LEN_DWORD	3
 
 /*CPU Opcodes*/
 #define OPCODE_REG_EAX			0
@@ -301,7 +312,7 @@
 #define SIGNAL_ARGUMENTS_END	0xfefe1234
 
 /*task*/
-#define TASK_FIFOSIZE	128
+#define TASK_FIFOSIZE	(4 * 64)
 
 /*exceptions esp[] data with errorcode*/
 #define EXCEPTION_INFO_EDI		0x00
@@ -326,4 +337,3 @@
 #define SHEET_MAX_YSIZE	65535
 #define SHEET_MAX_CHILDREN	255
 #define SHEET_LOCATION_NOCHANGE	0x7ffffffe
-

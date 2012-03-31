@@ -8,7 +8,6 @@
 
 /*functions*/
 /*bootpack.c 基幹部分*/
-void KeyboardControlTask(void);
 
 /*callbios.c 32bitからBIOSをコールするための関数群*/
 
@@ -47,6 +46,14 @@ uint RGB_16_To_32(ushort c16);
 uchar RGB_32_To_08(uint c32);
 uchar RGB_32_To_08_xy(uint c32, int x, int y);
 ushort RGB_32_To_16(uint c32);
+
+/*debug.c デバッグ支援*/
+#ifdef CHNOSPROJECT_DEBUG
+void debug(const uchar format[], ...);
+void Debug_PhysicalMemoryDump(void *addr, uint bytes);
+void Debug_Set_Breakpoint(uint reg, void *addr, uint rw, uint len);
+void Debug_ExceptionHandler(uint *esp);
+#endif
 
 /*display.c ディスプレイ制御関連*/
 IO_DisplayControl *Initialise_Display(void);
@@ -191,6 +198,7 @@ ushort Keyboard_Decode_KeyCode(uchar keycode);
 void KeyboardController_SetLED(uchar leds);
 void KeyboardController_Wait_SendReady(void);
 void KeyboardController_SendData(uchar data);
+void KeyboardController_SendCommand(uchar cmd);
 
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
@@ -201,6 +209,12 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size);
 void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 
+/*mouse.c マウス関連*/
+void Mouse_SendCommand(uint data);
+UI_MouseCursor *MouseCursor_Initialise(UI_Sheet *parent);
+uint MouseCursor_Show(UI_MouseCursor *mcursor);
+uint MouseCursor_Move_Relative(UI_MouseCursor *mcursor, int apx, int apy);
+
 /*mtask.c マルチタスク関連*/
 UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl);
 UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_size);
@@ -208,14 +222,11 @@ void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task);
 void MultiTask_TaskSwitch(UI_TaskControl *ctrl);
 void MultiTask_Task_Sleep(UI_TaskControl *ctrl, UI_Task *task);
 UI_Task *MultiTask_GetNowTask(UI_TaskControl *ctrl);
+uint MultiTask_Push_Arguments(UI_Task *task, uint args, ...);
 
 /*serial.c シリアル通信関連*/
 void Initialise_SerialPort(void);
 void SerialPort_Send(const uchar s[]);
-//
-#ifdef CHNOSPROJECT_DEBUG
-void debug(const uchar format[], ...);
-#endif
 
 /*sheet.c シート関連*/
 UI_Sheet *Sheet_Initialise(void);
@@ -232,6 +243,7 @@ uint Sheet_RefreshMap(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_RefreshMap_All(UI_Sheet *sheet);
 uint Sheet_Enable_InvisibleColor(UI_Sheet *sheet, uint invcol);
 uint Sheet_Disable_InvisibleColor(UI_Sheet *sheet);
+uint Sheet_SetTopmost(UI_Sheet *sheet, bool topmost);
 
 /*sht08.c 8bitカラー シート関連*/
 uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
@@ -257,6 +269,27 @@ uint Sheet32_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int 
 uint Sheet32_Internal_RefreshSheet_To_08_xy(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 bool Sheet32_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py);
 
+/*shtdraw シート描画関数*/
+uint Sheet_Drawing_Fill_Rectangle(UI_Sheet *sheet, uint c, int px0, int py0, int px1, int py1);
+uint Sheet_Drawing_Put_String(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
+uint Sheet_Drawing_Draw_Point(UI_Sheet *sheet, int x, int y, uint c);
+//
+uint Sheet_Drawing_Fill_Rectangle_Invalid(UI_Sheet *sheet, uint c, int px0, int py0, int px1, int py1);
+uint Sheet_Drawing_Put_String_Invalid(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
+uint Sheet_Drawing_Draw_Point_Invalid(UI_Sheet *sheet, int x, int y, uint c);
+//
+uint Sheet08_Drawing_Fill_Rectangle(UI_Sheet *sheet, uint c, int px0, int py0, int px1, int py1);
+uint Sheet08_Drawing_Put_String(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
+uint Sheet08_Drawing_Draw_Point(UI_Sheet *sheet, int x, int y, uint c);
+//
+uint Sheet16_Drawing_Fill_Rectangle(UI_Sheet *sheet, uint c, int px0, int py0, int px1, int py1);
+uint Sheet16_Drawing_Put_String(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
+uint Sheet16_Drawing_Draw_Point(UI_Sheet *sheet, int x, int y, uint c);
+//
+uint Sheet32_Drawing_Fill_Rectangle(UI_Sheet *sheet, uint c, int px0, int py0, int px1, int py1);
+uint Sheet32_Drawing_Put_String(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
+uint Sheet32_Drawing_Draw_Point(UI_Sheet *sheet, int x, int y, uint c);
+
 /*shtfunc.c シート内部関数*/
 uint Sheet_Internal_GetLocationP(UI_Sheet *sheet, DATA_Location2D *dest);
 uint Sheet_Internal_GetLocationQ(UI_Sheet *sheet, DATA_Location2D *dest);
@@ -272,6 +305,7 @@ uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int p
 uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy);
 bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py);
+uint Sheet_Internal_RefreshSheet_Invalid(struct UI_SHEET *sheet, int px0, int py0, int px1, int py1);
 
 /*system.c システムデータ・初期化関連*/
 void Initialise_System(void);
@@ -378,6 +412,18 @@ uint Load_CR3(void);			//コントロールレジスタ3を読み込む。特権命令。
 void Store_CR3(uint cr3);		//コントロールレジスタ3をcr3に変更する。特権命令。
 uint Load_CR4(void);			//コントロールレジスタ4を読み込む。特権命令。
 void Store_CR4(uint cr4);		//コントロールレジスタ4をcr4に変更する。特権命令。
+uint Load_DR0(void);
+void Store_DR0(uint dr0);
+uint Load_DR1(void);
+void Store_DR1(uint dr1);
+uint Load_DR2(void);
+void Store_DR2(uint dr2);
+uint Load_DR3(void);
+void Store_DR3(uint dr3);
+uint Load_DR6(void);
+void Store_DR6(uint dr6);
+uint Load_DR7(void);
+void Store_DR7(uint dr7);
 void Load_GDTR(uint limit, uint addr);	//グローバル・ディスクリプタ・テーブル・レジスタ(GDTR)に、addrからlimitの範囲をGDTとしてロードさせる。特権命令。
 void Load_IDTR(uint limit, uint addr);	//インタラプト・ディスクリプタ・テーブル・レジスタ(IDTR)に、addrからlimitの範囲をIDTとしてロードさせる。特権命令。
 void Load_TR(uint tr);			//セグメント・セレクタtrを、タスクレジスタに現在のタスクとしてロードさせる。特権命令。

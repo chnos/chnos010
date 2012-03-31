@@ -106,6 +106,52 @@ typedef union CPU_CONTROL_REGISTER4 {
 	} bit;
 } CPU_ControlRegister4;
 
+typedef union CPU_DEBUG_REGISTER6 {
+	uint dr6;
+	struct CPU_DEBUG_REGISTER6_BIT {
+		unsigned B0 : 1;
+		unsigned B1 : 1;
+		unsigned B2 : 1;
+		unsigned B3 : 1;
+		unsigned bit4_11 : 8;	//1
+		unsigned bit12 : 1;	//0
+		unsigned BD : 1;
+		unsigned BS : 1;
+		unsigned BT : 1;
+		unsigned bit16_31 : 16;
+	} bit;
+} CPU_DebugRegister6;
+
+typedef union CPU_DEBUG_REGISTER7 {
+	uint dr7;
+	struct CPU_DEBUG_REGISTER7_BIT {
+		unsigned L0 : 1;
+		unsigned G0 : 1;
+		unsigned L1 : 1;
+		unsigned G1 : 1;
+		unsigned L2 : 1;
+		unsigned G2 : 1;
+		unsigned L3 : 1;
+		unsigned G3 : 1;
+		unsigned LE : 1;	//must be 1
+		unsigned GE : 1;	//must be 1
+		unsigned bit10 : 1;	//1
+		unsigned bit11 : 1;	//0
+		unsigned bit12 : 1;	//0
+		unsigned GD : 1;
+		unsigned bit14 : 1;	//0
+		unsigned bit15 : 1;	//0
+		unsigned RW0 : 2;
+		unsigned LEN0 : 2;
+		unsigned RW1 : 2;
+		unsigned LEN1 : 2;
+		unsigned RW2 : 2;
+		unsigned LEN2 : 2;
+		unsigned RW3 : 2;
+		unsigned LEN3 : 2;
+	} bit;
+} CPU_DebugRegister7;
+
 typedef union CPU_EFLAGS {
 	uint eflags;
 	struct CPU_EFLAGS_BIT {
@@ -215,6 +261,7 @@ typedef struct UI_TASK {
 	struct UI_TASK_STATE_FLAGS {
 		unsigned initialized : 1;
 		unsigned linked : 1;
+		unsigned first_run : 1;
 	} flags;
 } UI_Task;
 
@@ -419,6 +466,7 @@ typedef struct UI_SHEET {
 			unsigned using_map : 1;
 			unsigned vram_auto_allocated : 1;
 			unsigned using_invcol : 1;
+			unsigned topmost : 1;
 		} bit;
 	} flags;
 	void *vram;
@@ -429,6 +477,11 @@ typedef struct UI_SHEET {
 	uint (*Config_Functions)(struct UI_SHEET *sheet);
 	uint (*RefreshSheet)(struct UI_SHEET *sheet, int px0, int py0, int px1, int py1);
 	bool (*IsVisiblePixel)(struct UI_SHEET *sheet, int px, int py);
+	struct UI_SHEET_DRAWING {
+		uint (*Fill_Rectangle)(struct UI_SHEET *sheet, uint c, int px0, int py0, int px1, int py1);
+		uint (*Put_String)(struct UI_SHEET *sheet, int x, int y, uint fc, const uchar s[]);
+		uint (*Draw_Point)(struct UI_SHEET *sheet, int x, int y, uint c);
+	} Drawing;
 } UI_Sheet;
 
 /*timer*/
@@ -457,7 +510,6 @@ typedef struct UI_TIMER_CONTROL {
 } UI_TimerControl;
 
 /*color*/
-
 typedef union RGB_32BIT {
 	uint c32;
 	struct RGB_32BIT_RGBA {
@@ -467,3 +519,13 @@ typedef union RGB_32BIT {
 		uchar a;
 	} bit;
 } RGB32;
+
+/*mouse*/
+
+typedef struct UI_MOUSE_CURSOR {
+	UI_Sheet *cursor_sheet;
+	struct UI_MOUSE_CURSOR_FLAGS {
+		unsigned mode : 2;
+	} flags;
+	uchar *cursors[4];
+} UI_MouseCursor;

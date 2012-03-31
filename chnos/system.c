@@ -110,6 +110,7 @@ void Initialise_System(void)
 	uchar s[128];
 	uint cpuid_buf[4];
 	CPU_EFlags eflags;
+	CPU_ControlRegister4 cr4;
 
 	IO_CLI();
 
@@ -128,6 +129,11 @@ void Initialise_System(void)
 		debug("%s:%d\n", __FILE__, __LINE__);
 		debug("CHNOSProject is Running in Debug Mode.\n");
 	#endif
+
+//Config Control Register4
+	cr4.cr4 = Load_CR4();
+	cr4.bit.DE = True;
+	Store_CR4(cr4.cr4);
 
 	TextMode_Put_String("\tInitialising Memory...\n", white);
 	System_Check_Memory();
@@ -328,6 +334,9 @@ UI_Task *System_MultiTask_Task_Initialise(uint tss_additional_size)
 
 void System_MultiTask_Task_Run(UI_Task *task)
 {
+	#ifdef CHNOSPROJECT_DEBUG_CALLLINK
+		debug("System_MultiTask_Task_Run:Called from[0x%08X].\n", *((uint *)(&task - 1)));
+	#endif
 	MultiTask_Task_Run(System.TaskController, task);
 	return;
 }

@@ -5,7 +5,7 @@ void Drawing32_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, 
 {
 	uint x, y;
 
-//if negative position
+//if negative location
 	if((x0 & 0x80000000) != 0 || (y0 & 0x80000000) != 0 || (x1 & 0x80000000) != 0 || (y1 & 0x80000000) != 0){
 		return;
 	}
@@ -24,7 +24,7 @@ void Drawing32_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uc
 	uchar d;
 	uint *p;
 
-//if negative position
+//if negative location
 	if((x & 0x80000000) != 0 || (y & 0x80000000) != 0){
 		return;
 	}
@@ -46,7 +46,7 @@ void Drawing32_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uc
 
 void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[])
 {
-//if negative position
+//if negative location
 	if((x & 0x80000000) != 0 || (y & 0x80000000) != 0){
 		return;
 	}
@@ -63,7 +63,7 @@ void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const 
 
 void Drawing32_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c)
 {
-//if negative position
+//if negative location
 	if((x & 0x80000000) != 0 || (y & 0x80000000) != 0){
 		return;
 	}

@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-//指定サイズは、バイト単位。
+//指定サイズは、バイト単位。4バイト切り捨て。
 //内部サイズは、エントリ(uint=4byte)単位。
 
 DATA_FIFO32 *FIFO32_Initialise(IO_MemoryControl memctrl, uint size)

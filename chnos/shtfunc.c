@@ -76,10 +76,13 @@ uint Sheet_Internal_MapInitialise(UI_Sheet *parent)
 
 	parent->mapsize = parent->size.x * parent->size.y * 4;
 	parent->map = (uint *)System_Memory_Allocate(parent->mapsize);
-	MOVSD_ZeroFill(parent->map, parent->mapsize);
 	parent->flags.bit.using_map = True;
 
 	Sheet_Internal_MapRebuild(parent, 0, 0, parent->size.x - 1, parent->size.y - 1);
+
+	#ifdef CHNOSPROJECT_DEBUG_SHEET
+		debug("Sheet_Internal_MapInitialise:[0x%08X] map:[0x%08X]\n", parent, parent->map);
+	#endif
 
 	return 0;
 }
@@ -416,23 +419,27 @@ uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int
 {
 	uint retv;
 
+	#ifdef CHNOSPROJECT_DEBUG_CALLLINK
+		debug("Sheet_Internal_RefreshSheet:Called from[0x%08X].\n", *((uint *)(&sheet - 1)));
+	#endif
+
 	if(sheet->parent == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_Internal_RefreshSheet:Null parent.\n");
+			debug("Sheet_Internal_RefreshSheet:[0x%08X]Null parent.\n", sheet);
 		#endif
 		return 1;
 	}
 
 	if(!sheet->parent->flags.bit.buffer_configured){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_RefreshSheet:Not buffer_configured parent.\n");
+			debug("Sheet_Internal_RefreshSheet:[0x%08X]Not buffer_configured parent.\n", sheet);
 		#endif
 		return 2;
 	}
 
 	if(sheet->RefreshSheet == Null){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_Internal_RefreshSheet:Null Refresh function.\n");
+			debug("Sheet_Internal_RefreshSheet:[0x%08X]Null Refresh function.\n", sheet);
 		#endif
 		return 3;
 	}
@@ -457,6 +464,10 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 	int xsize, ysize;
 	DATA_Location2D A, B;
 	int apx, apy;
+
+	#ifdef CHNOSPROJECT_DEBUG_CALLLINK
+		debug("Sheet_Internal_SlideSub:Called from[0x%08X].\n", *((uint *)(&sheet - 1)));
+	#endif
 
 	xsize = (int)sheet->size.x;
 	ysize = (int)sheet->size.y;
@@ -616,4 +627,12 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py)
 {
 	return True;
+}
+
+uint Sheet_Internal_RefreshSheet_Invalid(struct UI_SHEET *sheet, int px0, int py0, int px1, int py1)
+{
+	#ifdef CHNOSPROJECT_DEBUG_SHEET
+		debug("Sheet_Internal_RefreshSheet_Invalid:Invalid refresh request.\n");
+	#endif
+	return 0;
 }
