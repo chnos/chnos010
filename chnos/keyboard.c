@@ -177,7 +177,8 @@ ushort Keyboard_KeyCodeTable[0x80] = {
 	0x0000,
 	KEYID_MASK_EXTENDED | KEYID_MUHENKAN,
 	0x0000,
-	0x5c,	//\ for mikan-trap
+	'\\',
+//	0x5c,	// ='\' for mikan-trap.
 	0x0000,
 	0x0000
 };
@@ -332,6 +333,12 @@ void Initialise_Keyboard(void)
 	state_keyctrl.keyctrl = 0;
 	state_keyalt.keyalt = 0;
 	key_decode_phase = 0;
+
+	KeyboardController_Wait_SendReady();
+	IO_Out8(PORT_KEYCMD, KEYCMD_WRITE_8042_MODE_REG);
+	KeyboardController_Wait_SendReady();
+	IO_Out8(PORT_KEYDATA, KBC_MODE);
+
 	return;
 }
 
@@ -369,10 +376,15 @@ ushort Keyboard_Decode_KeyCode(uchar keycode)
 	keyid = 0;
 	table = 0;
 
+	if(keycode == KEYDATA_ACK || keycode == KEYDATA_RESEND){
+		return 0;
+	}
+
 	key_decode_buf[key_decode_phase] = keycode;
 
 	switch(key_decode_phase){
 		case 0:
+
 			if(key_decode_buf[0] == 0xe0){
 				key_decode_phase = 1;
 				break;

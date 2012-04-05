@@ -12,6 +12,8 @@
 	//#define CHNOSPROJECT_DEBUG_CALLBIOS
 	//#define CHNOSPROJECT_DEBUG_FIFO
 	//#define CHNOSPROJECT_DEBUG_KBCT
+	//#define CHNOSPROJECT_DEBUG_MCT
+	#define CHNOSPROJECT_DEBUG_MOUSE
 	//#define CHNOSPROJECT_DEBUG_DISPLAY
 	//#define CHNOSPROJECT_DEBUG_DRAWING
 	#define CHNOSPROJECT_DEBUG_SHEET
@@ -208,13 +210,14 @@
 #define PORT_KEYDATA		0x0060
 #define PORT_KEYSTA		0x0064
 #define KEYSTA_SEND_NOTREADY	0x02
-#define KEYCMD_WRITE_MODE	0x60
-#define KBC_MODE		0x47
+#define KEYCMD_WRITE_8042_MODE_REG	0x60
+#define KBC_MODE		0x47	//Keyboard and Mouse Interrupt Enable.
 #define PORT_KEYCMD		0x0064
 #define KEYCMD_SENDTO_MOUSE	0xd4
 #define KEYCMD_LED		0xed
 #define KEYDATA_ACK	0xfa
 #define KEYDATA_RESEND	0xfe
+#define MOUSECMD_ENABLE	0xf4
 
 /*COM1 io port*/
 #define COM1_RX		0x03f8
@@ -310,7 +313,7 @@
 
 /*FIFO buffer*/
 #define SIGNAL_ARGUMENTS_END	0xfefe1234
-
+#define SIGNAL_KEY_OFFSET 0x10000
 /*task*/
 #define TASK_FIFOSIZE	(4 * 64)
 

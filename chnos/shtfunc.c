@@ -145,9 +145,19 @@ uint Sheet_Internal_MapWriteFromSheet(UI_Sheet *sheet, bool force, int px0, int 
 	}
 
 	if(force){
-		for(y = p.y; y <= r.y; y++){
-			for(x = p.x; x <= r.x; x++){
-				sheet->parent->map[y * sheet->parent->size.x + x] = (uint)sheet;
+		if(sheet->flags.bit.using_invcol){
+			for(y = p.y; y <= r.y; y++){
+				for(x = p.x; x <= r.x; x++){
+					if(sheet->IsVisiblePixel(sheet, x, y)){
+						sheet->parent->map[y * sheet->parent->size.x + x] = (uint)sheet;
+					}
+				}
+			}
+		} else{
+			for(y = p.y; y <= r.y; y++){
+				for(x = p.x; x <= r.x; x++){
+					sheet->parent->map[y * sheet->parent->size.x + x] = (uint)sheet;
+				}
 			}
 		}
 	} else{

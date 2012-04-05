@@ -57,7 +57,7 @@ void CPU_ExceptionHandler06(uint *esp)
 		callbios->retvalue.eflags.eflags = esp[0x0c];
 
 		System_CallBIOS_Send_End_Of_Operation(False);
-		System_MultiTask_Task_Sleep(System_MultiTask_GetNowTask());
+		System_MultiTask_Task_Kill(System_MultiTask_GetNowTask());
 	} else{
 		Error_Report(ERROR_CPU_EXCEPTION_06, esp);
 	}

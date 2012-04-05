@@ -49,7 +49,7 @@ int FIFO32_Put(DATA_FIFO32 *fifo, uint data)
 
 
 	if(fifo->task != Null){
-		if(!fifo->task->flags.linked){
+		if(fifo->task->flags.linked && !fifo->task->flags.running){
 			#ifdef CHNOSPROJECT_DEBUG_FIFO
 				debug("FIFO32_Put:Task run start.\n");
 			#endif

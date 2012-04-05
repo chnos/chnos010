@@ -51,6 +51,7 @@ void ProgrammableInterruptController_InterruptMask_Clear(uint irq)
 	} else{	/*For Slave*/
 		irq -= 8;
 		IO_Out8(PIC1_IMR, IO_In8(PIC1_IMR) & ~(mask << irq));
+		IO_Out8(PIC0_IMR, IO_In8(PIC0_IMR) & ~(mask << 2));
 	}
 
 	return;
@@ -64,10 +65,10 @@ void ProgrammableInterruptController_InterruptRequest_Complete(uint irq)
 
 	if(irq < 8){	/*For Master*/
 		IO_Out8(PIC0_OCW2, 0x60 + irq);
-	} else{	/*For Slave*/
-		IO_Out8(PIC0_OCW2, 0x60 + 0x02);
+	} else{	/*For Slave (and Master IRQ2)*/
 		irq -= 8;
 		IO_Out8(PIC1_OCW2, 0x60 + irq);
+		IO_Out8(PIC0_OCW2, 0x60 + 0x02);
 	}
 	return;
 }

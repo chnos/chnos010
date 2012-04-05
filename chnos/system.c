@@ -81,18 +81,28 @@ typedef union CPUID_FUNCTION_FLAGS {
 
 typedef struct SYSTEM_COMMONDATA {
 	uint RunningPhase;
-	uint PhysicalMemorySize;
-	IO_MemoryControl MemoryController;
-	UI_TaskControl *TaskController;
-	IO_CallBIOSControl *CallBIOSController;
-	IO_DisplayControl *DisplayController;
+	DATA_FIFO32 *InputFocus;
+	struct SYSTEM_COMMONDATA_CONTROLLER {
+		IO_MemoryControl Memory;
+		UI_TaskControl *Task;
+		IO_CallBIOSControl *CallBIOS;
+		IO_DisplayControl *Display;
+	} Controller;
 	struct SYSTEM_COMMONDATA_ENVIRONMENT {
+		struct SYSTEM_COMMONDATA_ENVIRONMENT_MEMORY {
+			uint PhysicalSize;
+		} Memory;
 		struct SYSTEM_COMMONDATA_ENVIRONMENT_CPUID {
 			uint max_id;
 			uint max_eid;
 			CPUID_FunctionFlags function_flags;
 		} CPUID;
 	} Environment;
+	struct SYSTEM_COMMONDATA_CORETASK {
+		UI_Task *Main;
+		UI_Task *KeyboardControl;
+		UI_Task *MouseControl;
+	} CoreTask;
 } System_CommonData;
 //
 System_CommonData System;
@@ -140,9 +150,9 @@ void Initialise_System(void)
 	i = System_Get_PhisycalMemorySize();
 	snprintf(s, sizeof(s), "\tMemory:%uByte %uKiB %uMib\n", i, i >> 10, i >> 20);
 	TextMode_Put_String(s, white);
-	System.MemoryController = Memory_Initialise_Control((void *)PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, i - PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, SYSTEM_MEMORY_CONTROL_TAGS);
+	System.Controller.Memory = Memory_Initialise_Control((void *)PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, i - PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, SYSTEM_MEMORY_CONTROL_TAGS);
 
-	i = Memory_Get_FreeSize(System.MemoryController);
+	i = Memory_Get_FreeSize(System.Controller.Memory);
 	snprintf(s, sizeof(s), "\tFreeMemory:%uByte %uKiB %uMib\n", i, i >> 10, i >> 20);
 	TextMode_Put_String(s, white);
 
@@ -162,11 +172,13 @@ void Initialise_System(void)
 	Initialise_Keyboard();
 
 	TextMode_Put_String("\tInitialising MultiTask...\n", white);
-	System.TaskController = Initialise_MultiTask_Control(System.MemoryController);
+	System.Controller.Task = Initialise_MultiTask_Control(System.Controller.Memory);
 	Timer_Set_TaskSwitch(&System_TaskSwitch);
+	System.CoreTask.Main = System_MultiTask_GetNowTask();
+	System.InputFocus = System.CoreTask.Main->fifo;
 
 	TextMode_Put_String("\tInitialising CallBIOS...\n", white);
-	System.CallBIOSController = Initialise_CallBIOS();
+	System.Controller.CallBIOS = Initialise_CallBIOS();
 
 	TextMode_Put_String("\tReading CPU Identification...\n", white);
 	eflags.eflags = IO_Load_EFlags();
@@ -219,7 +231,27 @@ void Initialise_System(void)
 
 	IO_STI();
 
-	System.DisplayController = Initialise_Display();
+	System.Controller.Display = Initialise_Display();
+
+//Core Task Run.
+
+	System.CoreTask.KeyboardControl = System_MultiTask_Task_Initialise(0);
+	System.CoreTask.KeyboardControl->tss->eip = (uint)&KeyboardControlTask;
+	System.CoreTask.KeyboardControl->tss->cs = SYSTEM_CS << 3;
+	System.CoreTask.KeyboardControl->tss->ss = SYSTEM_DS << 3;
+	System.CoreTask.KeyboardControl->tss->ds = SYSTEM_DS << 3;
+	System.CoreTask.KeyboardControl->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
+	MultiTask_Push_Arguments(System.CoreTask.KeyboardControl, 1, &System.InputFocus);
+	System_MultiTask_Task_Run(System.CoreTask.KeyboardControl);
+
+	System.CoreTask.MouseControl = System_MultiTask_Task_Initialise(0);
+	System.CoreTask.MouseControl->tss->eip = (uint)&MouseControlTask;
+	System.CoreTask.MouseControl->tss->cs = SYSTEM_CS << 3;
+	System.CoreTask.MouseControl->tss->ss = SYSTEM_DS << 3;
+	System.CoreTask.MouseControl->tss->ds = SYSTEM_DS << 3;
+	System.CoreTask.MouseControl->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
+	MultiTask_Push_Arguments(System.CoreTask.MouseControl, 2, &System.InputFocus, MouseCursor_Initialise(System.Controller.Display->vramsheet));
+	System_MultiTask_Task_Run(System.CoreTask.MouseControl);
 
 	return;
 }
@@ -241,7 +273,7 @@ uint System_Get_RunningPhase(void)
 
 uint System_Get_PhisycalMemorySize(void)
 {
-	return System.PhysicalMemorySize;
+	return System.Environment.Memory.PhysicalSize;
 }
 
 void System_SegmentDescriptor_Set_Absolute(uint selector, uint limit, uint base, uint ar)
@@ -305,9 +337,6 @@ uint System_SegmentDescriptor_Set(uint limit, uint base, uint ar)
 	}
 
 	Error_Report(ERROR_NO_MORE_SEGMENT, *retaddr);
-	for(;;){
-		IO_HLT();
-	}
 
 	return 0;
 }
@@ -323,13 +352,13 @@ void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar)
 
 void System_TaskSwitch(void)
 {
-	MultiTask_TaskSwitch(System.TaskController);
+	MultiTask_TaskSwitch(System.Controller.Task);
 	return;
 }
 
 UI_Task *System_MultiTask_Task_Initialise(uint tss_additional_size)
 {
-	return MultiTask_Task_Initialise(System.TaskController, tss_additional_size);
+	return MultiTask_Task_Initialise(System.Controller.Task, tss_additional_size);
 }
 
 void System_MultiTask_Task_Run(UI_Task *task)
@@ -337,73 +366,95 @@ void System_MultiTask_Task_Run(UI_Task *task)
 	#ifdef CHNOSPROJECT_DEBUG_CALLLINK
 		debug("System_MultiTask_Task_Run:Called from[0x%08X].\n", *((uint *)(&task - 1)));
 	#endif
-	MultiTask_Task_Run(System.TaskController, task);
+	MultiTask_Task_Run(System.Controller.Task, task);
 	return;
 }
 
 void *System_Memory_Allocate(uint size)
 {
-	return Memory_Allocate(System.MemoryController, size);
+	return Memory_Allocate(System.Controller.Memory, size);
 }
 
 UI_Task *System_MultiTask_GetNowTask(void)
 {
-	return MultiTask_GetNowTask(System.TaskController);
+	return MultiTask_GetNowTask(System.Controller.Task);
 }
 
 IO_CallBIOSControl *System_CallBIOS_Get_Controller(void)
 {
-	return System.CallBIOSController;
+	return System.Controller.CallBIOS;
 }
 
 void System_CallBIOS_Execute(uchar intn, DATA_FIFO32 *fifo, uint endsignal)
 {
-	CallBIOS_Execute(System.CallBIOSController, intn, fifo, endsignal);
+	CallBIOS_Execute(System.Controller.CallBIOS, intn, fifo, endsignal);
 	return;
 }
 
 void System_Memory_Free(void *addr, uint size)
 {
-	Memory_Free(System.MemoryController, addr, size);
+	Memory_Free(System.Controller.Memory, addr, size);
 	return;
 }
 
 void System_CallBIOS_Send_End_Of_Operation(uint abort)
 {
-	CallBIOS_Send_End_Of_Operation(System.CallBIOSController, abort);
+	CallBIOS_Send_End_Of_Operation(System.Controller.CallBIOS, abort);
 	return;
 }
 
 void System_MultiTask_Task_Sleep(UI_Task *task)
 {
-	MultiTask_Task_Sleep(System.TaskController, task);
+	MultiTask_Task_Sleep(System.Controller.Task, task);
+	return;
+}
+
+void System_MultiTask_Task_Kill(UI_Task *task)
+{
+	MultiTask_Task_Kill(System.Controller.Task, task);
 	return;
 }
 
 DATA_FIFO32 *System_FIFO32_Initialise(uint size)
 {
-	return FIFO32_Initialise(System.MemoryController, size);
+	return FIFO32_Initialise(System.Controller.Memory, size);
 }
 
 uint System_Display_VESA_Set_VideoMode(uint index)
 {
-	return Display_VESA_Set_VideoMode(System.DisplayController, index);
+	return Display_VESA_Set_VideoMode(System.Controller.Display, index);
 }
 
 IO_DisplayControl *System_Display_Get_Controller(void)
 {
-	return System.DisplayController;
+	return System.Controller.Display;
 }
 
 uint System_Memory_Get_FreeSize(void)
 {
-	return Memory_Get_FreeSize(System.MemoryController);
+	return Memory_Get_FreeSize(System.Controller.Memory);
+}
+
+uint System_TaskControlMessage_Send_AllTask(uint message)
+{
+	UI_Task *task;
+	uint sended_tasks;
+
+	sended_tasks = 0;
+	for(task = System.Controller.Task->start; task != Null; task = task->next){
+		if(task->fifo != Null){
+			sended_tasks++;
+			FIFO32_Put(task->fifo, message);
+		}
+	}
+
+	return sended_tasks;
 }
 
 //
 void System_Check_Memory(void)
 {
-	System.PhysicalMemorySize = Memory_Test(0x00400000, 0xbfffffff);
+	System.Environment.Memory.PhysicalSize = Memory_Test(0x00400000, 0xbfffffff);
 	return;
 }
 

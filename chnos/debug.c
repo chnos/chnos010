@@ -136,11 +136,14 @@ void Debug_ExceptionHandler(uint *esp)
 
 	debug_exception_last_addr = esp[0x0a];
 
+//Microsot VirtualPC2007 Only
+/*
 	if(((uchar *)(SegmentDescriptor_Get_Base(&gdt[esp[0x0b] >> 3])))[esp[0x0a]] == 0x89){
 		esp[0x0a] += 3;
 	}
+*/
 
-Debug_PhysicalMemoryDump((void *)Load_DR0(), 32);
+Debug_PhysicalMemoryDump((void *)(Load_DR0() - 16), 32);
 
 //Wait press any key.
 	for(;;){

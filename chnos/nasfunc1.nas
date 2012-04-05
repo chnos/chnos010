@@ -108,6 +108,9 @@
 	GLOBAL	_asm_InterruptHandler27
 	EXTERN	_InterruptHandler27
 
+	GLOBAL	_asm_InterruptHandler2c
+	EXTERN	_InterruptHandler2c
+
 [SECTION .text]
 
 _asm_CPU_ExceptionHandler00:
@@ -665,6 +668,22 @@ _asm_InterruptHandler27:
 	mov	ds,ax
 	mov	es,ax
 	call	_InterruptHandler27
+	pop	eax
+	popad
+	pop	ds
+	pop	es
+	iretd
+
+_asm_InterruptHandler2c:
+	push	es
+	push	ds
+	pushad
+	mov	eax,esp
+	push	eax
+	mov	ax,ss
+	mov	ds,ax
+	mov	es,ax
+	call	_InterruptHandler2c
 	pop	eax
 	popad
 	pop	ds

@@ -34,6 +34,9 @@ IO_CallBIOSControl *Initialise_CallBIOS(void)
 	Store_CR4(cr4.cr4);
 
 	ctrl->CallBIOS_Task = System_MultiTask_Task_Initialise((256 >> 3) + (65536 >> 3) + 1);
+//CallBIOS 16Bit エミュレーションタスクはFIFOを使用しないのでタスクのFIFOを解放
+	FIFO32_Free(ctrl->CallBIOS_Task->fifo);
+	ctrl->CallBIOS_Task->fifo = Null;
 
 	q = (uchar *)(ctrl->CallBIOS_Task->tss + sizeof(CPU_TaskStateSegment));
 	for(i = 0; i < (256 >> 3); i++){
@@ -57,6 +60,7 @@ IO_CallBIOSControl *Initialise_CallBIOS(void)
 	return ctrl;
 }
 
+//fifoには、終了状況を受け取るfifoを指定する。endsignalは正常終了、endsignal+1は異常終了を示す。
 void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn, DATA_FIFO32 *fifo, uint endsignal)
 {
 	uchar *q;
@@ -95,7 +99,7 @@ void CallBIOS_Send_End_Of_Operation(IO_CallBIOSControl *ctrl, uint abort)
 
 void CallBIOS_Check_Privileged_Operation(uint *esp)
 {
-//例外発生時に呼ばれることを想定
+//エラーコードのある例外発生時に呼ばれることを想定
 //エラーコードのない例外からだと、スタックがずれるので注意
 	uchar *eip;
 	ushort *userstack;
@@ -174,7 +178,7 @@ void CallBIOS_Check_Privileged_Operation(uint *esp)
 	System_CallBIOS_Send_End_Of_Operation(True);
 
 	for(;;){
-		System_MultiTask_Task_Sleep(System_MultiTask_GetNowTask());
+		System_MultiTask_Task_Kill(System_MultiTask_GetNowTask());
 	}
 
 	return;

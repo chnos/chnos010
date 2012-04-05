@@ -261,6 +261,7 @@ typedef struct UI_TASK {
 	struct UI_TASK_STATE_FLAGS {
 		unsigned initialized : 1;
 		unsigned linked : 1;
+		unsigned running : 1;
 		unsigned first_run : 1;
 	} flags;
 } UI_Task;
@@ -447,6 +448,7 @@ typedef struct IO_DISPLAY_CONTROL {
 	ushort ysize;
 	void *vram;
 	DATA_FIFO32 *bios_signal;
+	struct UI_SHEET *vramsheet;
 } IO_DisplayControl;
 
 /*sheet*/

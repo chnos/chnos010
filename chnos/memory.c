@@ -44,6 +44,7 @@ IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags)
 {
 	IO_MemoryControl ctrl;
 
+	start = (void *)(((uint)start + 7) & ~7);
 	size = (size + 7) & ~7;
 
 //Memory Control配列が入る分より多く、管理対象のメモリを与えられているかチェック。

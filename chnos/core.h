@@ -3,11 +3,13 @@
 #include "coredef0.h"	/*システム定数宣言*/
 #include "coredef1.h"	/*システムデータ型宣言*/
 #include "coredef2.h"	/*システム外部リソース宣言*/
-#include "coredef3.h"	/*システムFIFOコマンド宣言*/
+#include "coredef3.h"	/*TaskControlMessage宣言*/
 #include "keyid.h"	/*KeyIdentifier キーID宣言*/
 
 /*functions*/
 /*bootpack.c 基幹部分*/
+void KeyboardControlTask(DATA_FIFO32 **InputFocus);
+void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor);
 
 /*callbios.c 32bitからBIOSをコールするための関数群*/
 
@@ -210,17 +212,23 @@ void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 
 /*mouse.c マウス関連*/
-void Mouse_SendCommand(uint data);
+void Initialise_Mouse(void);
+void InterruptHandler2c(uint *esp);
+void Mouse_SendCommand(uint cmd);
 UI_MouseCursor *MouseCursor_Initialise(UI_Sheet *parent);
 uint MouseCursor_Show(UI_MouseCursor *mcursor);
-uint MouseCursor_Move_Relative(UI_MouseCursor *mcursor, int apx, int apy);
+uint MouseCursor_Move_Relative(UI_MouseCursor *mcursor, int rpx, int rpy);
+uint MouseCursor_Move_Absolute(UI_MouseCursor *mcursor, int apx, int apy);
 
 /*mtask.c マルチタスク関連*/
 UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl);
 UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_size);
+uint MultiTask_Internal_Task_SetLink(UI_TaskControl *ctrl, UI_Task *task);
+uint MultiTask_Internal_Task_CleartLink(UI_TaskControl *ctrl, UI_Task *task);
 void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task);
 void MultiTask_TaskSwitch(UI_TaskControl *ctrl);
 void MultiTask_Task_Sleep(UI_TaskControl *ctrl, UI_Task *task);
+void MultiTask_Task_Kill(UI_TaskControl *ctrl, UI_Task *task);
 UI_Task *MultiTask_GetNowTask(UI_TaskControl *ctrl);
 uint MultiTask_Push_Arguments(UI_Task *task, uint args, ...);
 
@@ -328,10 +336,12 @@ void System_CallBIOS_Execute(uchar intn, DATA_FIFO32 *fifo, uint endsignal);
 void System_Memory_Free(void *addr, uint size);
 void System_CallBIOS_Send_End_Of_Operation(uint abort);
 void System_MultiTask_Task_Sleep(UI_Task *task);
+void System_MultiTask_Task_Kill(UI_Task *task);
 DATA_FIFO32 *System_FIFO32_Initialise(uint size);
 uint System_Display_VESA_Set_VideoMode(uint index);
 IO_DisplayControl *System_Display_Get_Controller(void);
 uint System_Memory_Get_FreeSize(void);
+uint System_TaskControlMessage_Send_AllTask(uint message);
 
 /*timer.c タイマー関連*/
 UI_TimerControl *Initialise_ProgrammableIntervalTimer(void);
@@ -486,6 +496,7 @@ void asm_CPU_ExceptionHandler1f(void);
 void asm_InterruptHandler20(void);
 void asm_InterruptHandler21(void);
 void asm_InterruptHandler27(void);
+void asm_InterruptHandler2c(void);
 
 /*nasfunc2.nas 16bitコード*/
 void asm_16bit_CallBIOSTask(void);

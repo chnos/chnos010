@@ -1,16 +1,10 @@
 
 #include "core.h"
 
-#define MAIN_KEYBASE	0x100
-
-void KeyboardControlTask(void);
-void MouseControlTask(UI_MouseCursor *mcursor);
-
 void CHNMain(void)
 {
 	uchar s[128];
 	uint data;
-	UI_Task *KBCT, *MCT;
 	UI_Task *mytask;
 	uint i;
 	IO_DisplayControl *disp_ctrl;
@@ -19,7 +13,6 @@ void CHNMain(void)
 	int x, y;
 	UI_Timer *timer1, *timer2, *timer3;
 	uint counter1, counter2, counter3;
-	UI_MouseCursor *mcursor;
 
 	i = 0;
 	data = 0;
@@ -29,41 +22,7 @@ void CHNMain(void)
 	mytask = System_MultiTask_GetNowTask();
 	disp_ctrl = System_Display_Get_Controller();
 
-	vramsheet = Sheet_Initialise();
-	Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
-
-	testsheet2 = Sheet_Initialise();
-	Sheet_SetBuffer(testsheet2, Null, 128, 64, 8);
-	for(y = 0; y < testsheet2->size.y; y++){
-		for(x = 0; x < testsheet2->size.x; x++){
-			((uchar *)testsheet2->vram)[y * testsheet2->size.x + x] = y * 2 + x;
-		}
-	}
-	Drawing08_Fill_Rectangle(testsheet2->vram, testsheet2->size.x, 0xc6c6c6, 4, 24, testsheet2->size.x - 4 - 1, testsheet2->size.y - 4 - 1);
-	Drawing08_Put_String(testsheet2->vram, testsheet2->size.x, 4, 4, 0xffffff, "TestSheet2");
-	Sheet_SetParent(testsheet2, vramsheet);
-	Sheet_Show(testsheet2, 2, 80, 80);
-
-	KBCT = System_MultiTask_Task_Initialise(0);
-	KBCT->tss->eip = (uint)&KeyboardControlTask;
-	KBCT->tss->cs = SYSTEM_CS << 3;
-	KBCT->tss->ss = SYSTEM_DS << 3;
-	KBCT->tss->ds = SYSTEM_DS << 3;
-	KBCT->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
-	System_MultiTask_Task_Run(KBCT);
-
-//Debug_Set_Breakpoint(0, KBCT, DR7_RW_WRITE_DATA, DR7_LEN_BYTE);
-
-	mcursor = MouseCursor_Initialise(vramsheet);
-
-	MCT = System_MultiTask_Task_Initialise(0);
-	MCT->tss->eip = (uint)&MouseControlTask;
-	MCT->tss->cs = SYSTEM_CS << 3;
-	MCT->tss->ss = SYSTEM_DS << 3;
-	MCT->tss->ds = SYSTEM_DS << 3;
-	MCT->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
-	MultiTask_Push_Arguments(MCT, 1, mcursor);
-	System_MultiTask_Task_Run(MCT);
+	vramsheet = disp_ctrl->vramsheet;
 
 	Sheet_Drawing_Fill_Rectangle(vramsheet, 0xffffff, 0, 0, vramsheet->size.x - 1, vramsheet->size.y - 1);
 	Sheet_Drawing_Put_String(vramsheet, 10, 10, 0x000000, "Welcome to CHNOSProject!");
@@ -75,15 +34,13 @@ void CHNMain(void)
 		snprintf(s, sizeof(s), "%d:0x%X %dx%d-%dbits", i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
 		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 3, 0x000000, s);
 
-		FIFO32_Put_Arguments(KBCT->fifo, 4, FIFOCMD_KBCT_SET_FOCUS_FIFO, mytask->fifo, MAIN_KEYBASE, 0);
-
 		for(;;){
 			if(FIFO32_MyTaskFIFO_Status() == 0){
 				System_MultiTask_Task_Sleep(mytask);
 			} else{
 				data = FIFO32_MyTaskFIFO_Get();
-				if(MAIN_KEYBASE <= data && data <= (MAIN_KEYBASE + 0xFFFF)){
-					data -= MAIN_KEYBASE;
+				if(SIGNAL_KEY_OFFSET <= data && data <= (SIGNAL_KEY_OFFSET + 0xFFFF)){
+					data -= SIGNAL_KEY_OFFSET;
 					if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
 						if((data & KEYID_MASK_ID) == KEYID_CURSOR_U){
 							if(i == 0){
@@ -126,6 +83,18 @@ void CHNMain(void)
 	for(i = 0; i < 50; i += 5){
 		Drawing_Draw_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0xc6c6c6, i);
 	}
+
+	testsheet2 = Sheet_Initialise();
+	Sheet_SetBuffer(testsheet2, Null, 128, 64, 8);
+	for(y = 0; y < testsheet2->size.y; y++){
+		for(x = 0; x < testsheet2->size.x; x++){
+			((uchar *)testsheet2->vram)[y * testsheet2->size.x + x] = y * 2 + x;
+		}
+	}
+	Drawing08_Fill_Rectangle(testsheet2->vram, testsheet2->size.x, 0xc6c6c6, 4, 24, testsheet2->size.x - 4 - 1, testsheet2->size.y - 4 - 1);
+	Drawing08_Put_String(testsheet2->vram, testsheet2->size.x, 4, 4, 0xffffff, "TestSheet2");
+	Sheet_SetParent(testsheet2, vramsheet);
+	Sheet_Show(testsheet2, 2, 80, 80);
 
 	testsheet = Sheet_Initialise();
 	sheet_desktop = Sheet_Initialise();
@@ -186,7 +155,6 @@ void CHNMain(void)
 	Sheet_Show(sheet32, 2, 420, vramsheet->size.y >> 1);
 
 	Sheet_SetParent(testsheet, vramsheet);
-	Sheet_Enable_InvisibleColor(testsheet, 0xc6c6c6);
 	Sheet_Show(testsheet, 4, 10, 10);
 
 	timer1 = Timer_Initialise();
@@ -204,15 +172,13 @@ void CHNMain(void)
 	counter3 = 0;
 	Timer_Run(timer3);
 
-	MouseCursor_Move_Relative(mcursor, vramsheet->size.x >> 1, vramsheet->size.y >> 1);
-
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
 			System_MultiTask_Task_Sleep(mytask);
 		} else{
 			data = FIFO32_MyTaskFIFO_Get();
-			if(MAIN_KEYBASE <= data && data <= (MAIN_KEYBASE + 0xFFFF)){
-				data -= MAIN_KEYBASE;
+			if(SIGNAL_KEY_OFFSET <= data && data <= (SIGNAL_KEY_OFFSET + 0xFFFF)){
+				data -= SIGNAL_KEY_OFFSET;
 				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
 					if((data & KEYID_MASK_ID) == KEYID_CURSOR_U){
 						if(data & KEYID_MASK_STATE_SHIFT){
@@ -273,17 +239,12 @@ void CHNMain(void)
 	}
 }
 
-void KeyboardControlTask(void)
+void KeyboardControlTask(DATA_FIFO32 **InputFocus)
 {
 	UI_Task *mytask;
-	uint data, offset;
-	DATA_FIFO32 *sendto;
-	uint args[5];
-	uint i;
+	uint data;
 
-	sendto = 0;
 	data = 0;
-	offset = 0;
 
 	mytask = System_MultiTask_GetNowTask();
 
@@ -304,31 +265,19 @@ void KeyboardControlTask(void)
 			if(0x100 <= data && data <= 0x1ff){
 				data -= 0x100;
 				data = Keyboard_Decode_KeyCode(data);
-				if(sendto != 0 && data != 0){
-					FIFO32_Put(sendto, data + offset);
-				}
-			} else if(data == FIFOCMD_KBCT_SET_FOCUS_FIFO){
-				args[0] = FIFOCMD_KBCT_SET_FOCUS_FIFO;
-				for(i = 1; i < 5; i++){
-					args[i] = FIFO32_MyTaskFIFO_Get();
-				}
-				if(args[4] == SIGNAL_ARGUMENTS_END){
-					sendto = (DATA_FIFO32 *)args[1];
-					offset = args[2];
-				} else{
-					#ifdef CHNOSPROJECT_DEBUG_KBCT
-						debug("KBCT:Invalid Arguments to Set Focus FIFO.\n");
-					#endif
+				if(InputFocus != 0 && data != 0){
+					FIFO32_Put(*InputFocus, data + SIGNAL_KEY_OFFSET);
 				}
 			}
 		}
 	}
 }
 
-void MouseControlTask(UI_MouseCursor *mcursor)
+void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 {
 	UI_Task *mytask;
 	uint data;
+	DATA_FIFO32 *mfifo;
 
 	data = 0;
 
@@ -338,18 +287,27 @@ void MouseControlTask(UI_MouseCursor *mcursor)
 		debug("MCT:MouseControlTask Start Running.\nMCT:UI_Task=0x%X\n", mytask);
 	#endif
 
+	Initialise_Mouse();
+
+	#ifdef CHNOSPROJECT_DEBUG_MCT
+		debug("MCT:Mouse Initialized.\n");
+	#endif
+
 	MouseCursor_Show(mcursor);
+//	Mouse_Set_ReceiveFIFO(mytask->fifo, 0x100);
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
 			System_MultiTask_Task_Sleep(mytask);
 		} else{
 			data = FIFO32_MyTaskFIFO_Get();
-			#ifdef CHNOSPROJECT_DEBUG_KBCT
+			#ifdef CHNOSPROJECT_DEBUG_MCT
 				debug("MCT:Receive data from FIFO(data:0x%X).\n", data);
 			#endif
 			if(0x100 <= data && data <= 0x1ff){
 
+			} else if(data == TCM_INFO_DISPLAY_UPDATE_RESOLUTION){
+				MouseCursor_Move_Absolute(mcursor, mcursor->cursor_sheet->parent->size.x >> 1, mcursor->cursor_sheet->parent->size.y >> 1);
 			}
 		}
 	}

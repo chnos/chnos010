@@ -43,9 +43,11 @@ IO_DisplayControl *Initialise_Display(void)
 	ctrl->vram = VGA_VRAM_ADR;
 
 	Drawing08_Initialise_Palette();
+	Initialise_Drawing();
 	Error_Set_Enable_Display_TextMode(False);
 	Error_Set_Enable_Display_GraphicMode(True, ctrl->vram, ctrl->xsize, ctrl->ysize >> 4);
-
+	ctrl->vramsheet = Sheet_Initialise();
+	Sheet_SetBuffer(ctrl->vramsheet, ctrl->vram, ctrl->xsize, ctrl->ysize, ctrl->bpp);
 
 	//ŽŸ‚ÉAVBE‚ÌBIOSî•ñ‚ð“¾‚éB
 
@@ -269,6 +271,8 @@ uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index)
 		#endif
 		Initialise_Drawing();
 		Error_Set_Enable_Display_GraphicMode(True, ctrl->vram, ctrl->xsize, ctrl->ysize >> 4);
+		Sheet_SetBuffer(ctrl->vramsheet, ctrl->vram, ctrl->xsize, ctrl->ysize, ctrl->bpp);
+		System_TaskControlMessage_Send_AllTask(TCM_INFO_DISPLAY_UPDATE_RESOLUTION);
 		return 0;
 	}
 
