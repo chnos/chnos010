@@ -451,6 +451,11 @@ uint System_TaskControlMessage_Send_AllTask(uint message)
 	return sended_tasks;
 }
 
+uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet)
+{
+	return Sheet_SetParent(sheet, System.Controller.Display->vramsheet);
+}
+
 //
 void System_Check_Memory(void)
 {

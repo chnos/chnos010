@@ -212,13 +212,15 @@ void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 
 /*mouse.c マウス関連*/
-void Initialise_Mouse(void);
+IO_MouseControl *Initialise_Mouse(void);
 void InterruptHandler2c(uint *esp);
+void Mouse_Set_ReceiveFIFO(DATA_FIFO32 *fifo, uint data0);
 void Mouse_SendCommand(uint cmd);
 UI_MouseCursor *MouseCursor_Initialise(UI_Sheet *parent);
 uint MouseCursor_Show(UI_MouseCursor *mcursor);
 uint MouseCursor_Move_Relative(UI_MouseCursor *mcursor, int rpx, int rpy);
 uint MouseCursor_Move_Absolute(UI_MouseCursor *mcursor, int apx, int apy);
+bool Mouse_Decode(IO_MouseControl *mctrl, uint data);
 
 /*mtask.c マルチタスク関連*/
 UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl);
@@ -342,6 +344,7 @@ uint System_Display_VESA_Set_VideoMode(uint index);
 IO_DisplayControl *System_Display_Get_Controller(void);
 uint System_Memory_Get_FreeSize(void);
 uint System_TaskControlMessage_Send_AllTask(uint message);
+uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet);
 
 /*timer.c タイマー関連*/
 UI_TimerControl *Initialise_ProgrammableIntervalTimer(void);

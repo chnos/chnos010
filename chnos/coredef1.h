@@ -524,6 +524,24 @@ typedef union RGB_32BIT {
 
 /*mouse*/
 
+typedef struct IO_MOUSE_CONTROL {
+	uint decode_phase;
+	uchar decode_buf[4];
+	DATA_Location2D move;
+	int scroll;
+	struct IO_MOUSE_CONTROL_FLAGS {
+		unsigned scroll : 1;
+	} flags;
+	union IO_MOUSE_CONTROL_BUTTON {
+		uchar button;
+		struct IO_MOUSE_CONTROL_BUTTON_BIT {
+			unsigned L : 1;
+			unsigned R : 1;
+			unsigned C : 1;
+		} bit;
+	} button;
+} IO_MouseControl;
+
 typedef struct UI_MOUSE_CURSOR {
 	UI_Sheet *cursor_sheet;
 	struct UI_MOUSE_CURSOR_FLAGS {
