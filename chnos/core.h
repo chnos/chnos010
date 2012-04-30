@@ -254,6 +254,7 @@ uint Sheet_RefreshMap_All(UI_Sheet *sheet);
 uint Sheet_Enable_InvisibleColor(UI_Sheet *sheet, uint invcol);
 uint Sheet_Disable_InvisibleColor(UI_Sheet *sheet);
 uint Sheet_SetTopmost(UI_Sheet *sheet, bool topmost);
+UI_Sheet *Sheet_GetSheetFromLocation(UI_Sheet *parent, int px, int py);
 
 /*sht08.c 8bitカラー シート関連*/
 uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);

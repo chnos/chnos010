@@ -66,10 +66,6 @@ void InterruptHandler2c(uint *esp)
 		mouse_retv = data;
 	}
 
-	#ifdef CHNOSPROJECT_DEBUG_MOUSE
-		debug("InterruptHandler2c:IRQ12:0x%02X\n", data);
-	#endif
-
 	return;
 }
 
@@ -343,12 +339,16 @@ bool Mouse_Decode(IO_MouseControl *mctrl, uint data)
 			mctrl->decode_phase++;
 			break;
 		case 34:
+			//はりぼて友の会などの資料には、スクロール情報は下位4バイトだけ有効であると書かれていたが、どうやら8バイト全て有効なようである。
 			mctrl->decode_buf[3] = data;
 			mctrl->decode_phase = 31;
-			mctrl->scroll = mctrl->decode_buf[3] & 0x0f;
-			if(mctrl->scroll & 0x08){
-				mctrl->scroll |= 0xfffffff0;
+			mctrl->scroll = mctrl->decode_buf[3];
+			if(mctrl->scroll & 0x80){
+				mctrl->scroll |= 0xffffff00;
 			}
+			#ifdef CHNOSPROJECT_DEBUG_MOUSE
+				debug("Mouse_Decode:case34:data=0x%02X scroll=%d\n", data, mctrl->scroll);
+			#endif
 			return True;
 	}
 

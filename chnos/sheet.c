@@ -544,3 +544,26 @@ uint Sheet_SetTopmost(UI_Sheet *sheet, bool topmost)
 	}
 	return 0;
 }
+
+//use map
+UI_Sheet *Sheet_GetSheetFromLocation(UI_Sheet *parent, int px, int py)
+{
+	if(parent == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_GetSheetFromLocation:Null parent.\n");
+		#endif
+		return Null;
+	}
+	if(parent->map == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_GetSheetFromLocation:Null map.\n");
+		#endif
+		return Null;
+	}
+
+	if(px < 0 || py < 0 || px >= (int)parent->size.x || py >= (int)parent->size.y){
+		return Null;
+	}
+
+	return (UI_Sheet *)parent->map[py * parent->size.x + px];
+}

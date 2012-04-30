@@ -74,10 +74,13 @@ void CHNMain(void)
 		}
 	}
 
-	Sheet_Drawing_Fill_Rectangle(vramsheet, 0xffffff, 0, 0, disp_ctrl->xsize - 1, disp_ctrl->ysize - 1);
-	Sheet_Drawing_Put_String(vramsheet, 10, 10, 0x000000, "Welcome to CHNOSProject!");
+	sheet_desktop = Sheet_Initialise();
+	Sheet_SetBuffer(sheet_desktop, Null, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 
-	Format_BMP_DrawPicture(disp_ctrl->vram, disp_ctrl->xsize, 10, 26, 0, 0, chnlogo);
+	Sheet_Drawing_Fill_Rectangle(sheet_desktop, 0xffffff, 0, 0, disp_ctrl->xsize - 1, disp_ctrl->ysize - 1);
+	Sheet_Drawing_Put_String(sheet_desktop, 10, 10, 0x000000, "Welcome to CHNOSProject!");
+
+	Format_BMP_DrawPicture(sheet_desktop->vram, sheet_desktop->size.x, 10, 26, 0, 0, chnlogo);
 
 	Drawing_Fill_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0x00c600, 45);
 	for(i = 0; i < 50; i += 5){
@@ -85,20 +88,15 @@ void CHNMain(void)
 	}
 
 	testsheet = Sheet_Initialise();
-	sheet_desktop = Sheet_Initialise();
+
 	sheet08 = Sheet_Initialise();
 	sheet16 = Sheet_Initialise();
 	sheet32 = Sheet_Initialise();
 
 	Sheet_SetBuffer(testsheet, Null, 256, 128, 8);
-	Sheet_SetBuffer(sheet_desktop, Null, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 	Sheet_SetBuffer(sheet08, Null, 128, 128, 8);
 	Sheet_SetBuffer(sheet16, Null, 128, 128, 16);
 	Sheet_SetBuffer(sheet32, Null, 128, 128, 32);
-
-	for(i = 0; i < sheet_desktop->vramsize; i++){
-		((uchar *)sheet_desktop->vram)[i] = ((uchar *)disp_ctrl->vram)[i];
-	}
 
 	for(y = 0; y < testsheet->size.y; y++){
 		for(x = 0; x < testsheet->size.x; x++){
@@ -148,17 +146,17 @@ void CHNMain(void)
 	timer1 = Timer_Initialise();
 	Timer_Config(timer1, 50, mytask->fifo, 11, True);
 	counter1 = 0;
-	Timer_Run(timer1);
+	//Timer_Run(timer1);
 
 	timer2 = Timer_Initialise();
 	Timer_Config(timer2, 50, mytask->fifo, 12, False);
 	counter2 = 0;
-	Timer_Run(timer2);
+	//Timer_Run(timer2);
 
 	timer3 = Timer_Initialise();
 	Timer_Config(timer3, 200, mytask->fifo, 13, True);
 	counter3 = 0;
-	Timer_Run(timer3);
+	//Timer_Run(timer3);
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
@@ -266,12 +264,20 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 	UI_Task *mytask;
 	uint data;
 	IO_MouseControl *mctrl;
-	UI_Sheet *mouseinfosheet;
-	uchar s[16];
+	#ifdef CHNOSPROJECT_DEBUG_MCT
+		UI_Sheet *mouseinfosheet;
+		uchar s[16];
+	#endif
 	int scroll;
+
+	DATA_Location2D moveorg_mfocus;
+	UI_Sheet *mfocus;
+	bool old_mouse_buttonL;
 
 	data = 0;
 	scroll = 0;
+	mfocus = Null;
+	old_mouse_buttonL = False;
 
 	mytask = System_MultiTask_GetNowTask();
 
@@ -279,12 +285,14 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 		debug("MCT:MouseControlTask Start Running.\nMCT:UI_Task=0x%X\n", mytask);
 	#endif
 
-	mouseinfosheet = Sheet_Initialise();
-	Sheet_SetBuffer(mouseinfosheet, Null, (4 * 2) + (8 * 16), 4 + 16 + (4 * 2) + (16 * 4), 8);
-	System_Sheet_SetParentToVRAM(mouseinfosheet);
-	Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0x99cc33, 0, 0, mouseinfosheet->size.x - 1, mouseinfosheet->size.y - 1);
-	Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24, mouseinfosheet->size.x - 1 - 4, mouseinfosheet->size.y - 1 - 4);
-	Sheet_Drawing_Put_String(mouseinfosheet, 4, 4, 0xffffff, "MouseInfo");
+	#ifdef CHNOSPROJECT_DEBUG_MCT
+		mouseinfosheet = Sheet_Initialise();
+		Sheet_SetBuffer(mouseinfosheet, Null, (4 * 2) + (8 * 16), 4 + 16 + (4 * 2) + (16 * 4), 8);
+		System_Sheet_SetParentToVRAM(mouseinfosheet);
+		Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0x99cc33, 0, 0, mouseinfosheet->size.x - 1, mouseinfosheet->size.y - 1);
+		Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24, mouseinfosheet->size.x - 1 - 4, mouseinfosheet->size.y - 1 - 4);
+		Sheet_Drawing_Put_String(mouseinfosheet, 4, 4, 0xffffff, "MouseInfo");
+	#endif
 
 	mctrl = Initialise_Mouse();
 
@@ -292,14 +300,19 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 		debug("MCT:Mouse Initialized.\n");
 	#endif
 
-	MouseCursor_Show(mcursor);
 	Mouse_Set_ReceiveFIFO(mytask->fifo, 0x100);
 
 	Mouse_Decode(mctrl, 0x00);	//Decode start.
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
-			System_MultiTask_Task_Sleep(mytask);
+			if(mfocus != Null && ((mcursor->cursor_sheet->location.x - moveorg_mfocus.x) != 0 || (mcursor->cursor_sheet->location.y - moveorg_mfocus.y) != 0)){
+				Sheet_Slide_Relative(mfocus, mcursor->cursor_sheet->location.x - moveorg_mfocus.x, mcursor->cursor_sheet->location.y - moveorg_mfocus.y);
+				moveorg_mfocus.x = mcursor->cursor_sheet->location.x;
+				moveorg_mfocus.y = mcursor->cursor_sheet->location.y;
+			} else{
+				System_MultiTask_Task_Sleep(mytask);
+			}
 		} else{
 			data = FIFO32_MyTaskFIFO_Get();
 			#ifdef CHNOSPROJECT_DEBUG_MCT
@@ -308,38 +321,71 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 			if(0x100 <= data && data <= 0x1ff){
 				if(Mouse_Decode(mctrl, data - 0x100)){
 					MouseCursor_Move_Relative(mcursor, mctrl->move.x, mctrl->move.y);
-					Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 0), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 0) + 15);
-					snprintf(s, sizeof(s), "X:%d", mcursor->cursor_sheet->location.x);
-					Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 0), 0x000000, s);
-					Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 1), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 1) + 15);
-					snprintf(s, sizeof(s), "Y:%d", mcursor->cursor_sheet->location.y);
-					Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 1), 0x000000, s);
-					Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 2), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 2) + 15);
-					snprintf(s, sizeof(s), "Button:lrc");
+					#ifdef CHNOSPROJECT_DEBUG_MCT
+						Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 0), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 0) + 15);
+						snprintf(s, sizeof(s), "X:%d", mcursor->cursor_sheet->location.x);
+						Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 0), 0x000000, s);
+						Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 1), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 1) + 15);
+						snprintf(s, sizeof(s), "Y:%d", mcursor->cursor_sheet->location.y);
+						Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 1), 0x000000, s);
+						Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 2), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 2) + 15);
+						snprintf(s, sizeof(s), "Button:lrc");
+					#endif
+/*
 					if(mctrl->button.bit.L){
-						s[7] -= 0x20;
+						#ifdef CHNOSPROJECT_DEBUG_MCT
+							s[7] -= 0x20;
+						#endif
+						moveorg_mfocus.x += mctrl->move.x;
+						moveorg_mfocus.y += mctrl->move.y;
+					}
+*/
+					if(old_mouse_buttonL != mctrl->button.bit.L){
+						if(old_mouse_buttonL){	//up
+							if(mfocus != Null){
+								Sheet_Slide_Relative(mfocus, mcursor->cursor_sheet->location.x - moveorg_mfocus.x, mcursor->cursor_sheet->location.y - moveorg_mfocus.y);
+							}
+							mfocus = Null;
+						} else{	//down
+							moveorg_mfocus.x = mcursor->cursor_sheet->location.x;
+							moveorg_mfocus.y = mcursor->cursor_sheet->location.y;
+							mfocus = Sheet_GetSheetFromLocation(mcursor->cursor_sheet->parent, mcursor->cursor_sheet->location.x, mcursor->cursor_sheet->location.y);
+						}
+						old_mouse_buttonL = mctrl->button.bit.L;
 					}
 					if(mctrl->button.bit.R){
-						s[8] -= 0x20;
+						#ifdef CHNOSPROJECT_DEBUG_MCT
+							s[8] -= 0x20;
+						#endif
 					}
 					if(mctrl->button.bit.C){
-						s[9] -= 0x20;
+						#ifdef CHNOSPROJECT_DEBUG_MCT
+							s[9] -= 0x20;
+						#endif
 					}
-					Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 2), 0x000000, s);
+					#ifdef CHNOSPROJECT_DEBUG_MCT
+						Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 2), 0x000000, s);
+					#endif
 					if(mctrl->flags.scroll){
 						scroll += mctrl->scroll;
-						Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 3), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 3) + 15);
-						snprintf(s, sizeof(s), "Scroll:%d", scroll);
-						Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 3), 0x000000, s);
-
-						Sheet_RefreshSheet(mouseinfosheet, 4, 24 + (16 * 0), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 3) + 15);
+						#ifdef CHNOSPROJECT_DEBUG_MCT
+							Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 3), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 3) + 15);
+							snprintf(s, sizeof(s), "Scroll:%d", scroll);
+							Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 3), 0x000000, s);
+							Sheet_RefreshSheet(mouseinfosheet, 4, 24 + (16 * 0), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 3) + 15);
+						#endif
 					} else{
-						Sheet_RefreshSheet(mouseinfosheet, 4, 24 + (16 * 0), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 2) + 15);
+						#ifdef CHNOSPROJECT_DEBUG_MCT
+							Sheet_RefreshSheet(mouseinfosheet, 4, 24 + (16 * 0), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 2) + 15);
+						#endif
 					}
 				}
 			} else if(data == TCM_INFO_DISPLAY_UPDATE_RESOLUTION){
 				MouseCursor_Move_Absolute(mcursor, mcursor->cursor_sheet->parent->size.x >> 1, mcursor->cursor_sheet->parent->size.y >> 1);
-				Sheet_Show(mouseinfosheet, 2, 200, 200);
+				MouseCursor_Show(mcursor);
+				#ifdef CHNOSPROJECT_DEBUG_MCT
+					Sheet_Show(mouseinfosheet, 2, 200, 200);
+				#endif
 			}
 		}
 	}
