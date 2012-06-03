@@ -120,6 +120,11 @@ uint isqrt(uint n)
 	return x;
 }
 
+uint CFunction_ExtractBits(uint source, uint start, uint end)
+{
+	return (source >> start) & ~(0xffffffff << (end - start + 1));
+}
+
 //引数(uchar s[], uint n, const uchar format[], ...)
 //	s	:結果を書き込む文字列の先頭アドレスを指定します。
 //	n	:s[]の大きさを指定します。(n - 1)番目以降の文字は書き込まれません。

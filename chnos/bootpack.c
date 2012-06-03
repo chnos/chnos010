@@ -141,6 +141,7 @@ void CHNMain(void)
 	Sheet_Show(sheet32, 1, 420, vramsheet->size.y >> 1);
 
 	Sheet_SetParent(testsheet, vramsheet);
+	Sheet_SetMovable(testsheet, True);
 	Sheet_Show(testsheet, 6, 10, 10);
 
 	timer1 = Timer_Initialise();
@@ -350,6 +351,9 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 							moveorg_mfocus.x = mcursor->cursor_sheet->location.x;
 							moveorg_mfocus.y = mcursor->cursor_sheet->location.y;
 							mfocus = Sheet_GetSheetFromLocation(mcursor->cursor_sheet->parent, mcursor->cursor_sheet->location.x, mcursor->cursor_sheet->location.y);
+							if(mfocus != Null && mfocus->flags.bit.movable == False){
+								mfocus = Null;
+							}
 						}
 						old_mouse_buttonL = mctrl->button.bit.L;
 					}

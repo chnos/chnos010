@@ -469,6 +469,7 @@ typedef struct UI_SHEET {
 			unsigned vram_auto_allocated : 1;
 			unsigned using_invcol : 1;
 			unsigned topmost : 1;
+			unsigned movable : 1;
 		} bit;
 	} flags;
 	void *vram;

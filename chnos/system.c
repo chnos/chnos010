@@ -227,6 +227,9 @@ void Initialise_System(void)
 		TextMode_Put_String(s, white);
 	}
 
+	TextMode_Put_String("\tInitialising PCI...\n", white);
+	Initialise_PCI();
+
 	TextMode_Put_String("\tSystem Initialising Phase End.\n", white);
 
 	IO_STI();

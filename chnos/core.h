@@ -24,6 +24,7 @@ uint CallBIOS_Pop_Data_From_Stack(uint *esp);
 void srand(uint seed);
 uint rand(void);
 uint isqrt(uint n);
+uint CFunction_ExtractBits(uint source, uint start, uint end);
 int snprintf(uchar s[], uint n, const uchar format[], ...);
 int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
 //
@@ -234,6 +235,9 @@ void MultiTask_Task_Kill(UI_TaskControl *ctrl, UI_Task *task);
 UI_Task *MultiTask_GetNowTask(UI_TaskControl *ctrl);
 uint MultiTask_Push_Arguments(UI_Task *task, uint args, ...);
 
+/*pci.c PCI関連*/
+void Initialise_PCI(void);
+
 /*serial.c シリアル通信関連*/
 void Initialise_SerialPort(void);
 void SerialPort_Send(const uchar s[]);
@@ -255,6 +259,7 @@ uint Sheet_Enable_InvisibleColor(UI_Sheet *sheet, uint invcol);
 uint Sheet_Disable_InvisibleColor(UI_Sheet *sheet);
 uint Sheet_SetTopmost(UI_Sheet *sheet, bool topmost);
 UI_Sheet *Sheet_GetSheetFromLocation(UI_Sheet *parent, int px, int py);
+uint Sheet_SetMovable(UI_Sheet *sheet, bool movable);
 
 /*sht08.c 8bitカラー シート関連*/
 uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);

@@ -534,6 +534,13 @@ uint Sheet_Disable_InvisibleColor(UI_Sheet *sheet)
 
 uint Sheet_SetTopmost(UI_Sheet *sheet, bool topmost)
 {
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_SetTopmost:Null sheet.\n");
+		#endif
+		return Null;
+	}
+
 	if(topmost){
 		sheet->flags.bit.topmost = True;
 		if(sheet->flags.bit.visible){
@@ -566,4 +573,17 @@ UI_Sheet *Sheet_GetSheetFromLocation(UI_Sheet *parent, int px, int py)
 	}
 
 	return (UI_Sheet *)parent->map[py * parent->size.x + px];
+}
+
+uint Sheet_SetMovable(UI_Sheet *sheet, bool movable)
+{
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_SetMovable:Null sheet.\n");
+		#endif
+		return Null;
+	}
+
+	sheet->flags.bit.movable = movable;
+	return 0;
 }
