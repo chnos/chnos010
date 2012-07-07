@@ -460,6 +460,13 @@ uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int
 
 	retv = sheet->RefreshSheet(sheet, px0, py0, px1, py1);
 
+	if(sheet->flags.bit.autorefresh_upperlevel && sheet->parent->parent != Null){
+		//無限再帰を防ぐため、一時的に上位階層オートリフレッシュを無効にする
+		sheet->flags.bit.autorefresh_upperlevel = False;
+		Sheet_RefreshSheet(sheet->parent, px0, py0, px1, py1);
+		sheet->flags.bit.autorefresh_upperlevel = True;
+	}
+
 	if(retv != 0){
 		return 10 + retv;
 	}

@@ -8,7 +8,8 @@ DATA_FIFO32 *FIFO32_Initialise(IO_MemoryControl memctrl, uint size)
 {
 	DATA_FIFO32 *fifo;
 
-	fifo = Memory_Allocate(memctrl, sizeof(DATA_FIFO32));
+	//fifo = Memory_Allocate(memctrl, sizeof(DATA_FIFO32));
+	fifo = (DATA_FIFO32 *)System_CommonStruct_Allocate(SYSTEM_STRUCTID_FIFO32);
 
 	fifo->size = size >> 2;
 	fifo->buf = Memory_Allocate(memctrl, fifo->size << 2);
@@ -152,8 +153,7 @@ void FIFO32_Free(DATA_FIFO32 *fifo)
 	fifo->p = 0;	/*write*/
 	fifo->q = 0;	/*read*/
 
-	System_Memory_Free(fifo, sizeof(DATA_FIFO32));
-
+	System_CommonStruct_Free(&fifo->common_tag);
 	return;
 }
 

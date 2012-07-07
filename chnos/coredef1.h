@@ -240,8 +240,15 @@ typedef struct IO_MEMORYCONTROLTAG {
 
 typedef IO_MemoryControlTag* IO_MemoryControl;
 
+/*common tag*/
+typedef struct SYSTEM_COMMON_STRUCT {
+	uint structid;
+	uint structsize;
+} System_CommonStruct;
+
 /*FIFO*/
 typedef struct FIFO32 {
+	System_CommonStruct common_tag;
 	uint *buf;
 	uint p, q, size, free;
 	struct FIFO32_FLAGS {
@@ -453,6 +460,7 @@ typedef struct IO_DISPLAY_CONTROL {
 
 /*sheet*/
 typedef struct UI_SHEET {
+	System_CommonStruct common_tag;
 	struct UI_SHEET *parent;	//one sheet has one parent(if vramseet then:0)
 	struct UI_SHEET *next;		//same level sheet link
 	struct UI_SHEET *child;		//children lowest height
@@ -470,6 +478,7 @@ typedef struct UI_SHEET {
 			unsigned using_invcol : 1;
 			unsigned topmost : 1;
 			unsigned movable : 1;
+			unsigned autorefresh_upperlevel : 1;
 		} bit;
 	} flags;
 	void *vram;
@@ -550,3 +559,22 @@ typedef struct UI_MOUSE_CURSOR {
 	} flags;
 	uchar *cursors[4];
 } UI_MouseCursor;
+
+/*textbox*/
+typedef struct UI_TEXT_BOX {
+	UI_Sheet *sheet;
+	uint forecol;
+	uint backcol;
+	DATA_Location2D location_cursor;
+	DATA_Location2DU chars;
+	uchar *text_buf;
+	uint size_text_buf;
+	union UI_TEXT_BOX_FLAGS {
+		uint flags;
+		struct UI_TEXT_BOX_BITS {
+			unsigned initialized : 1;
+			unsigned textbuffer_configured : 1;
+		} bit;
+	} flags;
+} UI_TextBox;
+

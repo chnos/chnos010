@@ -105,33 +105,37 @@ uchar *PCI_GetDeviceType(uint id);
 
 void Initialise_PCI(void)
 {
-	uint data, bus, device, function;
+	#ifdef CHNOSPROJECT_DEBUG_PCI
+		uint data, bus, device, function;
+	#endif
 
 //PCICARèâä˙âª
 	IO_Out32(PORT_PCI_CONFIG_ADDRESS, 0x00000000);
 
-	for(bus = 0; bus < 256; bus++){
-		for(device = 0; device < 32; device++){
-			for(function = 0; function < 8; function++){
-				PCI_ConfigurationRegister_SelectDevice(bus, device, function);
-				data = PCI_ConfigurationRegister_Read32(0x00);
-				if(data != 0xffffffff){
-					debug("PCI:Bus%d.Device%d.Function%d:\n", bus, device, function);
-					debug("PCI:    DeviceVendor:%s(0x%04X)\n", PCI_GetDeviceVendor(data & 0xffff), data & 0xffff);
+	#ifdef CHNOSPROJECT_DEBUG_PCI
+		for(bus = 0; bus < 256; bus++){
+			for(device = 0; device < 32; device++){
+				for(function = 0; function < 8; function++){
+					PCI_ConfigurationRegister_SelectDevice(bus, device, function);
+					data = PCI_ConfigurationRegister_Read32(0x00);
+					if(data != 0xffffffff){
+						debug("PCI:Bus%d.Device%d.Function%d:\n", bus, device, function);
+						debug("PCI:    DeviceVendor:%s(0x%04X)\n", PCI_GetDeviceVendor(data & 0xffff), data & 0xffff);
 
-					debug("PCI:    DeviceID:0x%04X\n", data >> 16);
+						debug("PCI:    DeviceID:0x%04X\n", data >> 16);
 
-					data = PCI_ConfigurationRegister_Read32(0x08);
-					data = CFunction_ExtractBits(data, 8, 31);
-					debug("PCI:    ClassCode:%s(0x%06X)\n", PCI_GetDeviceClass(data), data);
+						data = PCI_ConfigurationRegister_Read32(0x08);
+						data = CFunction_ExtractBits(data, 8, 31);
+						debug("PCI:    ClassCode:%s(0x%06X)\n", PCI_GetDeviceClass(data), data);
 
-					data = PCI_ConfigurationRegister_Read32(0x0c);
-					data = CFunction_ExtractBits(data, 16, 22);
-					debug("PCI:    DeviceType:%s(%d)\n", PCI_GetDeviceType(data), data);
+						data = PCI_ConfigurationRegister_Read32(0x0c);
+						data = CFunction_ExtractBits(data, 16, 22);
+						debug("PCI:    DeviceType:%s(%d)\n", PCI_GetDeviceType(data), data);
+					}
 				}
 			}
 		}
-	}
+	#endif
 
 	return;
 }

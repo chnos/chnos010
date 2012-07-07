@@ -4,7 +4,8 @@
 #include "coredef1.h"	/*システムデータ型宣言*/
 #include "coredef2.h"	/*システム外部リソース宣言*/
 #include "coredef3.h"	/*TaskControlMessage宣言*/
-#include "keyid.h"	/*KeyIdentifier キーID宣言*/
+#include "keyid.h"		/*KeyIdentifier キーID宣言*/
+#include "structid.h"	/*SystemCommonStructID宣言*/
 
 /*functions*/
 /*bootpack.c 基幹部分*/
@@ -323,6 +324,11 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy);
 bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py);
 uint Sheet_Internal_RefreshSheet_Invalid(struct UI_SHEET *sheet, int px0, int py0, int px1, int py1);
 
+/*struct.c システム構造体共通管理ルーチン*/
+System_CommonStruct *System_CommonStruct_Allocate(uint structid);
+uint System_CommonStruct_Free(System_CommonStruct *str);
+
+
 /*system.c システムデータ・初期化関連*/
 void Initialise_System(void);
 void System_Set_RunningPhase(uint phase);
@@ -351,6 +357,12 @@ IO_DisplayControl *System_Display_Get_Controller(void);
 uint System_Memory_Get_FreeSize(void);
 uint System_TaskControlMessage_Send_AllTask(uint message);
 uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet);
+
+/*textbox.c テキスト入力UI関連*/
+UI_TextBox *TextBox_Initialise(void);
+uint TextBox_SetBuffer(UI_TextBox *textbox, uint xchars, uint ychars, uint bpp, UI_Sheet *parent);
+uint TextBox_Show(UI_TextBox *textbox, uint height, int px, int py);
+uint TextBox_Put_Character(UI_TextBox *textbox, uchar c);
 
 /*timer.c タイマー関連*/
 UI_TimerControl *Initialise_ProgrammableIntervalTimer(void);

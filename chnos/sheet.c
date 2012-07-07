@@ -7,9 +7,10 @@ UI_Sheet *Sheet_Initialise(void)
 {
 	UI_Sheet *sheet;
 
-	sheet = System_Memory_Allocate(sizeof(UI_Sheet));
+	sheet = (UI_Sheet *)System_CommonStruct_Allocate(SYSTEM_STRUCTID_SHEET);
 
 	sheet->flags.bit.initialized = True;
+	sheet->flags.bit.autorefresh_upperlevel = True;
 
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
 		debug("Sheet_Initialise:[0x%08X]\n", sheet);
@@ -77,7 +78,7 @@ uint Sheet_Free(UI_Sheet *sheet)
 		System_Memory_Free(sheet->vram, sheet->vramsize);
 	}
 
-	System_Memory_Free(sheet, sizeof(UI_Sheet));
+	System_CommonStruct_Free(&sheet->common_tag);
 
 	return 0;
 }

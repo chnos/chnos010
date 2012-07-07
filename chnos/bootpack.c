@@ -13,6 +13,7 @@ void CHNMain(void)
 	int x, y;
 	UI_Timer *timer1, *timer2, *timer3;
 	uint counter1, counter2, counter3;
+	UI_TextBox *textbox;
 
 	i = 0;
 	data = 0;
@@ -106,6 +107,11 @@ void CHNMain(void)
 
 	Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 4, 24, testsheet->size.x - 4 - 1, testsheet->size.y - 4 - 1);
 
+	textbox = TextBox_Initialise();
+	TextBox_SetBuffer(textbox, 20, 6, 8, testsheet);
+	TextBox_Show(textbox, 0, 4, 24);
+
+
 	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 4, 4, 0xffffff, "TestSheet");
 	snprintf(s, sizeof(s), "Memory:%d Bytes", System_Get_PhisycalMemorySize());
 	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 8, 24 + 16 * 4, 0xffffff, s);
@@ -194,6 +200,8 @@ void CHNMain(void)
 					} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
 						Sheet_Slide_Absolute(testsheet, disp_ctrl->xsize >> 1, disp_ctrl->ysize >> 1);
 					}
+				} else if(!(data & KEYID_MASK_BREAK) && !(data & KEYID_MASK_EXTENDED)){
+					TextBox_Put_Character(textbox, data & KEYID_MASK_ID);
 				}
 			} else if(data == 11){
 				Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 8, 24, 8 + (20 * 8) - 1, 24 + (16 * 2) - 1);
@@ -332,15 +340,7 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 						Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0xccffff, 4, 24 + (16 * 2), mouseinfosheet->size.x - 1 - 4, 24 + (16 * 2) + 15);
 						snprintf(s, sizeof(s), "Button:lrc");
 					#endif
-/*
-					if(mctrl->button.bit.L){
-						#ifdef CHNOSPROJECT_DEBUG_MCT
-							s[7] -= 0x20;
-						#endif
-						moveorg_mfocus.x += mctrl->move.x;
-						moveorg_mfocus.y += mctrl->move.y;
-					}
-*/
+
 					if(old_mouse_buttonL != mctrl->button.bit.L){
 						if(old_mouse_buttonL){	//up
 							if(mfocus != Null){
@@ -357,16 +357,23 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 						}
 						old_mouse_buttonL = mctrl->button.bit.L;
 					}
-					if(mctrl->button.bit.R){
-						#ifdef CHNOSPROJECT_DEBUG_MCT
-							s[8] -= 0x20;
-						#endif
-					}
-					if(mctrl->button.bit.C){
-						#ifdef CHNOSPROJECT_DEBUG_MCT
-							s[9] -= 0x20;
-						#endif
-					}
+					#ifdef CHNOSPROJECT_DEBUG_MCT
+						if(mctrl->button.bit.L){
+							#ifdef CHNOSPROJECT_DEBUG_MCT
+								s[7] -= 0x20;
+							#endif
+						}
+						if(mctrl->button.bit.R){
+							#ifdef CHNOSPROJECT_DEBUG_MCT
+								s[8] -= 0x20;
+							#endif
+						}
+						if(mctrl->button.bit.C){
+							#ifdef CHNOSPROJECT_DEBUG_MCT
+								s[9] -= 0x20;
+							#endif
+						}
+					#endif
 					#ifdef CHNOSPROJECT_DEBUG_MCT
 						Sheet_Drawing_Put_String(mouseinfosheet, 4, 24 + (16 * 2), 0x000000, s);
 					#endif

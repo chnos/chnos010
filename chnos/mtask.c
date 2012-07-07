@@ -173,7 +173,7 @@ void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task)
 	task->flags.running = True;
 
 	#ifdef CHNOSPROJECT_DEBUG_MULTITASK
-		debug("MultiTask_Task_Run:Start Running(sel:0x%X last:0x%X start:0x%X).\n", task->selector, last, ctrl->start);
+		debug("MultiTask_Task_Run:Start Running(sel:0x%X).\n", task->selector);
 	#endif
 
 	if(task->flags.first_run){
