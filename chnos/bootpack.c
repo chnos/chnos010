@@ -29,6 +29,7 @@ void CHNMain(void)
 	Sheet_Drawing_Put_String(vramsheet, 10, 10, 0x000000, "Welcome to CHNOSProject!");
 
 	if(disp_ctrl->display_mode == DISPLAYMODE_VBE_LINEAR){
+		i = 0;
 		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 1, 0x000000, "Please Select the VideoMode Number.");
 		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 2, 0x000000, "(Use cursor Up or Down, Select Enter.)");
 		Sheet_Drawing_Fill_Rectangle(vramsheet, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
@@ -110,6 +111,8 @@ void CHNMain(void)
 	textbox = TextBox_Initialise();
 	TextBox_SetBuffer(textbox, 20, 6, 8, testsheet);
 	TextBox_Show(textbox, 0, 4, 24);
+	TextBox_Put_Character(textbox, '>');
+	TextBox_SetEnable_RecordInputText(textbox, True);
 
 
 	Drawing08_Put_String(testsheet->vram, testsheet->size.x, 4, 4, 0xffffff, "TestSheet");
@@ -172,36 +175,14 @@ void CHNMain(void)
 			data = FIFO32_MyTaskFIFO_Get();
 			if(SIGNAL_KEY_OFFSET <= data && data <= (SIGNAL_KEY_OFFSET + 0xFFFF)){
 				data -= SIGNAL_KEY_OFFSET;
+				TextBox_Put_Character(textbox, data);
 				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
-					if((data & KEYID_MASK_ID) == KEYID_CURSOR_U){
-						if(data & KEYID_MASK_STATE_SHIFT){
-							Sheet_Slide_Relative(testsheet, 5, -5);
-						} else{
-							Sheet_Slide_Relative(testsheet, 0, -5);
-						}
-					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_D){
-						if(data & KEYID_MASK_STATE_SHIFT){
-							Sheet_Slide_Relative(testsheet, -5, 5);
-						} else{
-							Sheet_Slide_Relative(testsheet, 0, 5);
-						}
-					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_L){
-						if(data & KEYID_MASK_STATE_SHIFT){
-							Sheet_Slide_Relative(testsheet, -5, -5);
-						} else{
-							Sheet_Slide_Relative(testsheet, -5, 0);
-						}
-					} else if((data & KEYID_MASK_ID) == KEYID_CURSOR_R){
-						if(data & KEYID_MASK_STATE_SHIFT){
-							Sheet_Slide_Relative(testsheet, 5, 5);
-						} else{
-							Sheet_Slide_Relative(testsheet, 5, 0);
-						}
-					} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
-						Sheet_Slide_Absolute(testsheet, disp_ctrl->xsize >> 1, disp_ctrl->ysize >> 1);
+					if((data & KEYID_MASK_ID) == KEYID_ENTER){
+						TextBox_SetEnable_RecordInputText(textbox, False);
+						TextBox_Put_String(textbox, textbox->text_buf);
+						TextBox_Put_Character(textbox, '>');
+						TextBox_SetEnable_RecordInputText(textbox, True);
 					}
-				} else if(!(data & KEYID_MASK_BREAK) && !(data & KEYID_MASK_EXTENDED)){
-					TextBox_Put_Character(textbox, data & KEYID_MASK_ID);
 				}
 			} else if(data == 11){
 				Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 8, 24, 8 + (20 * 8) - 1, 24 + (16 * 2) - 1);

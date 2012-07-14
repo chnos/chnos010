@@ -26,6 +26,7 @@ void srand(uint seed);
 uint rand(void);
 uint isqrt(uint n);
 uint CFunction_ExtractBits(uint source, uint start, uint end);
+uint CFunction_MemoryMove(void *destination, uint destination_size, void *source, uint source_size);
 int snprintf(uchar s[], uint n, const uchar format[], ...);
 int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
 //
@@ -290,6 +291,7 @@ bool Sheet32_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py);
 uint Sheet_Drawing_Fill_Rectangle(UI_Sheet *sheet, uint c, int px0, int py0, int px1, int py1);
 uint Sheet_Drawing_Put_String(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
 uint Sheet_Drawing_Draw_Point(UI_Sheet *sheet, int x, int y, uint c);
+uint Sheet_Drawing_Scroll_Vertical(UI_Sheet *sheet, int vpx);
 //
 uint Sheet_Drawing_Fill_Rectangle_Invalid(UI_Sheet *sheet, uint c, int px0, int py0, int px1, int py1);
 uint Sheet_Drawing_Put_String_Invalid(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
@@ -362,7 +364,10 @@ uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet);
 UI_TextBox *TextBox_Initialise(void);
 uint TextBox_SetBuffer(UI_TextBox *textbox, uint xchars, uint ychars, uint bpp, UI_Sheet *parent);
 uint TextBox_Show(UI_TextBox *textbox, uint height, int px, int py);
-uint TextBox_Put_Character(UI_TextBox *textbox, uchar c);
+uint TextBox_Put_Character(UI_TextBox *textbox, ushort keyid);
+uint TextBox_Put_String(UI_TextBox *textbox, const uchar s[]);
+bool TextBox_Internal_Put_Character_TextBuffer(UI_TextBox *textbox, uchar c);
+bool TextBox_SetEnable_RecordInputText(UI_TextBox *textbox, bool enable);
 
 /*timer.c タイマー関連*/
 UI_TimerControl *Initialise_ProgrammableIntervalTimer(void);

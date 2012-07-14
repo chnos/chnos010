@@ -466,7 +466,7 @@ typedef struct UI_SHEET {
 	struct UI_SHEET *child;		//children lowest height
 	DATA_Location2D location;
 	DATA_Location2DU size;
-	ushort bpp;	//0:Text(16col) 1:8bit 2:16bit 3:32bit
+	ushort bpp;
 	union UI_SHEET_FLAGS {
 		ushort flags;
 		struct UI_SHEET_FLAGS_BITS {
@@ -569,11 +569,13 @@ typedef struct UI_TEXT_BOX {
 	DATA_Location2DU chars;
 	uchar *text_buf;
 	uint size_text_buf;
+	uint using_text_buf;
 	union UI_TEXT_BOX_FLAGS {
 		uint flags;
 		struct UI_TEXT_BOX_BITS {
 			unsigned initialized : 1;
 			unsigned textbuffer_configured : 1;
+			unsigned record_input_text : 1;
 		} bit;
 	} flags;
 } UI_TextBox;

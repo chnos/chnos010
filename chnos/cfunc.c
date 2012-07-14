@@ -125,6 +125,62 @@ uint CFunction_ExtractBits(uint source, uint start, uint end)
 	return (source >> start) & ~(0xffffffff << (end - start + 1));
 }
 
+//source番地からの、destination_sizeを超えないsource_sizeバイトを、destination番地へ移動させる。
+//メモリ範囲が重なっていてもデータは破壊されない。
+//同一番地へコピーする場合は何もしない。
+//戻り値は、コピーしたバイト数。
+uint CFunction_MemoryMove(void *destination, uint destination_size, void *source, uint source_size)
+{
+	uint move_size, i;
+	void *temp;
+
+	if(destination == source){
+		return 0;
+	}
+
+	if(destination_size <= source_size){
+		move_size = destination_size;
+	} else{
+		move_size = source_size;
+	}
+
+	if((uint)source < (uint)destination && (uint)source + source_size > (uint)destination){
+		//sourceを上書きしてしまう場合、一度バッファに退避させた後コピーする。
+		temp = System_Memory_Allocate(move_size);
+		i = 0;
+		if(move_size >= 4){
+			for(; i < move_size - (4 - 1); i += 4){
+				((uint *)temp)[i >> 2] = ((uint *)source)[i >> 2];
+			}
+		}
+		if(i != move_size){
+			for(; i < move_size; i++){
+				((uchar *)temp)[i] = ((uchar *)source)[i];
+			}
+		}
+	} else{
+		temp = source;
+	}
+
+	i = 0;
+	if(move_size >= 4){
+		for(; i < move_size - (4 - 1); i += 4){
+			((uint *)destination)[i >> 2] = ((uint *)temp)[i >> 2];
+		}
+	}
+	if(i != move_size){
+		for(; i < move_size; i++){
+			((uchar *)destination)[i] = ((uchar *)temp)[i];
+		}
+	}
+
+	if(temp != source){
+		System_Memory_Free(temp, move_size);
+	}
+
+	return move_size;
+}
+
 //引数(uchar s[], uint n, const uchar format[], ...)
 //	s	:結果を書き込む文字列の先頭アドレスを指定します。
 //	n	:s[]の大きさを指定します。(n - 1)番目以降の文字は書き込まれません。
