@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-IO_CallBIOSControl *Initialise_CallBIOS(void)
+IO_CallBIOSControl *Initialize_CallBIOS(void)
 {
 	IO_CallBIOSControl *ctrl;
 	uint i;
@@ -33,7 +33,7 @@ IO_CallBIOSControl *Initialise_CallBIOS(void)
 	cr4.bit.VME = True;
 	Store_CR4(cr4.cr4);
 
-	ctrl->CallBIOS_Task = System_MultiTask_Task_Initialise((256 >> 3) + (65536 >> 3) + 1);
+	ctrl->CallBIOS_Task = System_MultiTask_Task_Initialize((256 >> 3) + (65536 >> 3) + 1);
 //CallBIOS 16Bit エミュレーションタスクはFIFOを使用しないのでタスクのFIFOを解放
 	FIFO32_Free(ctrl->CallBIOS_Task->fifo);
 	ctrl->CallBIOS_Task->fifo = Null;

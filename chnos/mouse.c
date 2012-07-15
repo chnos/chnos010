@@ -32,7 +32,7 @@ uchar Mouse_Pattern_Standard[24][24] = {
 	"***.....................",
 };
 
-IO_MouseControl *Initialise_Mouse(void)
+IO_MouseControl *Initialize_Mouse(void)
 {
 	IO_MouseControl *mctrl;
 
@@ -98,7 +98,7 @@ void Mouse_SendCommand(uint cmd)
 	return;
 }
 
-UI_MouseCursor *MouseCursor_Initialise(UI_Sheet *parent)
+UI_MouseCursor *MouseCursor_Initialize(UI_Sheet *parent)
 {
 	UI_MouseCursor *mcursor;
 	uint x, y;
@@ -108,7 +108,7 @@ UI_MouseCursor *MouseCursor_Initialise(UI_Sheet *parent)
 	}
 
 	mcursor = System_Memory_Allocate(sizeof(UI_MouseCursor));
-	mcursor->cursor_sheet = Sheet_Initialise();
+	mcursor->cursor_sheet = Sheet_Initialize();
 
 	mcursor->cursors[0] = System_Memory_Allocate(24 * 24 * (8 >> 3));
 	for(y = 0; y < 24; y++){

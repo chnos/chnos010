@@ -14,7 +14,7 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor);
 
 /*callbios.c 32bitからBIOSをコールするための関数群*/
 
-IO_CallBIOSControl *Initialise_CallBIOS(void);
+IO_CallBIOSControl *Initialize_CallBIOS(void);
 void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn, DATA_FIFO32 *fifo, uint endsignal);
 void CallBIOS_Send_End_Of_Operation(IO_CallBIOSControl *ctrl, uint abort);
 void CallBIOS_Check_Privileged_Operation(uint *esp);
@@ -31,7 +31,7 @@ int snprintf(uchar s[], uint n, const uchar format[], ...);
 int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
 //
 int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
-void CFunction_vsnprintf_Initialise_WorkArea(CFunction_vsnprintf_WorkArea *work, uchar s[], const uchar format[], uint n, uint vargs[]);
+void CFunction_vsnprintf_Initialize_WorkArea(CFunction_vsnprintf_WorkArea *work, uchar s[], const uchar format[], uint n, uint vargs[]);
 int CFunction_vsnprintf_Check_FormatBuffer(CFunction_vsnprintf_WorkArea *work);
 int CFunction_vsnprintf_Check_DestinationBuffer(CFunction_vsnprintf_WorkArea *work);
 uchar CFunction_vsnprintf_Read_FormatBuffer(CFunction_vsnprintf_WorkArea *work);
@@ -52,6 +52,12 @@ uchar RGB_32_To_08(uint c32);
 uchar RGB_32_To_08_xy(uint c32, int x, int y);
 ushort RGB_32_To_16(uint c32);
 
+/*console.c コンソール関連*/
+UI_Console *Console_Initialize(void);
+uint Console_SetSize(UI_Console *console, uint xchars, uint ychars);
+uint Console_Run(UI_Console *console);
+void Console_MainTask(UI_Console *myconsole);
+
 /*debug.c デバッグ支援*/
 #ifdef CHNOSPROJECT_DEBUG
 void debug(const uchar format[], ...);
@@ -61,11 +67,11 @@ void Debug_ExceptionHandler(uint *esp);
 #endif
 
 /*display.c ディスプレイ制御関連*/
-IO_DisplayControl *Initialise_Display(void);
+IO_DisplayControl *Initialize_Display(void);
 uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index);
 
 /*draw08.c 8bit描画関連*/
-void Drawing08_Initialise_Palette(void);
+void Drawing08_Initialize_Palette(void);
 void Drawing08_Set_Palette(uint start, uint end, uchar *rgb);
 void Drawing08_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing08_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
@@ -92,14 +98,14 @@ void Drawing_Invalid_Put_String(void *vram, uint xsize, uint x, uint y, uint c, 
 void Drawing_Invalid_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing_Invalid_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 void Drawing_Invalid_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
-void Initialise_Drawing(void);
+void Initialize_Drawing(void);
 void Drawing_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing_Draw_Circle(void *vram, uint xsize, uint x, uint y, uint c, uint r);
 void Drawing_Fill_Circle(void *vram, uint xsize, uint x, uint y, uint c, uint r);
 
 /*dsctbl.c セグメント・ゲートディスクリプタ関連*/
-void Initialise_GlobalDescriptorTable(void);
-void Initialise_InterruptDescriptorTable(void);
+void Initialize_GlobalDescriptorTable(void);
+void Initialize_InterruptDescriptorTable(void);
 void SegmentDescriptor_Set(IO_SegmentDescriptor *seg_desc, uint limit, uint base, uint ar);
 uint SegmentDescriptor_Get_Base(IO_SegmentDescriptor *seg_desc);
 uint SegmentDescriptor_Get_Limit(IO_SegmentDescriptor *seg_desc);
@@ -107,7 +113,7 @@ uint SegmentDescriptor_Get_AccessRight(IO_SegmentDescriptor *seg_desc);
 void GateDescriptor_Set(IO_GateDescriptor *gate_desc, uint offset, uint selector, uint ar);
 
 /*emu86.c x86エミュレーター関連*/
-void Emulator_x86_Initialise(Emulator_x86_Environment *env);
+void Emulator_x86_Initialize(Emulator_x86_Environment *env);
 uint Emulator_x86_Execute(Emulator_x86_Environment *env);
 uint Emulator_x86_Execute_Auto(Emulator_x86_Environment *env);
 int Emulator_x86_Put_EmulationInformation(Emulator_x86_Environment *env, const uchar format[], ...);
@@ -176,7 +182,7 @@ void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp);
 void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp);
 
 /*fifo.c FIFOバッファ関連*/
-DATA_FIFO32 *FIFO32_Initialise(IO_MemoryControl memctrl, uint size);
+DATA_FIFO32 *FIFO32_Initialize(IO_MemoryControl memctrl, uint size);
 int FIFO32_Put(DATA_FIFO32 *fifo, uint data);
 int FIFO32_Put_Arguments(DATA_FIFO32 *fifo, uint args, ...);
 void FIFO32_Set_Task(DATA_FIFO32 *fifo, UI_Task *task);
@@ -190,13 +196,13 @@ uint FIFO32_MyTaskFIFO_Get(void);
 uint Format_BMP_DrawPicture(void *vram, uint xsize, uint x, uint y, uint pxsize, uint pysize, void *bmp);
 
 /*intrpt.c 割り込み関連*/
-void Initialise_ProgrammableInterruptController(void);
+void Initialize_ProgrammableInterruptController(void);
 void ProgrammableInterruptController_InterruptMask_Clear(uint irq);
 void ProgrammableInterruptController_InterruptRequest_Complete(uint irq);
 void InterruptHandler27(uint *esp);
 
 /*keyboard.c キーボード関連*/
-void Initialise_Keyboard(void);
+void Initialize_Keyboard(void);
 void InterruptHandler21(uint *esp);
 void Keyboard_Set_ReceiveFIFO(DATA_FIFO32 *fifo, uint data0);
 ushort Keyboard_Decode_KeyCode(uchar keycode);
@@ -207,7 +213,7 @@ void KeyboardController_SendCommand(uchar cmd);
 
 /*memory.c メモリ関連*/
 uint Memory_Test(uint start, uint end);
-IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags);
+IO_MemoryControl Memory_Initialize_Control(void *start, uint size, uint tags);
 void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size);
 void Memory_Free_Sub(IO_MemoryControl ctrl, uint tagno);
 void *Memory_Allocate(IO_MemoryControl ctrl, uint size);
@@ -215,19 +221,19 @@ void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 
 /*mouse.c マウス関連*/
-IO_MouseControl *Initialise_Mouse(void);
+IO_MouseControl *Initialize_Mouse(void);
 void InterruptHandler2c(uint *esp);
 void Mouse_Set_ReceiveFIFO(DATA_FIFO32 *fifo, uint data0);
 void Mouse_SendCommand(uint cmd);
-UI_MouseCursor *MouseCursor_Initialise(UI_Sheet *parent);
+UI_MouseCursor *MouseCursor_Initialize(UI_Sheet *parent);
 uint MouseCursor_Show(UI_MouseCursor *mcursor);
 uint MouseCursor_Move_Relative(UI_MouseCursor *mcursor, int rpx, int rpy);
 uint MouseCursor_Move_Absolute(UI_MouseCursor *mcursor, int apx, int apy);
 bool Mouse_Decode(IO_MouseControl *mctrl, uint data);
 
 /*mtask.c マルチタスク関連*/
-UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl);
-UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_size);
+UI_TaskControl *Initialize_MultiTask_Control(IO_MemoryControl sysmemctrl);
+UI_Task *MultiTask_Task_Initialize(UI_TaskControl *ctrl, uint tss_additional_size);
 uint MultiTask_Internal_Task_SetLink(UI_TaskControl *ctrl, UI_Task *task);
 uint MultiTask_Internal_Task_CleartLink(UI_TaskControl *ctrl, UI_Task *task);
 void MultiTask_Task_Run(UI_TaskControl *ctrl, UI_Task *task);
@@ -238,14 +244,14 @@ UI_Task *MultiTask_GetNowTask(UI_TaskControl *ctrl);
 uint MultiTask_Push_Arguments(UI_Task *task, uint args, ...);
 
 /*pci.c PCI関連*/
-void Initialise_PCI(void);
+void Initialize_PCI(void);
 
 /*serial.c シリアル通信関連*/
-void Initialise_SerialPort(void);
+void Initialize_SerialPort(void);
 void SerialPort_Send(const uchar s[]);
 
 /*sheet.c シート関連*/
-UI_Sheet *Sheet_Initialise(void);
+UI_Sheet *Sheet_Initialize(void);
 uint Sheet_Free(UI_Sheet *sheet);
 uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
 uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent);
@@ -262,6 +268,7 @@ uint Sheet_Disable_InvisibleColor(UI_Sheet *sheet);
 uint Sheet_SetTopmost(UI_Sheet *sheet, bool topmost);
 UI_Sheet *Sheet_GetSheetFromLocation(UI_Sheet *parent, int px, int py);
 uint Sheet_SetMovable(UI_Sheet *sheet, bool movable);
+uint Sheet_SetInputFIFO(UI_Sheet *sheet, DATA_FIFO32 *fifo);
 
 /*sht08.c 8bitカラー シート関連*/
 uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
@@ -314,7 +321,7 @@ uint Sheet_Internal_GetLocationP(UI_Sheet *sheet, DATA_Location2D *dest);
 uint Sheet_Internal_GetLocationQ(UI_Sheet *sheet, DATA_Location2D *dest);
 uint Sheet_Internal_GetLocationR(UI_Sheet *sheet, DATA_Location2D *dest);
 uint Sheet_Internal_GetLocationS(UI_Sheet *sheet, DATA_Location2D *dest);
-uint Sheet_Internal_MapInitialise(UI_Sheet *parent);
+uint Sheet_Internal_MapInitialize(UI_Sheet *parent);
 uint Sheet_Internal_MapWriteFromSheet(UI_Sheet *sheet, bool force, int px0, int py0, int px1, int py1);
 bool Sheet_Internal_IsLocationInRangeOfSheet(UI_Sheet *sheet, int px, int py);
 bool Sheet_Internal_IsRangeOverlappedWithSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
@@ -332,7 +339,7 @@ uint System_CommonStruct_Free(System_CommonStruct *str);
 
 
 /*system.c システムデータ・初期化関連*/
-void Initialise_System(void);
+void Initialize_System(void);
 void System_Set_RunningPhase(uint phase);
 uint System_Get_RunningPhase(void);
 uint System_Get_PhisycalMemorySize(void);
@@ -343,7 +350,7 @@ uint System_SegmentDescriptor_Get_AccessRight(uint selector);
 uint System_SegmentDescriptor_Set(uint limit, uint base, uint ar);
 void System_GateDescriptor_Set(uint irq, uint offset, uint selector, uint ar);
 void System_TaskSwitch(void);
-UI_Task *System_MultiTask_Task_Initialise(uint tss_additional_size);
+UI_Task *System_MultiTask_Task_Initialize(uint tss_additional_size);
 void System_MultiTask_Task_Run(UI_Task *task);
 void *System_Memory_Allocate(uint size);
 UI_Task *System_MultiTask_GetNowTask(void);
@@ -353,15 +360,16 @@ void System_Memory_Free(void *addr, uint size);
 void System_CallBIOS_Send_End_Of_Operation(uint abort);
 void System_MultiTask_Task_Sleep(UI_Task *task);
 void System_MultiTask_Task_Kill(UI_Task *task);
-DATA_FIFO32 *System_FIFO32_Initialise(uint size);
+DATA_FIFO32 *System_FIFO32_Initialize(uint size);
 uint System_Display_VESA_Set_VideoMode(uint index);
 IO_DisplayControl *System_Display_Get_Controller(void);
 uint System_Memory_Get_FreeSize(void);
 uint System_TaskControlMessage_Send_AllTask(uint message);
 uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet);
+uint System_InputFocus_Change(DATA_FIFO32 *fifo);
 
 /*textbox.c テキスト入力UI関連*/
-UI_TextBox *TextBox_Initialise(void);
+UI_TextBox *TextBox_Initialize(void);
 uint TextBox_SetBuffer(UI_TextBox *textbox, uint xchars, uint ychars, uint bpp, UI_Sheet *parent);
 uint TextBox_Show(UI_TextBox *textbox, uint height, int px, int py);
 uint TextBox_Put_Character(UI_TextBox *textbox, ushort keyid);
@@ -370,11 +378,11 @@ bool TextBox_Internal_Put_Character_TextBuffer(UI_TextBox *textbox, uchar c);
 bool TextBox_SetEnable_RecordInputText(UI_TextBox *textbox, bool enable);
 
 /*timer.c タイマー関連*/
-UI_TimerControl *Initialise_ProgrammableIntervalTimer(void);
+UI_TimerControl *Initialize_ProgrammableIntervalTimer(void);
 void InterruptHandler20(uint *esp);
 void Timer_Set_TaskSwitch(void (*TaskSwitchFunction)(void));
 void Timer_TaskSwitch_Invalid(void);
-UI_Timer *Timer_Initialise(void);
+UI_Timer *Timer_Initialize(void);
 uint Timer_Config(UI_Timer *timer, uint tick_ms, DATA_FIFO32 *fifo, uint fifo_putdata, bool interval);
 uint Timer_Run(UI_Timer *timer);
 uint Timer_TimeOut(void);

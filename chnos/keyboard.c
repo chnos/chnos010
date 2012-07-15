@@ -322,7 +322,7 @@ uchar Keyboard_KeyCodeTable_Shift[0x80] = {
 	0x00
 };
 
-void Initialise_Keyboard(void)
+void Initialize_Keyboard(void)
 {
 	System_GateDescriptor_Set(0x21, (uint)asm_InterruptHandler21, 0x02, AR_INTGATE32);
 	ProgrammableInterruptController_InterruptMask_Clear(0x01);

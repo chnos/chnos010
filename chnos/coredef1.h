@@ -463,7 +463,7 @@ typedef struct UI_SHEET {
 	System_CommonStruct common_tag;
 	struct UI_SHEET *parent;	//one sheet has one parent(if vramseet then:0)
 	struct UI_SHEET *next;		//same level sheet link
-	struct UI_SHEET *child;		//children lowest height
+	struct UI_SHEET *child;		//lowest height sheet in children
 	DATA_Location2D location;
 	DATA_Location2DU size;
 	ushort bpp;
@@ -494,6 +494,7 @@ typedef struct UI_SHEET {
 		uint (*Put_String)(struct UI_SHEET *sheet, int x, int y, uint fc, const uchar s[]);
 		uint (*Draw_Point)(struct UI_SHEET *sheet, int x, int y, uint c);
 	} Drawing;
+	DATA_FIFO32 *input_fifo;
 } UI_Sheet;
 
 /*timer*/
@@ -562,14 +563,17 @@ typedef struct UI_MOUSE_CURSOR {
 
 /*textbox*/
 typedef struct UI_TEXT_BOX {
+	System_CommonStruct common_tag;
 	UI_Sheet *sheet;
 	uint forecol;
 	uint backcol;
 	DATA_Location2D location_cursor;
+	DATA_Location2D location_cursor_record_started;
 	DATA_Location2DU chars;
 	uchar *text_buf;
 	uint size_text_buf;
 	uint using_text_buf;
+	
 	union UI_TEXT_BOX_FLAGS {
 		uint flags;
 		struct UI_TEXT_BOX_BITS {
@@ -579,4 +583,18 @@ typedef struct UI_TEXT_BOX {
 		} bit;
 	} flags;
 } UI_TextBox;
+
+typedef struct UI_CONSOLE {
+	UI_TextBox *textbox;
+	UI_Task *task;
+	union UI_CONSOLE_FLAGS {
+		uint flags;
+		struct UI_CONSOLE_BITS {
+			unsigned initialized : 1;
+			unsigned configured_size : 1;
+			unsigned isprompt : 1;
+		} bit;
+	} flags;
+} UI_Console;
+
 

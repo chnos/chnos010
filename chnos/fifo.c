@@ -4,7 +4,7 @@
 //指定サイズは、バイト単位。4バイト切り捨て。
 //内部サイズは、エントリ(uint=4byte)単位。
 
-DATA_FIFO32 *FIFO32_Initialise(IO_MemoryControl memctrl, uint size)
+DATA_FIFO32 *FIFO32_Initialize(IO_MemoryControl memctrl, uint size)
 {
 	DATA_FIFO32 *fifo;
 
@@ -26,8 +26,12 @@ int FIFO32_Put(DATA_FIFO32 *fifo, uint data)
 {
 	uint eflags;
 
-	if(!fifo->flags.initialized){
+	if(fifo == Null){
 		return -1;
+	}
+
+	if(!fifo->flags.initialized){
+		return -2;
 	}
 
 	eflags = IO_Load_EFlags();
@@ -73,8 +77,12 @@ int FIFO32_Put_Arguments(DATA_FIFO32 *fifo, uint args, ...)
 	uint *vargs;
 	uint eflags;
 
-	if(!fifo->flags.initialized){
+	if(fifo == Null){
 		return -1;
+	}
+
+	if(!fifo->flags.initialized){
+		return -2;
 	}
 
 	if(args == 0){
@@ -102,6 +110,10 @@ int FIFO32_Put_Arguments(DATA_FIFO32 *fifo, uint args, ...)
 
 void FIFO32_Set_Task(DATA_FIFO32 *fifo, UI_Task *task)
 {
+	if(fifo == Null){
+		return;
+	}
+
 	fifo->task = task;
 	return;
 }
@@ -109,6 +121,10 @@ void FIFO32_Set_Task(DATA_FIFO32 *fifo, UI_Task *task)
 uint FIFO32_Get(DATA_FIFO32 *fifo)
 {
 	int data;
+
+	if(fifo == Null){
+		return 0;
+	}
 
 	if(!fifo->flags.initialized){
 		return 0;
@@ -131,6 +147,10 @@ uint FIFO32_Get(DATA_FIFO32 *fifo)
 
 uint FIFO32_Status(DATA_FIFO32 *fifo)
 {
+	if(fifo == Null){
+		return 0;
+	}
+
 	if(!fifo->flags.initialized){
 		return 0;
 	}
@@ -140,6 +160,10 @@ uint FIFO32_Status(DATA_FIFO32 *fifo)
 
 void FIFO32_Free(DATA_FIFO32 *fifo)
 {
+	if(fifo == Null){
+		return;
+	}
+
 	if(!fifo->flags.initialized){
 		return;
 	}

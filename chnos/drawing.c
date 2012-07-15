@@ -8,7 +8,7 @@ void (*Drawing_Draw_Point)(void *vram, uint xsize, uint x, uint y, uint c);
 //また、二点の座標をとる関数は、（基本的に）全て引数左側がx成分の小さい側（原点に近い）でなければならない。
 //高レベル描画関数では、それらを上手くラップすべきである。
 
-void Initialise_Drawing(void)
+void Initialize_Drawing(void)
 {
 	IO_DisplayControl *dispctrl;
 
@@ -18,7 +18,7 @@ void Initialise_Drawing(void)
 		Drawing_Fill_Rectangle	= Drawing08_Fill_Rectangle;
 		Drawing_Put_String	= Drawing08_Put_String;
 		Drawing_Draw_Point	= Drawing08_Draw_Point;
-		Drawing08_Initialise_Palette();
+		Drawing08_Initialize_Palette();
 	} else if(dispctrl->bpp == 16){
 		Drawing_Fill_Rectangle	= Drawing16_Fill_Rectangle;
 		Drawing_Put_String	= Drawing16_Put_String;

@@ -14,11 +14,12 @@ void CHNMain(void)
 	UI_Timer *timer1, *timer2, *timer3;
 	uint counter1, counter2, counter3;
 	UI_TextBox *textbox;
+	UI_Console *console;
 
 	i = 0;
 	data = 0;
 
-	Initialise_System();
+	Initialize_System();
 
 	mytask = System_MultiTask_GetNowTask();
 	disp_ctrl = System_Display_Get_Controller();
@@ -76,7 +77,7 @@ void CHNMain(void)
 		}
 	}
 
-	sheet_desktop = Sheet_Initialise();
+	sheet_desktop = Sheet_Initialize();
 	Sheet_SetBuffer(sheet_desktop, Null, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 
 	Sheet_Drawing_Fill_Rectangle(sheet_desktop, 0xffffff, 0, 0, disp_ctrl->xsize - 1, disp_ctrl->ysize - 1);
@@ -89,11 +90,11 @@ void CHNMain(void)
 		Drawing_Draw_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0xc6c6c6, i);
 	}
 
-	testsheet = Sheet_Initialise();
+	testsheet = Sheet_Initialize();
 
-	sheet08 = Sheet_Initialise();
-	sheet16 = Sheet_Initialise();
-	sheet32 = Sheet_Initialise();
+	sheet08 = Sheet_Initialize();
+	sheet16 = Sheet_Initialize();
+	sheet32 = Sheet_Initialize();
 
 	Sheet_SetBuffer(testsheet, Null, 256, 128, 8);
 	Sheet_SetBuffer(sheet08, Null, 128, 128, 8);
@@ -108,7 +109,7 @@ void CHNMain(void)
 
 	Drawing08_Fill_Rectangle(testsheet->vram, testsheet->size.x, 0xc6c6c6, 4, 24, testsheet->size.x - 4 - 1, testsheet->size.y - 4 - 1);
 
-	textbox = TextBox_Initialise();
+	textbox = TextBox_Initialize();
 	TextBox_SetBuffer(textbox, 20, 6, 8, testsheet);
 	TextBox_Show(textbox, 0, 4, 24);
 	TextBox_Put_Character(textbox, '>');
@@ -151,22 +152,27 @@ void CHNMain(void)
 
 	Sheet_SetParent(testsheet, vramsheet);
 	Sheet_SetMovable(testsheet, True);
+	Sheet_SetInputFIFO(testsheet, mytask->fifo);
 	Sheet_Show(testsheet, 6, 10, 10);
 
-	timer1 = Timer_Initialise();
+	timer1 = Timer_Initialize();
 	Timer_Config(timer1, 50, mytask->fifo, 11, True);
 	counter1 = 0;
 	//Timer_Run(timer1);
 
-	timer2 = Timer_Initialise();
+	timer2 = Timer_Initialize();
 	Timer_Config(timer2, 50, mytask->fifo, 12, False);
 	counter2 = 0;
 	//Timer_Run(timer2);
 
-	timer3 = Timer_Initialise();
+	timer3 = Timer_Initialize();
 	Timer_Config(timer3, 200, mytask->fifo, 13, True);
 	counter3 = 0;
 	//Timer_Run(timer3);
+
+	console = Console_Initialize();
+	Console_SetSize(console, 20, 6);
+	Console_Run(console);
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
@@ -276,7 +282,7 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 	#endif
 
 	#ifdef CHNOSPROJECT_DEBUG_MCT
-		mouseinfosheet = Sheet_Initialise();
+		mouseinfosheet = Sheet_Initialize();
 		Sheet_SetBuffer(mouseinfosheet, Null, (4 * 2) + (8 * 16), 4 + 16 + (4 * 2) + (16 * 4), 8);
 		System_Sheet_SetParentToVRAM(mouseinfosheet);
 		Sheet_Drawing_Fill_Rectangle(mouseinfosheet, 0x99cc33, 0, 0, mouseinfosheet->size.x - 1, mouseinfosheet->size.y - 1);
@@ -284,7 +290,7 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 		Sheet_Drawing_Put_String(mouseinfosheet, 4, 4, 0xffffff, "MouseInfo");
 	#endif
 
-	mctrl = Initialise_Mouse();
+	mctrl = Initialize_Mouse();
 
 	#ifdef CHNOSPROJECT_DEBUG_MCT
 		debug("MCT:Mouse Initialized.\n");
@@ -332,6 +338,7 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 							moveorg_mfocus.x = mcursor->cursor_sheet->location.x;
 							moveorg_mfocus.y = mcursor->cursor_sheet->location.y;
 							mfocus = Sheet_GetSheetFromLocation(mcursor->cursor_sheet->parent, mcursor->cursor_sheet->location.x, mcursor->cursor_sheet->location.y);
+							System_InputFocus_Change(mfocus->input_fifo);
 							if(mfocus != Null && mfocus->flags.bit.movable == False){
 								mfocus = Null;
 							}
@@ -372,7 +379,7 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 						#endif
 					}
 				}
-			} else if(data == TCM_INFO_DISPLAY_UPDATE_RESOLUTION){
+			} else if(data == TCM_OFFSET + TCM_INFO_DISPLAY_UPDATE_RESOLUTION){
 				MouseCursor_Move_Absolute(mcursor, mcursor->cursor_sheet->parent->size.x >> 1, mcursor->cursor_sheet->parent->size.y >> 1);
 				MouseCursor_Show(mcursor);
 				#ifdef CHNOSPROJECT_DEBUG_MCT

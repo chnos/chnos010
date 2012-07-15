@@ -103,7 +103,7 @@ uchar *PCI_GetDeviceVendor(uint id);
 uchar *PCI_GetDeviceClass(uint id);
 uchar *PCI_GetDeviceType(uint id);
 
-void Initialise_PCI(void)
+void Initialize_PCI(void)
 {
 	#ifdef CHNOSPROJECT_DEBUG_PCI
 		uint data, bus, device, function;

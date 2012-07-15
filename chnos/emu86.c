@@ -39,7 +39,7 @@ uchar *Emulator_x86_ByteRegNames[] = {
 	"BH"
 };
 
-void Emulator_x86_Initialise(Emulator_x86_Environment *env)
+void Emulator_x86_Initialize(Emulator_x86_Environment *env)
 {
 	env->EFLAGS.eflags			= 0x00000002;
 	env->EIP				= 0x0000fff0;

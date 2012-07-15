@@ -3,7 +3,7 @@
 
 UI_TimerControl *timerctrl;
 
-UI_TimerControl *Initialise_ProgrammableIntervalTimer(void)
+UI_TimerControl *Initialize_ProgrammableIntervalTimer(void)
 {
 	timerctrl = (UI_TimerControl *)System_Memory_Allocate(sizeof(UI_TimerControl));
 
@@ -11,7 +11,7 @@ UI_TimerControl *Initialise_ProgrammableIntervalTimer(void)
 	timerctrl->TaskSwitch = &Timer_TaskSwitch_Invalid;
 
 //config watch
-	timerctrl->timer_root = Timer_Initialise();
+	timerctrl->timer_root = Timer_Initialize();
 	Timer_Config(timerctrl->timer_root, 0xfffffff, Null, 0, True);
 	timerctrl->timer_root->timeout = 0xffffffff;
 	timerctrl->timer_root->flags.bit.running = True;
@@ -57,7 +57,7 @@ void Timer_TaskSwitch_Invalid(void)
 	return;
 }
 
-UI_Timer *Timer_Initialise(void)
+UI_Timer *Timer_Initialize(void)
 {
 	UI_Timer *timer;
 
@@ -66,7 +66,7 @@ UI_Timer *Timer_Initialise(void)
 	timer->flags.bit.initialized = True;
 
 	#ifdef CHNOSPROJECT_DEBUG_TIMER
-		debug("Timer_Initialise:[0x%08X]\n", timer);
+		debug("Timer_Initialize:[0x%08X]\n", timer);
 	#endif
 
 	return timer;

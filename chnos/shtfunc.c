@@ -62,12 +62,12 @@ uint Sheet_Internal_GetLocationS(UI_Sheet *sheet, DATA_Location2D *dest)
 	return 0;
 }
 
-//uint Sheet_Internal_MapInitialise(UI_Sheet *parent);
+//uint Sheet_Internal_MapInitialize(UI_Sheet *parent);
 //mapを初期化する。
 //すでにマップが確保されていた場合は、解放した後に再確保する。
 //マップの再構成も自動で行う。
 
-uint Sheet_Internal_MapInitialise(UI_Sheet *parent)
+uint Sheet_Internal_MapInitialize(UI_Sheet *parent)
 {
 	if(parent->flags.bit.using_map){
 		parent->flags.bit.using_map = False;
@@ -81,7 +81,7 @@ uint Sheet_Internal_MapInitialise(UI_Sheet *parent)
 	Sheet_Internal_MapRebuild(parent, 0, 0, parent->size.x - 1, parent->size.y - 1);
 
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
-		debug("Sheet_Internal_MapInitialise:[0x%08X] map:[0x%08X]\n", parent, parent->map);
+		debug("Sheet_Internal_MapInitialize:[0x%08X] map:[0x%08X]\n", parent, parent->map);
 	#endif
 
 	return 0;

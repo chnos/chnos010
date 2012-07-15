@@ -230,7 +230,7 @@ int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 
 	CFunction_vsnprintf_WorkArea work;
 
-	CFunction_vsnprintf_Initialise_WorkArea(&work, s, format, n, vargs);	
+	CFunction_vsnprintf_Initialize_WorkArea(&work, s, format, n, vargs);	
 
 	flag_fill_zero = False;
 	fill_length = 0xffffffff;
@@ -411,7 +411,7 @@ int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 	return work.index_destination_buf;
 }
 
-void CFunction_vsnprintf_Initialise_WorkArea(CFunction_vsnprintf_WorkArea *work, uchar s[], const uchar format[], uint n, uint vargs[])
+void CFunction_vsnprintf_Initialize_WorkArea(CFunction_vsnprintf_WorkArea *work, uchar s[], const uchar format[], uint n, uint vargs[])
 {
 	work->destination_buf = s;
 	work->length_destination_buf = n;

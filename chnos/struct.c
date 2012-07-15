@@ -16,6 +16,12 @@ System_CommonStruct *System_CommonStruct_Allocate(uint structid)
 		case SYSTEM_STRUCTID_FIFO32:
 			strsize = sizeof(DATA_FIFO32);
 			break;
+		case SYSTEM_STRUCTID_TEXTBOX:
+			strsize = sizeof(UI_TextBox);
+			break;
+		case SYSTEM_STRUCTID_CONSOLE:
+			strsize = sizeof(UI_Console);
+			break;
 		default:
 			#ifdef CHNOSPROJECT_DEBUG_COMMON_STRUCT
 				debug("System_CommonStruct_Allocate:Unknown Struct.\n");
@@ -35,6 +41,8 @@ uint System_CommonStruct_Free(System_CommonStruct *str)
 	switch(str->structid){
 		case SYSTEM_STRUCTID_SHEET:
 		case SYSTEM_STRUCTID_FIFO32:
+		case SYSTEM_STRUCTID_TEXTBOX:
+		case SYSTEM_STRUCTID_CONSOLE:
 			break;
 		default:
 			#ifdef CHNOSPROJECT_DEBUG_COMMON_STRUCT

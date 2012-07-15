@@ -22,6 +22,7 @@
 	//#define CHNOSPROJECT_DEBUG_PCI
 	//#define CHNOSPROJECT_DEBUG_COMMON_STRUCT
 	//#define CHNOSPROJECT_DEBUG_TEXTBOX
+	#define CHNOSPROJECT_DEBUG_CONSOLE
 #endif
 
 /*defines*/
@@ -327,7 +328,6 @@
 
 /*FIFO buffer*/
 #define SIGNAL_ARGUMENTS_END	0xfefe1234
-#define SIGNAL_KEY_OFFSET 0x10000
 /*task*/
 #define TASK_FIFOSIZE	(4 * 64)
 

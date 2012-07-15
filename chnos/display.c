@@ -5,7 +5,7 @@
 
 #define SIGNAL_BIOS_OPERATION_END	0xff
 
-IO_DisplayControl *Initialise_Display(void)
+IO_DisplayControl *Initialize_Display(void)
 {
 	//最初に現在の画面モードをVGA320*200-8bitに設定する。(BIOS)
 
@@ -18,7 +18,7 @@ IO_DisplayControl *Initialise_Display(void)
 
 	ctrl = (IO_DisplayControl *)System_Memory_Allocate(sizeof(IO_DisplayControl));
 
-	ctrl->bios_signal = System_FIFO32_Initialise(64);
+	ctrl->bios_signal = System_FIFO32_Initialize(64);
 
 	callbiosctrl = System_CallBIOS_Get_Controller();
 	callbiosctrl->CallBIOS_Task->tss->eax = 0x0013;
@@ -42,11 +42,11 @@ IO_DisplayControl *Initialise_Display(void)
 	ctrl->ysize = VGA08_VRAM_YSIZE;
 	ctrl->vram = VGA_VRAM_ADR;
 
-	Drawing08_Initialise_Palette();
-	Initialise_Drawing();
+	Drawing08_Initialize_Palette();
+	Initialize_Drawing();
 	Error_Set_Enable_Display_TextMode(False);
 	Error_Set_Enable_Display_GraphicMode(True, ctrl->vram, ctrl->xsize, ctrl->ysize >> 4);
-	ctrl->vramsheet = Sheet_Initialise();
+	ctrl->vramsheet = Sheet_Initialize();
 	Sheet_SetBuffer(ctrl->vramsheet, ctrl->vram, ctrl->xsize, ctrl->ysize, ctrl->bpp);
 
 	//次に、VBEのBIOS情報を得る。
@@ -269,10 +269,10 @@ uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index)
 			}
 			debug("\n");
 		#endif
-		Initialise_Drawing();
+		Initialize_Drawing();
 		Error_Set_Enable_Display_GraphicMode(True, ctrl->vram, ctrl->xsize, ctrl->ysize >> 4);
 		Sheet_SetBuffer(ctrl->vramsheet, ctrl->vram, ctrl->xsize, ctrl->ysize, ctrl->bpp);
-		System_TaskControlMessage_Send_AllTask(TCM_INFO_DISPLAY_UPDATE_RESOLUTION);
+		System_TaskControlMessage_Send_AllTask(TCM_OFFSET + TCM_INFO_DISPLAY_UPDATE_RESOLUTION);
 		return 0;
 	}
 

@@ -114,7 +114,7 @@ uchar *SystemRunningPhaseText[] = {
 void System_Check_Memory(void);
 uint System_CPUID(void *addr, uint id);
 
-void Initialise_System(void)
+void Initialize_System(void)
 {
 	uint i;
 	uchar s[128];
@@ -132,7 +132,7 @@ void Initialise_System(void)
 	System_Set_RunningPhase(0);
 
 	TextMode_Put_String("\tInitialising SerialPort...\n", white);
-	Initialise_SerialPort();
+	Initialize_SerialPort();
 	Error_Set_Enable_SerialPort(True);
 
 	#ifdef CHNOSPROJECT_DEBUG
@@ -150,35 +150,35 @@ void Initialise_System(void)
 	i = System_Get_PhisycalMemorySize();
 	snprintf(s, sizeof(s), "\tMemory:%uByte %uKiB %uMib\n", i, i >> 10, i >> 20);
 	TextMode_Put_String(s, white);
-	System.Controller.Memory = Memory_Initialise_Control((void *)PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, i - PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, SYSTEM_MEMORY_CONTROL_TAGS);
+	System.Controller.Memory = Memory_Initialize_Control((void *)PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, i - PHYSICAL_MEMORY_ALLOCATION_START_ADDRESS, SYSTEM_MEMORY_CONTROL_TAGS);
 
 	i = Memory_Get_FreeSize(System.Controller.Memory);
 	snprintf(s, sizeof(s), "\tFreeMemory:%uByte %uKiB %uMib\n", i, i >> 10, i >> 20);
 	TextMode_Put_String(s, white);
 
 	TextMode_Put_String("\tInitialising GDT...\n", white);
-	Initialise_GlobalDescriptorTable();
+	Initialize_GlobalDescriptorTable();
 
 	TextMode_Put_String("\tInitialising IDT...\n", white);
-	Initialise_InterruptDescriptorTable();
+	Initialize_InterruptDescriptorTable();
 
 	TextMode_Put_String("\tInitialising PIC...\n", white);
-	Initialise_ProgrammableInterruptController();
+	Initialize_ProgrammableInterruptController();
 
 	TextMode_Put_String("\tInitialising PIT...\n", white);
-	Initialise_ProgrammableIntervalTimer();
+	Initialize_ProgrammableIntervalTimer();
 
 	TextMode_Put_String("\tInitialising Keyboard...\n", white);
-	Initialise_Keyboard();
+	Initialize_Keyboard();
 
 	TextMode_Put_String("\tInitialising MultiTask...\n", white);
-	System.Controller.Task = Initialise_MultiTask_Control(System.Controller.Memory);
+	System.Controller.Task = Initialize_MultiTask_Control(System.Controller.Memory);
 	Timer_Set_TaskSwitch(&System_TaskSwitch);
 	System.CoreTask.Main = System_MultiTask_GetNowTask();
 	System.InputFocus = System.CoreTask.Main->fifo;
 
 	TextMode_Put_String("\tInitialising CallBIOS...\n", white);
-	System.Controller.CallBIOS = Initialise_CallBIOS();
+	System.Controller.CallBIOS = Initialize_CallBIOS();
 
 	TextMode_Put_String("\tReading CPU Identification...\n", white);
 	eflags.eflags = IO_Load_EFlags();
@@ -228,17 +228,17 @@ void Initialise_System(void)
 	}
 
 	TextMode_Put_String("\tInitialising PCI...\n", white);
-	Initialise_PCI();
+	Initialize_PCI();
 
 	TextMode_Put_String("\tSystem Initialising Phase End.\n", white);
 
 	IO_STI();
 
-	System.Controller.Display = Initialise_Display();
+	System.Controller.Display = Initialize_Display();
 
 //Core Task Run.
 
-	System.CoreTask.KeyboardControl = System_MultiTask_Task_Initialise(0);
+	System.CoreTask.KeyboardControl = System_MultiTask_Task_Initialize(0);
 	System.CoreTask.KeyboardControl->tss->eip = (uint)&KeyboardControlTask;
 	System.CoreTask.KeyboardControl->tss->cs = SYSTEM_CS << 3;
 	System.CoreTask.KeyboardControl->tss->ss = SYSTEM_DS << 3;
@@ -247,13 +247,13 @@ void Initialise_System(void)
 	MultiTask_Push_Arguments(System.CoreTask.KeyboardControl, 1, &System.InputFocus);
 	System_MultiTask_Task_Run(System.CoreTask.KeyboardControl);
 
-	System.CoreTask.MouseControl = System_MultiTask_Task_Initialise(0);
+	System.CoreTask.MouseControl = System_MultiTask_Task_Initialize(0);
 	System.CoreTask.MouseControl->tss->eip = (uint)&MouseControlTask;
 	System.CoreTask.MouseControl->tss->cs = SYSTEM_CS << 3;
 	System.CoreTask.MouseControl->tss->ss = SYSTEM_DS << 3;
 	System.CoreTask.MouseControl->tss->ds = SYSTEM_DS << 3;
 	System.CoreTask.MouseControl->tss->esp = (uint)System_Memory_Allocate(1024 * 32) + (1024 * 32);
-	MultiTask_Push_Arguments(System.CoreTask.MouseControl, 2, &System.InputFocus, MouseCursor_Initialise(System.Controller.Display->vramsheet));
+	MultiTask_Push_Arguments(System.CoreTask.MouseControl, 2, &System.InputFocus, MouseCursor_Initialize(System.Controller.Display->vramsheet));
 	System_MultiTask_Task_Run(System.CoreTask.MouseControl);
 
 	return;
@@ -359,9 +359,9 @@ void System_TaskSwitch(void)
 	return;
 }
 
-UI_Task *System_MultiTask_Task_Initialise(uint tss_additional_size)
+UI_Task *System_MultiTask_Task_Initialize(uint tss_additional_size)
 {
-	return MultiTask_Task_Initialise(System.Controller.Task, tss_additional_size);
+	return MultiTask_Task_Initialize(System.Controller.Task, tss_additional_size);
 }
 
 void System_MultiTask_Task_Run(UI_Task *task)
@@ -418,9 +418,9 @@ void System_MultiTask_Task_Kill(UI_Task *task)
 	return;
 }
 
-DATA_FIFO32 *System_FIFO32_Initialise(uint size)
+DATA_FIFO32 *System_FIFO32_Initialize(uint size)
 {
-	return FIFO32_Initialise(System.Controller.Memory, size);
+	return FIFO32_Initialize(System.Controller.Memory, size);
 }
 
 uint System_Display_VESA_Set_VideoMode(uint index)
@@ -457,6 +457,14 @@ uint System_TaskControlMessage_Send_AllTask(uint message)
 uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet)
 {
 	return Sheet_SetParent(sheet, System.Controller.Display->vramsheet);
+}
+
+uint System_InputFocus_Change(DATA_FIFO32 *fifo)
+{
+	FIFO32_Put(System.InputFocus, INPUTSIGNAL_FOCUS_LOST);
+	System.InputFocus = fifo;
+	FIFO32_Put(System.InputFocus, INPUTSIGNAL_FOCUS_GOT);
+	return 0;
 }
 
 //

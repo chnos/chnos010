@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-void Initialise_ProgrammableInterruptController(void)
+void Initialize_ProgrammableInterruptController(void)
 {
 	/*
 	IRR：インタラプトリクエストレジスタ 

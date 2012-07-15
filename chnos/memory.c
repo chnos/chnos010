@@ -40,7 +40,7 @@ uint Memory_Test(uint start, uint end)
 //ctrl[0].size = tags;
 //Memory Control配列は、管理対象のメモリの終端に配置される。
 
-IO_MemoryControl Memory_Initialise_Control(void *start, uint size, uint tags)
+IO_MemoryControl Memory_Initialize_Control(void *start, uint size, uint tags)
 {
 	IO_MemoryControl ctrl;
 

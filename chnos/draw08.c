@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-void Drawing08_Initialise_Palette(void)
+void Drawing08_Initialize_Palette(void)
 {
 	static uchar table_rgb[16 * 3] = {
 		0x00, 0x00, 0x00,

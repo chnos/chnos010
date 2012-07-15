@@ -3,7 +3,7 @@
 
 //各シートの左上をP、左下をQ、右下をR、右上をS（すべて書き込める座標）とする。
 
-UI_Sheet *Sheet_Initialise(void)
+UI_Sheet *Sheet_Initialize(void)
 {
 	UI_Sheet *sheet;
 
@@ -13,7 +13,7 @@ UI_Sheet *Sheet_Initialise(void)
 	sheet->flags.bit.autorefresh_upperlevel = True;
 
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
-		debug("Sheet_Initialise:[0x%08X]\n", sheet);
+		debug("Sheet_Initialize:[0x%08X]\n", sheet);
 	#endif
 
 	sheet->Drawing.Fill_Rectangle = &Sheet_Drawing_Fill_Rectangle_Invalid;
@@ -38,7 +38,7 @@ uint Sheet_Free(UI_Sheet *sheet)
 	}
 	if(!sheet->flags.bit.initialized){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_Free:Not Initialised sheet.\n");
+			debug("Sheet_Free:Not Initialized sheet.\n");
 		#endif
 		return 1;
 	}
@@ -97,7 +97,7 @@ uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint b
 	}
 	if(!sheet->flags.bit.initialized){
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_SetBuffer:Not Initialised sheet.\n");
+			debug("Sheet_SetBuffer:Not Initialized sheet.\n");
 		#endif
 		return 2;
 	}
@@ -128,7 +128,7 @@ uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint b
 	}
 
 	if(sheet->flags.bit.using_map){
-		Sheet_Internal_MapInitialise(sheet);
+		Sheet_Internal_MapInitialize(sheet);
 	}
 
 	for(search = sheet->child; search != Null; search = search->next){
@@ -288,7 +288,7 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 	sheet->flags.bit.visible = True;
 
 	if(!sheet->parent->flags.bit.using_map){
-		Sheet_Internal_MapInitialise(sheet->parent);
+		Sheet_Internal_MapInitialize(sheet->parent);
 	}
 
 	Sheet_Internal_MapRefresh(sheet, sheet->location.x, sheet->location.y, sheet->location.x + sheet->size.x - 1, sheet->location.y + sheet->size.y - 1);
@@ -345,8 +345,12 @@ uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy)
 		return 3;
 	}
 	if(!sheet->flags.bit.visible){
-		sheet->location.x = apx;
-		sheet->location.y = apy;
+		if(apx != SHEET_LOCATION_NOCHANGE){
+			sheet->location.x = apx;
+		}
+		if(apy != SHEET_LOCATION_NOCHANGE){
+			sheet->location.y = apy;
+		}
 		return 0;
 	}
 
@@ -386,8 +390,12 @@ uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy)
 		return 3;
 	}
 	if(!sheet->flags.bit.visible){
-		sheet->location.x += rpx;
-		sheet->location.y += rpy;
+		if(rpx != SHEET_LOCATION_NOCHANGE){
+			sheet->location.x += rpx;
+		}
+		if(rpy != SHEET_LOCATION_NOCHANGE){
+			sheet->location.y += rpy;
+		}
 		return 0;
 	}
 
@@ -582,9 +590,24 @@ uint Sheet_SetMovable(UI_Sheet *sheet, bool movable)
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_SetMovable:Null sheet.\n");
 		#endif
-		return Null;
+		return 1;
 	}
 
 	sheet->flags.bit.movable = movable;
 	return 0;
 }
+
+uint Sheet_SetInputFIFO(UI_Sheet *sheet, DATA_FIFO32 *fifo)
+{
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_SetInputFIFO:Null sheet.\n");
+		#endif
+		return 1;
+	}
+
+	sheet->input_fifo = fifo;
+
+	return 0;
+}
+

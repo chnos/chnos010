@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-void Initialise_SerialPort(void)
+void Initialize_SerialPort(void)
 {
 	IO_Out8(COM1_CTRL_LINE, 0x80);	//ボーレート設定開始
 	IO_Out8(COM1_BAUD_LSB, 0x06);	//0x06 = 19.2bps

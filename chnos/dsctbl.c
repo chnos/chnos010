@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-void Initialise_GlobalDescriptorTable(void)
+void Initialize_GlobalDescriptorTable(void)
 {
 	uint i;
 
@@ -17,7 +17,7 @@ void Initialise_GlobalDescriptorTable(void)
 	return;
 }
 
-void Initialise_InterruptDescriptorTable(void)
+void Initialize_InterruptDescriptorTable(void)
 {
 	uint i;
 

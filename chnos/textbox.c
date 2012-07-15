@@ -1,11 +1,11 @@
 
 #include "core.h"
 
-UI_TextBox *TextBox_Initialise(void)
+UI_TextBox *TextBox_Initialize(void)
 {
 	UI_TextBox *textbox;
 
-	textbox = System_Memory_Allocate(sizeof(UI_TextBox));
+	textbox = (UI_TextBox *)System_CommonStruct_Allocate(SYSTEM_STRUCTID_TEXTBOX);
 	textbox->flags.bit.initialized = True;
 
 	textbox->forecol = 0x000000;
@@ -35,7 +35,7 @@ uint TextBox_SetBuffer(UI_TextBox *textbox, uint xchars, uint ychars, uint bpp, 
 	textbox->chars.y = ychars;
 	textbox->size_text_buf = textbox->chars.x * textbox->chars.y;
 
-	textbox->sheet = Sheet_Initialise();
+	textbox->sheet = Sheet_Initialize();
 	Sheet_SetBuffer(textbox->sheet, Null, xchars << 3, ychars << 4, bpp);
 	Sheet_SetParent(textbox->sheet, parent);
 
@@ -94,58 +94,12 @@ uint TextBox_Put_Character(UI_TextBox *textbox, ushort keyid)
 		if(keyid & KEYID_MASK_EXTENDED){	/*§Œä•¶Žš*/
 			switch(keyid & KEYID_MASK_ID){
 				case KEYID_ENTER:
-/*
-					if(TextBox_Internal_Put_Character_TextBuffer(textbox, '\n')){
-						textbox->location_cursor.x = 0;
-						textbox->location_cursor.y += 16;
-					}
-*/
 					TextBox_Put_Character(textbox, '\n');
 					break;
 				case KEYID_BACKSPACE:
-/*
-					if(textbox->location_cursor.x <= 0 && textbox->location_cursor.y <= 0){
-						break;
-					}
-					if(TextBox_Internal_Put_Character_TextBuffer(textbox, '\b')){
-						textbox->location_cursor.x -= 8;
-					}
-					if(textbox->location_cursor.x < 0){
-						textbox->location_cursor.x = 0;
-						textbox->location_cursor.y -= 16;
-						if(textbox->flags.bit.record_input_text){
-							for(i = 0; i < textbox->using_text_buf; i++){
-								if(textbox->text_buf[textbox->using_text_buf - i - 1] == '\n'){
-									break;
-								}
-								textbox->location_cursor.x += 8;
-								if(textbox->location_cursor.x >= (int)textbox->sheet->size.x - (8 - 1)){
-									textbox->location_cursor.x = 0;
-								}
-								if(textbox->using_text_buf - i - 1 == 0){
-									break;
-								}
-							}
-						} else{
-							textbox->location_cursor.x = (int)textbox->sheet->size.x - 8;
-						}
-					}
-*/
 					TextBox_Put_Character(textbox, '\b');
 					break;
 				case KEYID_TAB:
-/*
-					if(!textbox->flags.bit.record_input_text && TextBox_Internal_Put_Character_TextBuffer(textbox, '\b')){
-						textbox->location_cursor.x += 8 * (4 - ((textbox->location_cursor.x >> 3) & 3));
-					}
-					if(textbox->location_cursor.x > (int)textbox->sheet->size.x){
-						textbox->location_cursor.x = 8 * 4;
-						textbox->location_cursor.y += 16;
-					} else if(textbox->location_cursor.x == (int)textbox->sheet->size.x){
-						textbox->location_cursor.x = 0;
-						textbox->location_cursor.y += 16;
-					}
-*/
 					TextBox_Put_Character(textbox, '\t');
 					break;
 			}
@@ -164,7 +118,7 @@ uint TextBox_Put_Character(UI_TextBox *textbox, ushort keyid)
 						textbox->location_cursor.x -= 8;
 					}
 					if(textbox->location_cursor.x < 0){
-						textbox->location_cursor.x = 0;
+						textbox->location_cursor.x = textbox->location_cursor_record_started.x;
 						textbox->location_cursor.y -= 16;
 						if(textbox->flags.bit.record_input_text){
 							for(i = 0; i < textbox->using_text_buf; i++){
@@ -275,6 +229,7 @@ bool TextBox_SetEnable_RecordInputText(UI_TextBox *textbox, bool enable)
 		if(enable){
 			textbox->text_buf[0] = 0x00;
 			textbox->using_text_buf = 0;
+			textbox->location_cursor_record_started = textbox->location_cursor;
 		}
 		textbox->flags.bit.record_input_text = enable;
 	}

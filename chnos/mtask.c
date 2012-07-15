@@ -4,7 +4,7 @@
 //FIFOによるタスクの自動起動は既定で有効ですが、タスクが明示的に実行されるまでは無効になっています。
 //タスクはSTI下で開始されます（外部割り込み有効）。
 
-UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl)
+UI_TaskControl *Initialize_MultiTask_Control(IO_MemoryControl sysmemctrl)
 {
 	UI_TaskControl *ctrl;
 	UI_Task *maintask;
@@ -13,7 +13,7 @@ UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl)
 	ctrl->now = 0;
 	ctrl->sysmemctrl = sysmemctrl;
 
-	maintask = MultiTask_Task_Initialise(ctrl, 0);
+	maintask = MultiTask_Task_Initialize(ctrl, 0);
 
 	Load_TR(maintask->selector << 3);
 
@@ -28,7 +28,7 @@ UI_TaskControl *Initialise_MultiTask_Control(IO_MemoryControl sysmemctrl)
 	return ctrl;
 }
 
-UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_size)
+UI_Task *MultiTask_Task_Initialize(UI_TaskControl *ctrl, uint tss_additional_size)
 {
 	UI_Task *task;
 
@@ -85,7 +85,7 @@ UI_Task *MultiTask_Task_Initialise(UI_TaskControl *ctrl, uint tss_additional_siz
 	task->next = 0;
 	task->count = 0;
 
-	task->fifo = FIFO32_Initialise(ctrl->sysmemctrl, TASK_FIFOSIZE);
+	task->fifo = FIFO32_Initialize(ctrl->sysmemctrl, TASK_FIFOSIZE);
 
 	task->flags.initialized = True;
 	task->flags.linked = False;
