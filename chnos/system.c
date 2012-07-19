@@ -461,9 +461,11 @@ uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet)
 
 uint System_InputFocus_Change(DATA_FIFO32 *fifo)
 {
-	FIFO32_Put(System.InputFocus, INPUTSIGNAL_FOCUS_LOST);
-	System.InputFocus = fifo;
-	FIFO32_Put(System.InputFocus, INPUTSIGNAL_FOCUS_GOT);
+	if(System.InputFocus != fifo){
+		FIFO32_Put(System.InputFocus, INPUTSIGNAL_OFFSET + INPUTSIGNAL_FOCUS_LOST);
+		System.InputFocus = fifo;
+		FIFO32_Put(System.InputFocus, INPUTSIGNAL_OFFSET + INPUTSIGNAL_FOCUS_GOT);
+	}
 	return 0;
 }
 

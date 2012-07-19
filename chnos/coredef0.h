@@ -355,3 +355,6 @@
 #define SHEET_MAX_CHILDREN	255
 #define SHEET_LOCATION_NOCHANGE	0x7ffffffe
 
+/*console*/
+#define CONSOLE_PRINTF_BUFFER_SIZE	1024
+

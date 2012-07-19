@@ -120,6 +120,18 @@ uint isqrt(uint n)
 	return x;
 }
 
+bool CFunction_CompareStrings(const uchar s1[], const uchar s2[])
+{
+	uint i;
+
+	for(i = 0; s1[i] == s2[i]; i++){
+		if(s1[i] == 0x00){
+			return True;
+		}
+	}
+	return False;
+}
+
 uint CFunction_ExtractBits(uint source, uint start, uint end)
 {
 	return (source >> start) & ~(0xffffffff << (end - start + 1));

@@ -80,6 +80,8 @@ void Console_MainTask(UI_Console *myconsole)
 {
 	UI_Task *mytask;
 	uint data;
+	UI_Timer *ctimer;
+	bool key_ignore;
 
 	data = 0;
 
@@ -88,6 +90,8 @@ void Console_MainTask(UI_Console *myconsole)
 	#ifdef CHNOSPROJECT_DEBUG
 		debug("CMT:ConsoleMainTask[UI_Task=0x%X] Start Running.\n", mytask);
 	#endif
+
+	myconsole->printf_buffer = (uchar *)System_Memory_Allocate(CONSOLE_PRINTF_BUFFER_SIZE);
 
 	TextBox_Show(myconsole->textbox, SHEET_MAX_CHILDREN, (int)(myconsole->textbox->sheet->parent->size.x >> 1) - (int)(myconsole->textbox->sheet->size.x >> 1), (int)(myconsole->textbox->sheet->parent->size.y >> 1) - (int)(myconsole->textbox->sheet->size.y >> 1));
 	if(myconsole->textbox->sheet->location.x < 0){
@@ -100,6 +104,10 @@ void Console_MainTask(UI_Console *myconsole)
 	TextBox_SetEnable_RecordInputText(myconsole->textbox, True);
 	myconsole->flags.bit.isprompt = True;
 
+	ctimer = Timer_Initialize();
+	Timer_Config(ctimer, 500, mytask->fifo, 1, True);
+	Timer_Run(ctimer);
+
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
 			System_MultiTask_Task_Sleep(mytask);
@@ -110,12 +118,43 @@ void Console_MainTask(UI_Console *myconsole)
 			#endif
 			if(data < INPUTSIGNAL_OFFSET){
 				//汎用利用可能領域0
+				if(data == 1){
+					TextBox_Cursor_Blink(myconsole->textbox);
+				}
 			} else if(data < SIGNAL_KEY_OFFSET){
+				data -= INPUTSIGNAL_OFFSET;
+				if(data == INPUTSIGNAL_FOCUS_GOT){
+					TextBox_SetEnable_CursorBlink(myconsole->textbox, True);
+				} else if(data == INPUTSIGNAL_FOCUS_LOST){
+					TextBox_SetEnable_CursorBlink(myconsole->textbox, False);
+				}
 				//入力通知領域
 			} else if(data < SIGNAL_KEY_OFFSET + 0xffff){
+				key_ignore = False;
 				//keyid通知
 				data -= SIGNAL_KEY_OFFSET;
-				TextBox_Put_Character(myconsole->textbox, data);
+				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
+					if((data & KEYID_MASK_ID) == KEYID_ENTER){
+						key_ignore = True;
+						TextBox_SetEnable_RecordInputText(myconsole->textbox, False);
+						TextBox_Put_Character(myconsole->textbox, '\n');
+						if(Console_CompareCommandline_s(myconsole, "test")){
+							TextBox_Put_String(myconsole->textbox, "Hello, World.");
+						} else if(Console_CompareCommandline_s(myconsole, "mem")){
+							Console_printf(myconsole, "Total:%10uBytes %5uKB\n", System_Get_PhisycalMemorySize(), System_Get_PhisycalMemorySize() >> 10);
+							Console_printf(myconsole, "Free :%10uBytes %5uKB\n", System_Memory_Get_FreeSize(), System_Memory_Get_FreeSize() >> 10);
+						} else{
+							TextBox_Put_String(myconsole->textbox, "Console:No such file or command:");
+							TextBox_Put_String(myconsole->textbox, myconsole->textbox->text_buf);
+						}
+						TextBox_Put_Character(myconsole->textbox, '\n');
+						TextBox_Put_Character(myconsole->textbox, '>');
+						TextBox_SetEnable_RecordInputText(myconsole->textbox, True);
+					}
+				}
+				if(!key_ignore){
+					TextBox_Put_Key(myconsole->textbox, data);
+				}
 			} else if(data < TCM_OFFSET){
 				//汎用利用可能領域1
 			} else{
@@ -124,3 +163,16 @@ void Console_MainTask(UI_Console *myconsole)
 		}
 	}
 }
+
+bool Console_CompareCommandline_s(UI_Console *myconsole, const uchar s[])
+{
+	return CFunction_CompareStrings(myconsole->textbox->text_buf, s);
+}
+
+uint Console_printf(UI_Console *myconsole, const uchar format[], ...)
+{
+	CFunction_vsnprintf(myconsole->printf_buffer, CONSOLE_PRINTF_BUFFER_SIZE, format, (uint *)(&format + 1));
+	TextBox_Put_String(myconsole->textbox, myconsole->printf_buffer);
+	return 0;
+}
+

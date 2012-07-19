@@ -25,6 +25,7 @@ uint CallBIOS_Pop_Data_From_Stack(uint *esp);
 void srand(uint seed);
 uint rand(void);
 uint isqrt(uint n);
+bool CFunction_CompareStrings(const uchar s1[], const uchar s2[]);
 uint CFunction_ExtractBits(uint source, uint start, uint end);
 uint CFunction_MemoryMove(void *destination, uint destination_size, void *source, uint source_size);
 int snprintf(uchar s[], uint n, const uchar format[], ...);
@@ -57,6 +58,8 @@ UI_Console *Console_Initialize(void);
 uint Console_SetSize(UI_Console *console, uint xchars, uint ychars);
 uint Console_Run(UI_Console *console);
 void Console_MainTask(UI_Console *myconsole);
+bool Console_CompareCommandline_s(UI_Console *myconsole, const uchar s[]);
+uint Console_printf(UI_Console *myconsole, const uchar format[], ...);
 
 /*debug.c デバッグ支援*/
 #ifdef CHNOSPROJECT_DEBUG
@@ -372,10 +375,15 @@ uint System_InputFocus_Change(DATA_FIFO32 *fifo);
 UI_TextBox *TextBox_Initialize(void);
 uint TextBox_SetBuffer(UI_TextBox *textbox, uint xchars, uint ychars, uint bpp, UI_Sheet *parent);
 uint TextBox_Show(UI_TextBox *textbox, uint height, int px, int py);
-uint TextBox_Put_Character(UI_TextBox *textbox, ushort keyid);
+uint TextBox_Put_Key(UI_TextBox *textbox, ushort keyid);
 uint TextBox_Put_String(UI_TextBox *textbox, const uchar s[]);
-bool TextBox_Internal_Put_Character_TextBuffer(UI_TextBox *textbox, uchar c);
+uint TextBox_Put_Character(UI_TextBox *textbox, uchar c);
 bool TextBox_SetEnable_RecordInputText(UI_TextBox *textbox, bool enable);
+uint TextBox_SetEnable_CursorBlink(UI_TextBox *textbox, bool enable);
+uint TextBox_Cursor_Blink(UI_TextBox *textbox);
+uint TextBox_Internal_Put_Character(UI_TextBox *textbox, uchar c);
+bool TextBox_Internal_Put_Character_TextBuffer(UI_TextBox *textbox, uchar c);
+uint TextBox_Internal_DrawCursor(UI_TextBox *textbox, bool cursor);
 
 /*timer.c タイマー関連*/
 UI_TimerControl *Initialize_ProgrammableIntervalTimer(void);

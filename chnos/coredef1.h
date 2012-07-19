@@ -580,6 +580,8 @@ typedef struct UI_TEXT_BOX {
 			unsigned initialized : 1;
 			unsigned textbuffer_configured : 1;
 			unsigned record_input_text : 1;
+			unsigned cursor_blink : 1;
+			unsigned cursor_state : 1;
 		} bit;
 	} flags;
 } UI_TextBox;
@@ -587,6 +589,7 @@ typedef struct UI_TEXT_BOX {
 typedef struct UI_CONSOLE {
 	UI_TextBox *textbox;
 	UI_Task *task;
+	uchar *printf_buffer;
 	union UI_CONSOLE_FLAGS {
 		uint flags;
 		struct UI_CONSOLE_BITS {

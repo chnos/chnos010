@@ -171,7 +171,7 @@ void CHNMain(void)
 	//Timer_Run(timer3);
 
 	console = Console_Initialize();
-	Console_SetSize(console, 20, 6);
+	Console_SetSize(console, vramsheet->size.x >> 4, vramsheet->size.y >> 5);
 	Console_Run(console);
 
 	for(;;){
@@ -181,7 +181,7 @@ void CHNMain(void)
 			data = FIFO32_MyTaskFIFO_Get();
 			if(SIGNAL_KEY_OFFSET <= data && data <= (SIGNAL_KEY_OFFSET + 0xFFFF)){
 				data -= SIGNAL_KEY_OFFSET;
-				TextBox_Put_Character(textbox, data);
+				TextBox_Put_Key(textbox, data);
 				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
 					if((data & KEYID_MASK_ID) == KEYID_ENTER){
 						TextBox_SetEnable_RecordInputText(textbox, False);
