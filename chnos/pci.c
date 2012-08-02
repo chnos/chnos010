@@ -97,12 +97,6 @@ PCI_Device_Type pci_device_type[] = {
 	{3, "[Undefined]"},
 };
 
-void PCI_ConfigurationRegister_SelectDevice(uint bus, uint device, uint function);
-uint PCI_ConfigurationRegister_Read32(uint addr);
-uchar *PCI_GetDeviceVendor(uint id);
-uchar *PCI_GetDeviceClass(uint id);
-uchar *PCI_GetDeviceType(uint id);
-
 void Initialize_PCI(void)
 {
 	#ifdef CHNOSPROJECT_DEBUG_PCI

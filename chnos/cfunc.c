@@ -120,6 +120,70 @@ uint isqrt(uint n)
 	return x;
 }
 
+//文字列から数値を生成します。
+//base=0:C言語の定数表記ルールに従う。("0x..."=16, "0..."=8, else=10)
+//base=2-36(数字10+アルファベット26):各数字を基数として文字列を理解しようとする。
+//アルファベットの大文字・小文字は問わない。
+//endptr=NULLも可。有効な数字が一つもなければ、*endptr=s, retv=0となる。
+//出力のオーバーフローについては考慮しないので注意。
+//現状では負数は扱えない(マイナス記号は変換不能とされる)
+//sの例:"0xFEC375"(16), "0423"(8), "12345"(10)
+//文字列全体の前には空白があっても無視される。数字部分開始後は空白は変換不能とされる。
+//*endptr[0]==0x00のとき、文字列sのすべてが変換されたことを示す。
+uint strtol(const uchar s[], uchar *endptr[], uint base)
+{
+	uint i, v;
+
+	v = 0;
+
+	if(s == Null || base > 36 || base == 1){
+		if(endptr != Null){
+			*endptr = Null;
+		}
+		return 0;
+	}
+
+//空白を読み飛ばす
+	for(i = 0; s[i] != 0x00; i++){
+		if(s[i] != ' '){
+			break;
+		}
+	}
+//base=0の時の基数決定
+	if(base == 0){
+		if(s[i] == '0'){
+			i++;
+			if(s[i] == 'x'){
+				base = 16;
+				i++;
+			} else{
+				base = 8;
+			}
+		} else{
+			base = 10;
+		}
+	}
+//数値変換
+	for(; s[i] != 0x00; i++){
+		if('0' <= s[i] <= '9' && s[i] - '0' < base){
+			v *= base;
+			v += s[i] - '0';
+		} else if('A' <= s[i] <= 'Z' && s[i] - 'A' + 10 < base){
+			v *= base;
+			v += s[i] - 'A' + 10;
+		} else if('a' <= s[i] <= 'z' && s[i] - 'a' + 10 < base){
+			v *= base;
+			v += s[i] - 'a' + 10;
+		} else{
+			break;
+		}
+	}
+	if(endptr != Null){
+		*endptr = (uchar *)&s[i];
+	}
+	return v;
+}
+
 bool CFunction_CompareStrings(const uchar s1[], const uchar s2[])
 {
 	uint i;
@@ -132,9 +196,70 @@ bool CFunction_CompareStrings(const uchar s1[], const uchar s2[])
 	return False;
 }
 
+bool CFunction_CompareStrings_n(const uchar s1[], const uchar s2[], unsigned int n)
+{
+	uint i;
+
+	for(i = 0; i < n; i++){
+		if(s1[i] != s2[i]){
+			return False;
+		}
+		if(s1[i] == 0x00){
+			return True;
+		}
+	}
+	return True;
+}
+
 uint CFunction_ExtractBits(uint source, uint start, uint end)
 {
 	return (source >> start) & ~(0xffffffff << (end - start + 1));
+}
+
+//文字列内のn番目の単語(スペース区切りによる)の先頭アドレスを取得する。
+//戻り値は、n番目の単語が存在するかどうかを返す。
+//存在しなかった場合の*wordptrはsの末端を返す。
+//wordptrはNull許容。
+bool CFunction_String_GetWord(const uchar s[], uchar *wordptr[], uint n)
+{
+	uint i, count;
+
+	if(s == Null){
+		if(wordptr != Null){
+			*wordptr = Null;
+		}
+		return False;
+	}
+
+	if(n == 0){
+		if(wordptr != Null){
+			*wordptr = (uchar *)s;
+		}
+		return True;
+	}
+
+	count = 0;
+	for(i = 0; s[i] != 0x00; i++){
+		if(s[i] == ' '){
+			count++;
+			for(; s[i] != 0x00; i++){
+				if(s[i] != ' '){
+					break;
+				}
+			}
+			if(s[i] != 0x00 && count == n){
+				if(wordptr != Null){
+					*wordptr = (uchar *)&s[i];
+				}
+				return True;
+			}
+		}
+	}
+
+	if(wordptr != Null){
+		*wordptr = (uchar *)&s[i];
+	}
+	return False;
 }
 
 //source番地からの、destination_sizeを超えないsource_sizeバイトを、destination番地へ移動させる。
@@ -258,6 +383,11 @@ int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 				work.format_phase = 0;
 			} else if(c == 'o'){	/*データを8進数で出力します。*/
 			} else if(c == 'd'){	/*データを10進数で出力します。*/
+				/*標準精度は一桁以上、ゼロフィルです。*/
+				if(fill_length == 0xffffffff){
+					fill_length = 1;
+					flag_fill_zero = True;
+				}
 				i = CFunction_vsnprintf_Get_NextArgument(&work);
 				if((i & 0x80000000) != 0){
 					i--;
@@ -265,12 +395,26 @@ int CFunction_vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[])
 					CFunction_vsnprintf_Write_DestinationBuffer(&work, '-');
 				}
 				CFunction_vsnprintf_To_String_From_Decimal_Unsigned(&work, i);
+
 				for(i = 0; i < 10; i++){
 					if(work.temporary_data[i] != ' '){
 						break;
 					}
-					if(i >= 10 - 1){
-						CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
+				}
+				if(i == 10){
+					i--;
+					work.temporary_data[10 - 1] = '0';
+				}
+
+				if((10 - i) < fill_length && fill_length != 0xffffffff){
+					if(flag_fill_zero){
+						for(j = 0; j < (fill_length - (10 - i)); j++){
+							CFunction_vsnprintf_Write_DestinationBuffer(&work, '0');
+						}
+					} else{
+						for(j = 0; j < (fill_length - (10 - i)); j++){
+							CFunction_vsnprintf_Write_DestinationBuffer(&work, ' ');
+						}
 					}
 				}
 				for(; i < 10; i++){

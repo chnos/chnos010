@@ -173,6 +173,7 @@ void CHNMain(void)
 	console = Console_Initialize();
 	Console_SetSize(console, vramsheet->size.x >> 4, vramsheet->size.y >> 5);
 	Console_Run(console);
+	System_InputFocus_Change(console->textbox->sheet->input_fifo);
 
 	for(;;){
 		if(FIFO32_MyTaskFIFO_Status() == 0){
@@ -339,8 +340,12 @@ void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor)
 							moveorg_mfocus.y = mcursor->cursor_sheet->location.y;
 							mfocus = Sheet_GetSheetFromLocation(mcursor->cursor_sheet->parent, mcursor->cursor_sheet->location.x, mcursor->cursor_sheet->location.y);
 							System_InputFocus_Change(mfocus->input_fifo);
-							if(mfocus != Null && mfocus->flags.bit.movable == False){
-								mfocus = Null;
+							if(mfocus != Null){
+								if(mfocus->flags.bit.movable){
+									Sheet_ChangeHeight(mfocus, SHEET_MAX_CHILDREN);
+								} else{
+									mfocus = Null;
+								}
 							}
 						}
 						old_mouse_buttonL = mctrl->button.bit.L;

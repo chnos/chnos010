@@ -25,8 +25,11 @@ uint CallBIOS_Pop_Data_From_Stack(uint *esp);
 void srand(uint seed);
 uint rand(void);
 uint isqrt(uint n);
+uint strtol(const uchar s[], uchar *endptr[], uint base);
 bool CFunction_CompareStrings(const uchar s1[], const uchar s2[]);
+bool CFunction_CompareStrings_n(const uchar s1[], const uchar s2[], unsigned int n);
 uint CFunction_ExtractBits(uint source, uint start, uint end);
+bool CFunction_String_GetWord(const uchar s[], uchar *wordptr[], uint n);
 uint CFunction_MemoryMove(void *destination, uint destination_size, void *source, uint source_size);
 int snprintf(uchar s[], uint n, const uchar format[], ...);
 int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
@@ -57,9 +60,12 @@ ushort RGB_32_To_16(uint c32);
 UI_Console *Console_Initialize(void);
 uint Console_SetSize(UI_Console *console, uint xchars, uint ychars);
 uint Console_Run(UI_Console *console);
-void Console_MainTask(UI_Console *myconsole);
-bool Console_CompareCommandline_s(UI_Console *myconsole, const uchar s[]);
-uint Console_printf(UI_Console *myconsole, const uchar format[], ...);
+void Console_MainTask(UI_Console *console);
+bool Console_CompareCommandline_s(UI_Console *console, const uchar s[]);
+bool Console_CompareCommandline_n(UI_Console *console, const uchar s[], unsigned int n);
+uint Console_printf(UI_Console *console, const uchar format[], ...);
+uint Console_Command_dir(UI_Console *console);
+uint Console_Command_pci(UI_Console *console);
 
 /*debug.c デバッグ支援*/
 #ifdef CHNOSPROJECT_DEBUG
@@ -195,6 +201,9 @@ void FIFO32_Free(DATA_FIFO32 *fifo);
 uint FIFO32_MyTaskFIFO_Status(void);
 uint FIFO32_MyTaskFIFO_Get(void);
 
+/*floppy.c フロッピーディスク関連*/
+IO_FloppyDisk *FloppyDisk_Initialize(void *img);
+
 /*fmt_bmp.c ビットマップ描画関連*/
 uint Format_BMP_DrawPicture(void *vram, uint xsize, uint x, uint y, uint pxsize, uint pysize, void *bmp);
 
@@ -248,6 +257,11 @@ uint MultiTask_Push_Arguments(UI_Task *task, uint args, ...);
 
 /*pci.c PCI関連*/
 void Initialize_PCI(void);
+void PCI_ConfigurationRegister_SelectDevice(uint bus, uint device, uint function);
+uint PCI_ConfigurationRegister_Read32(uint addr);
+uchar *PCI_GetDeviceVendor(uint id);
+uchar *PCI_GetDeviceClass(uint id);
+uchar *PCI_GetDeviceType(uint id);
 
 /*serial.c シリアル通信関連*/
 void Initialize_SerialPort(void);
@@ -259,6 +273,7 @@ uint Sheet_Free(UI_Sheet *sheet);
 uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
 uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent);
 uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py);
+uint Sheet_ChangeHeight(UI_Sheet *sheet, uint height);
 uint Sheet_RefreshSheet_All(UI_Sheet *sheet);
 uint Sheet_Slide_Absolute(UI_Sheet *sheet, int apx, int apy);
 uint Sheet_Slide_Relative(UI_Sheet *sheet, int rpx, int rpy);
@@ -333,6 +348,7 @@ uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int 
 uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy);
+uint Sheet_Internal_ChangeHeight(UI_Sheet *sheet, uint height);
 bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py);
 uint Sheet_Internal_RefreshSheet_Invalid(struct UI_SHEET *sheet, int px0, int py0, int px1, int py1);
 

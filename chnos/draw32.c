@@ -51,6 +51,10 @@ void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const 
 		return;
 	}
 
+	if(s == Null){
+		return;
+	}
+
 	for(; *s != 0x00; s++){
 		if(x > xsize - 8){
 			break;

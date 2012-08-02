@@ -272,6 +272,9 @@
 #define DISPLAYMODE_VBE_LINEAR		0x0002
 
 /*settings*/
+/*IPL defines*/
+#define ADR_DISKIMG	(void *)0x00100000
+
 /*system segments*/
 #define SYSTEM_DS	0x01
 #define SYSTEM_CS	0x02
@@ -357,4 +360,9 @@
 
 /*console*/
 #define CONSOLE_PRINTF_BUFFER_SIZE	1024
+
+/*floppy*/
+#define FLOPPYDISK_RDE_OFFSET	0x002600
+#define FLOPPYDISK_RDE_ENTRIES	224
+
 

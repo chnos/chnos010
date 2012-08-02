@@ -184,8 +184,6 @@ uint Sheet_SetParent(UI_Sheet *sheet, UI_Sheet *parent)
 
 uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 {
-	UI_Sheet **search;
-	uint i;
 	uint retv;
 
 	if(sheet == Null){
@@ -204,13 +202,6 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		#ifdef CHNOSPROJECT_DEBUG_SHEET
 			debug("Sheet_Show:Null parent.\n");
 		#endif
-		sheet->flags.bit.visible = True;
-		if(px != SHEET_LOCATION_NOCHANGE){
-			sheet->location.x = px;
-		}
-		if(py != SHEET_LOCATION_NOCHANGE){
-			sheet->location.y = py;
-		}
 		return 3;
 	}
 	if(sheet->flags.bit.visible == True){
@@ -223,61 +214,7 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 		return 10 + retv;
 	}
 
-//At First, clear old height link.
-
-	search = &sheet->parent->child;
-	for(i = 0; i < SHEET_MAX_CHILDREN; i++){
-		if(*search == sheet){
-			*search = sheet->next;
-			break;
-		}
-		search = &(*search)->next;
-	}
-
-//Next, set new height link.
-	if(!sheet->flags.bit.topmost){
-		search = &sheet->parent->child;
-		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
-			if(i == height){
-				#ifdef CHNOSPROJECT_DEBUG_SHEET
-					debug("Sheet_Show:Search:Break(height).\n");
-				#endif
-				break;
-			}
-			if(*search == Null){
-				#ifdef CHNOSPROJECT_DEBUG_SHEET
-					debug("Sheet_Show:Search:Break(End of link).\n");
-				#endif
-				break;
-			}
-			if((*search)->flags.bit.topmost){
-				#ifdef CHNOSPROJECT_DEBUG_SHEET
-					debug("Sheet_Show:Search:Break(Under topmost sheet).\n");
-				#endif
-				break;
-			}
-			search = &(*search)->next;
-		}
-	} else{	/*topmost sheet. ignore height.*/
-		search = &sheet->parent->child;
-		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
-			if(*search == Null){
-				#ifdef CHNOSPROJECT_DEBUG_SHEET
-					debug("Sheet_Show:Search:Break(Top most).\n");
-				#endif
-				break;
-			}
-			search = &(*search)->next;
-		}
-	}
-	if(i == SHEET_MAX_CHILDREN){
-		#ifdef CHNOSPROJECT_DEBUG_SHEET
-			debug("Sheet_Show:Number of sheets is over SHEET_MAX_CHILDREN.\n");
-		#endif
-		return 3;
-	}
-	sheet->next = *search;
-	*search = sheet;
+	Sheet_Internal_ChangeHeight(sheet, height);
 
 	if(px != SHEET_LOCATION_NOCHANGE){
 		sheet->location.x = px;
@@ -298,6 +235,33 @@ uint Sheet_Show(UI_Sheet *sheet, uint height, int px, int py)
 	#ifdef CHNOSPROJECT_DEBUG_SHEET
 		debug("Sheet_Show:[0x%08X] height:%d\n", sheet, i);
 	#endif
+
+	return 0;
+}
+
+uint Sheet_ChangeHeight(UI_Sheet *sheet, uint height)
+{
+	if(sheet == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_ChangeHeight:Null sheet.\n");
+		#endif
+		return 1;
+	}
+	if(!sheet->flags.bit.buffer_configured){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_ChangeHeight:Not buffer_configured sheet.\n");
+		#endif
+		return 2;
+	}
+	if(sheet->parent == Null){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_ChangeHeight:Null parent.\n");
+		#endif
+		return 3;
+	}
+
+	Sheet_Internal_ChangeHeight(sheet, height);
+	Sheet_RefreshAllInRange(sheet->parent, sheet->location.x, sheet->location.y, sheet->location.x + (int)sheet->size.x - 1, sheet->location.y + (int)sheet->size.y - 1);
 
 	return 0;
 }

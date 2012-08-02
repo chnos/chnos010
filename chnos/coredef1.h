@@ -8,6 +8,7 @@ typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
 typedef enum _col_text { black, blue, green, skyblue, red, purple, brown, white} col_text;
+typedef unsigned char sector[512];
 
 /*structs*/
 /*CPU structs*/
@@ -586,6 +587,67 @@ typedef struct UI_TEXT_BOX {
 	} flags;
 } UI_TextBox;
 
+typedef struct IO_FLOPPYDISK_RDE {
+	uchar name[8];	//0x00:empty(no more files)
+					//0x05:=0xe5
+					//0x2e:(only directory)
+					//.		0x2e:current directory
+					//..	0x2e, 0x2e:parent directory
+					//0xe5:deleted(usable)
+	uchar ext[3];
+	uchar attribute;	//0x0f=LongFileNameEntry
+	uchar reserved;
+	uchar VFAT_createTimeMs;
+	ushort VFAT_createTime;
+	ushort VFAT_createDate;
+	ushort VFAT_accessDate;
+	ushort VFAT_clusterHighWord;
+	ushort updatetime;
+	ushort updatedate;
+	ushort cluster;
+	uint size;	//attribute.bit.directory==true:0
+} IO_FloppyDisk_RootDirectoryEntry;
+
+typedef struct IO_FLOPPYDISK {
+	System_CommonStruct common_tag;
+	uchar *img;
+	IO_FloppyDisk_RootDirectoryEntry *files;
+	sector *userdataarea;
+	void *fat;
+} IO_FloppyDisk;
+
+typedef union IO_FLOPPYDISK_RDE_ATTRIBUTE {
+	uchar attribute;	//0x0f=LongFileNameEntry
+	struct IO_FLOPPYDISK_RDE_ATTRIBUTE_BITS {
+		unsigned readonly : 1;
+		unsigned hidden : 1;
+		unsigned system : 1;
+		unsigned volumelabel : 1;
+		unsigned directory : 1;
+		unsigned archive : 1;
+		unsigned bit6 : 1;
+		unsigned bit7 : 1;
+	} bit;
+} IO_FloppyDisk_RDE_Attribute;
+
+typedef union IO_FLOPPYDISK_RDE_UPDATETIME {
+	ushort updatetime;
+	struct IO_FLOPPYDISK_RDE_UPDATETIME_BITS {
+		unsigned second : 5;	//second/2
+		unsigned minute : 6;
+		unsigned hour : 5;
+	} bit;
+} IO_FloppyDisk_RDE_UpdateTime;
+
+typedef union IO_FLOPPYDISK_RDE_UPDATEDATE {
+	ushort updatedate;
+	struct IO_FLOPPYDISK_RDE_UPDATEDATE_BITS {
+		unsigned day : 5;		//day(1-31)
+		unsigned month : 4;	//month(1-12)
+		unsigned year : 7;		//year(from 1980)
+	} bit;
+} IO_FloppyDisk_RDE_UpdateDate;
+
 typedef struct UI_CONSOLE {
 	UI_TextBox *textbox;
 	UI_Task *task;
@@ -598,6 +660,7 @@ typedef struct UI_CONSOLE {
 			unsigned isprompt : 1;
 		} bit;
 	} flags;
+	IO_FloppyDisk *boot_fd;
 } UI_Console;
 
 

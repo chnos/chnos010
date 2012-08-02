@@ -636,6 +636,69 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 	return 0;
 }
 
+uint Sheet_Internal_ChangeHeight(UI_Sheet *sheet, uint height)
+{
+	UI_Sheet **search;
+	uint i;
+
+//At First, clear old height link.
+	search = &sheet->parent->child;
+	for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+		if(*search == sheet){
+			*search = sheet->next;
+			break;
+		}
+		search = &(*search)->next;
+	}
+
+//Next, set new height link.
+	if(!sheet->flags.bit.topmost){
+		search = &sheet->parent->child;
+		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+			if(i == height){
+				#ifdef CHNOSPROJECT_DEBUG_SHEET
+					debug("Sheet_Internal_ChangeHeight:Search:Break(height).\n");
+				#endif
+				break;
+			}
+			if(*search == Null){
+				#ifdef CHNOSPROJECT_DEBUG_SHEET
+					debug("Sheet_Internal_ChangeHeight:Search:Break(End of link).\n");
+				#endif
+				break;
+			}
+			if((*search)->flags.bit.topmost){
+				#ifdef CHNOSPROJECT_DEBUG_SHEET
+					debug("Sheet_Internal_ChangeHeight:Search:Break(Under topmost sheet).\n");
+				#endif
+				break;
+			}
+			search = &(*search)->next;
+		}
+	} else{	/*topmost sheet. ignore height.*/
+		search = &sheet->parent->child;
+		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
+			if(*search == Null){
+				#ifdef CHNOSPROJECT_DEBUG_SHEET
+					debug("Sheet_Internal_ChangeHeight:Search:Break(Top most).\n");
+				#endif
+				break;
+			}
+			search = &(*search)->next;
+		}
+	}
+	if(i == SHEET_MAX_CHILDREN){
+		#ifdef CHNOSPROJECT_DEBUG_SHEET
+			debug("Sheet_Internal_ChangeHeight:Number of sheets is over SHEET_MAX_CHILDREN.\n");
+		#endif
+		return 3;
+	}
+	sheet->next = *search;
+	*search = sheet;
+
+	return 0;
+}
+
 //SheetXX_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py)
 //親シート内座標における、指定されたシートのピクセル(px, py)が可視状態であるかどうかを返す。
 //引数チェックはすべて省略しているので、呼び出し元で厳密にチェックする必要がある。
