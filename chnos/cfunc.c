@@ -263,10 +263,10 @@ bool CFunction_String_GetWord(const uchar s[], uchar *wordptr[], uint n)
 }
 
 //source番地からの、destination_sizeを超えないsource_sizeバイトを、destination番地へ移動させる。
-//メモリ範囲が重なっていてもデータは破壊されない。
+//メモリ範囲が重なっていてもデータは破壊されない(範囲が重なっている場合、sourceの内容が変更される可能性はあるが、移動されるデータ自体は保持される)。
 //同一番地へコピーする場合は何もしない。
 //戻り値は、コピーしたバイト数。
-uint CFunction_MemoryMove(void *destination, uint destination_size, void *source, uint source_size)
+uint CFunction_MemoryMove(void *destination, uint destination_size, const void *source, uint source_size)
 {
 	uint move_size, i;
 	void *temp;
@@ -296,7 +296,7 @@ uint CFunction_MemoryMove(void *destination, uint destination_size, void *source
 			}
 		}
 	} else{
-		temp = source;
+		temp = (uchar *)source;
 	}
 
 	i = 0;

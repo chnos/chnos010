@@ -25,6 +25,9 @@ System_CommonStruct *System_CommonStruct_Allocate(uint structid)
 		case SYSTEM_STRUCTID_FLOPPYDISK:
 			strsize = sizeof(IO_FloppyDisk);
 			break;
+		case SYSTEM_STRUCTID_FILE:
+			strsize = sizeof(IO_File);
+			break;
 		default:
 			#ifdef CHNOSPROJECT_DEBUG_COMMON_STRUCT
 				debug("System_CommonStruct_Allocate:Unknown Struct.\n");
@@ -47,6 +50,7 @@ uint System_CommonStruct_Free(System_CommonStruct *str)
 		case SYSTEM_STRUCTID_TEXTBOX:
 		case SYSTEM_STRUCTID_CONSOLE:
 		case SYSTEM_STRUCTID_FLOPPYDISK:
+		case SYSTEM_STRUCTID_FILE:
 			break;
 		default:
 			#ifdef CHNOSPROJECT_DEBUG_COMMON_STRUCT

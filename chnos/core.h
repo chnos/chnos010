@@ -30,7 +30,7 @@ bool CFunction_CompareStrings(const uchar s1[], const uchar s2[]);
 bool CFunction_CompareStrings_n(const uchar s1[], const uchar s2[], unsigned int n);
 uint CFunction_ExtractBits(uint source, uint start, uint end);
 bool CFunction_String_GetWord(const uchar s[], uchar *wordptr[], uint n);
-uint CFunction_MemoryMove(void *destination, uint destination_size, void *source, uint source_size);
+uint CFunction_MemoryMove(void *destination, uint destination_size, const void *source, uint source_size);
 int snprintf(uchar s[], uint n, const uchar format[], ...);
 int vsnprintf(uchar s[], uint n, const uchar format[], uint vargs[]);
 //
@@ -66,6 +66,7 @@ bool Console_CompareCommandline_n(UI_Console *console, const uchar s[], unsigned
 uint Console_printf(UI_Console *console, const uchar format[], ...);
 uint Console_Command_dir(UI_Console *console);
 uint Console_Command_pci(UI_Console *console);
+uint Console_Command_type(UI_Console *console);
 
 /*debug.c デバッグ支援*/
 #ifdef CHNOSPROJECT_DEBUG
@@ -201,8 +202,16 @@ void FIFO32_Free(DATA_FIFO32 *fifo);
 uint FIFO32_MyTaskFIFO_Status(void);
 uint FIFO32_MyTaskFIFO_Get(void);
 
+/*file.c ファイル関連*/
+IO_File *File_Initilaize(void);
+uint File_Free(IO_File *file);
+
 /*floppy.c フロッピーディスク関連*/
 IO_FloppyDisk *FloppyDisk_Initialize(void *img);
+uint FloppyDisk_Decode_FAT16(IO_FloppyDisk *fd, bool backup);
+bool FloppyDisk_IsPathExist(IO_FloppyDisk *fd, const uchar path[]);
+uint FloppyDisk_LoadFile(IO_FloppyDisk *fd, IO_File *file, const uchar path[]);
+IO_FloppyDisk_DirectoryEntry *FloppyDisk_Internal_GetDirectoryEntryFromPath(IO_FloppyDisk *fd, const uchar path[]);
 
 /*fmt_bmp.c ビットマップ描画関連*/
 uint Format_BMP_DrawPicture(void *vram, uint xsize, uint x, uint y, uint pxsize, uint pysize, void *bmp);

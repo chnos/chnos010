@@ -153,6 +153,8 @@ void Console_MainTask(UI_Console *console)
 							Console_Command_dir(console);
 						} else if(Console_CompareCommandline_n(console, "pci", 3)){
 							Console_Command_pci(console);
+						} else if(Console_CompareCommandline_n(console, "type", 4)){
+							Console_Command_type(console);
 						} else{
 							TextBox_Put_String(console->textbox, "Console:There is no such file or command:");
 							TextBox_Put_String(console->textbox, console->textbox->text_buf);
@@ -194,9 +196,9 @@ uint Console_printf(UI_Console *console, const uchar format[], ...)
 uint Console_Command_dir(UI_Console *console)
 {
 	uint i, j;
-	IO_FloppyDisk_RDE_UpdateTime rdetime;
-	IO_FloppyDisk_RDE_UpdateDate rdedate;
-	IO_FloppyDisk_RDE_Attribute rdeattr;
+	IO_FloppyDisk_DirectoryEntry_UpdateTime rdetime;
+	IO_FloppyDisk_DirectoryEntry_UpdateDate rdedate;
+	IO_FloppyDisk_DirectoryEntry_Attribute rdeattr;
 
 	for(i = 0; i < FLOPPYDISK_RDE_ENTRIES; i++){
 		if(console->boot_fd->files[i].name[0] == 0x00){
@@ -228,7 +230,7 @@ uint Console_Command_pci(UI_Console *console)
 	uint bus, device, function;
 	uint data;
 
-	TextBox_Put_String(console->textbox, "-<pci information>-");
+	TextBox_Put_String(console->textbox, "-<pci information>-\n");
 	if(CFunction_String_GetWord(console->textbox->text_buf, &p, 1)){
 		if(CFunction_String_GetWord(console->textbox->text_buf, &p, 3)){
 			function = strtol(p, Null, 0);
@@ -236,7 +238,7 @@ uint Console_Command_pci(UI_Console *console)
 			device = strtol(p, Null, 0);
 			CFunction_String_GetWord(console->textbox->text_buf, &p, 1);
 			bus = strtol(p, Null, 0);
-			Console_printf(console, "\nBus%3d.Device%2d.Function%2d:\n", bus, device, function);
+			Console_printf(console, "Bus%3d.Device%2d.Function%2d:\n", bus, device, function);
 			if(bus < 256 && device < 32 && function < 8){
 				PCI_ConfigurationRegister_SelectDevice(bus, device, function);
 				data = PCI_ConfigurationRegister_Read32(0x00);
@@ -257,11 +259,9 @@ uint Console_Command_pci(UI_Console *console)
 			} else{
 				TextBox_Put_String(console->textbox, "Invalid Device.\n");
 			}
-
-
 		}
 	} else{
-		TextBox_Put_String(console->textbox, "Usage:\n");
+		TextBox_Put_String(console->textbox, "Usage:");
 		TextBox_Put_String(console->textbox, "pci <bus> <device> <function>\n\nDevices which exist:\n");
 		for(bus = 0; bus < 256; bus++){
 			for(device = 0; device < 32; device++){
@@ -277,4 +277,36 @@ uint Console_Command_pci(UI_Console *console)
 	}
 	return 0;
 }
+
+uint Console_Command_type(UI_Console *console)
+{
+	uchar *p;
+	IO_File *file;
+	uint i;
+
+	TextBox_Put_String(console->textbox, "-<type>-");
+	if(CFunction_String_GetWord(console->textbox->text_buf, &p, 1)){
+			if(FloppyDisk_IsPathExist(console->boot_fd, p)){
+				TextBox_Put_String(console->textbox, ":");
+				TextBox_Put_String(console->textbox, p);
+				TextBox_Put_String(console->textbox, "\n");
+				file = File_Initilaize();
+				if(FloppyDisk_LoadFile(console->boot_fd, file, p) == 0){
+					for(i = 0; i < file->size; i++){
+						TextBox_Put_Character(console->textbox, ((uchar *)file->img)[i]);
+					}
+				} else{
+					TextBox_Put_String(console->textbox, "type:File load Error.\n");
+				}
+				File_Free(file);
+			} else{
+				TextBox_Put_String(console->textbox, "\ntype:The path is not exist.\n");
+			}
+	} else{
+		TextBox_Put_String(console->textbox, "\nUsage:");
+		TextBox_Put_String(console->textbox, "type filepath\n");
+	}
+	return 0;
+}
+
 

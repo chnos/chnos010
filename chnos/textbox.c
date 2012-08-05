@@ -291,6 +291,8 @@ uint TextBox_Internal_Put_Character(UI_TextBox *textbox, uchar c)
 			textbox->location_cursor.x = 0;
 			textbox->location_cursor.y += 16;
 		}
+	} else if(c == '\r'){
+
 	} else if(TextBox_Internal_Put_Character_TextBuffer(textbox, c)){
 		s[0] = c;
 		Sheet_Drawing_Fill_Rectangle(textbox->sheet, textbox->backcol, textbox->location_cursor.x, textbox->location_cursor.y, textbox->location_cursor.x + 8 - 1, textbox->location_cursor.y + 16 - 1);

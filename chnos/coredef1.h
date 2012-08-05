@@ -577,7 +577,7 @@ typedef struct UI_TEXT_BOX {
 	
 	union UI_TEXT_BOX_FLAGS {
 		uint flags;
-		struct UI_TEXT_BOX_BITS {
+		struct UI_TEXT_BOX_FLAGS_BITS {
 			unsigned initialized : 1;
 			unsigned textbuffer_configured : 1;
 			unsigned record_input_text : 1;
@@ -587,7 +587,7 @@ typedef struct UI_TEXT_BOX {
 	} flags;
 } UI_TextBox;
 
-typedef struct IO_FLOPPYDISK_RDE {
+typedef struct IO_FLOPPYDISK_DIRECTORY_ENTRY {
 	uchar name[8];	//0x00:empty(no more files)
 					//0x05:=0xe5
 					//0x2e:(only directory)
@@ -606,17 +606,17 @@ typedef struct IO_FLOPPYDISK_RDE {
 	ushort updatedate;
 	ushort cluster;
 	uint size;	//attribute.bit.directory==true:0
-} IO_FloppyDisk_RootDirectoryEntry;
+} IO_FloppyDisk_DirectoryEntry;
 
 typedef struct IO_FLOPPYDISK {
 	System_CommonStruct common_tag;
 	uchar *img;
-	IO_FloppyDisk_RootDirectoryEntry *files;
+	IO_FloppyDisk_DirectoryEntry *files;
 	sector *userdataarea;
-	void *fat;
+	ushort *fat;
 } IO_FloppyDisk;
 
-typedef union IO_FLOPPYDISK_RDE_ATTRIBUTE {
+typedef union IO_FLOPPYDISK_DIRECTORY_ENTRY_ATTRIBUTE {
 	uchar attribute;	//0x0f=LongFileNameEntry
 	struct IO_FLOPPYDISK_RDE_ATTRIBUTE_BITS {
 		unsigned readonly : 1;
@@ -628,25 +628,25 @@ typedef union IO_FLOPPYDISK_RDE_ATTRIBUTE {
 		unsigned bit6 : 1;
 		unsigned bit7 : 1;
 	} bit;
-} IO_FloppyDisk_RDE_Attribute;
+} IO_FloppyDisk_DirectoryEntry_Attribute;
 
-typedef union IO_FLOPPYDISK_RDE_UPDATETIME {
+typedef union IO_FLOPPYDISK_DIRECTORY_ENTRY_UPDATETIME {
 	ushort updatetime;
 	struct IO_FLOPPYDISK_RDE_UPDATETIME_BITS {
 		unsigned second : 5;	//second/2
 		unsigned minute : 6;
 		unsigned hour : 5;
 	} bit;
-} IO_FloppyDisk_RDE_UpdateTime;
+} IO_FloppyDisk_DirectoryEntry_UpdateTime;
 
-typedef union IO_FLOPPYDISK_RDE_UPDATEDATE {
+typedef union IO_FLOPPYDISK_DIRECTORY_ENTRY_UPDATEDATE {
 	ushort updatedate;
 	struct IO_FLOPPYDISK_RDE_UPDATEDATE_BITS {
 		unsigned day : 5;		//day(1-31)
 		unsigned month : 4;	//month(1-12)
 		unsigned year : 7;		//year(from 1980)
 	} bit;
-} IO_FloppyDisk_RDE_UpdateDate;
+} IO_FloppyDisk_DirectoryEntry_UpdateDate;
 
 typedef struct UI_CONSOLE {
 	UI_TextBox *textbox;
@@ -654,7 +654,7 @@ typedef struct UI_CONSOLE {
 	uchar *printf_buffer;
 	union UI_CONSOLE_FLAGS {
 		uint flags;
-		struct UI_CONSOLE_BITS {
+		struct UI_CONSOLE_FLAGS_BITS {
 			unsigned initialized : 1;
 			unsigned configured_size : 1;
 			unsigned isprompt : 1;
@@ -662,5 +662,19 @@ typedef struct UI_CONSOLE {
 	} flags;
 	IO_FloppyDisk *boot_fd;
 } UI_Console;
+
+typedef struct IO_FILE {
+	System_CommonStruct common_tag;
+	uchar *path;
+	uint size;
+	void *img;
+	union IO_FILE_FLAGS {
+		uint flags;
+		struct IO_FILE_FLAGS_BITS {
+			unsigned initialized : 1;
+			unsigned img_loaded : 1;
+		} bit;
+	} flags;
+} IO_File;
 
 
