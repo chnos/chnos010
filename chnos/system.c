@@ -469,6 +469,11 @@ uint System_InputFocus_Change(DATA_FIFO32 *fifo)
 	return 0;
 }
 
+UI_TaskControl *System_MultiTask_GetController(void)
+{
+	return System.Controller.Task;
+}
+
 //
 void System_Check_Memory(void)
 {

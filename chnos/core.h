@@ -67,6 +67,7 @@ uint Console_printf(UI_Console *console, const uchar format[], ...);
 uint Console_Command_dir(UI_Console *console);
 uint Console_Command_pci(UI_Console *console);
 uint Console_Command_type(UI_Console *console);
+uint Console_Command_task(UI_Console *console);
 
 /*debug.c デバッグ支援*/
 #ifdef CHNOSPROJECT_DEBUG
@@ -395,6 +396,7 @@ uint System_Memory_Get_FreeSize(void);
 uint System_TaskControlMessage_Send_AllTask(uint message);
 uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet);
 uint System_InputFocus_Change(DATA_FIFO32 *fifo);
+UI_TaskControl *System_MultiTask_GetController(void);
 
 /*textbox.c テキスト入力UI関連*/
 UI_TextBox *TextBox_Initialize(void);

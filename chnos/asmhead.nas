@@ -218,7 +218,6 @@ chk_apm:
 	call	text_putstr
 	lea	di, [msg002]
 	call	text_putstr
-
 	mov	ax, 0x5300
 	mov	bx, 0x0000
 	pusha
@@ -246,6 +245,7 @@ chk_apm:
 chk_apm_err_nosup:
 	mov	word [APMVER], 0x0000
 	mov	word [APM_FLAGS], 0x0000
+	popa
 	lea	di, [msg006]
 	call	text_putstr
 	lea	di, [msg003]

@@ -39,9 +39,6 @@ hankaku.bin : hankaku.txt Makefile
 hankaku.obj : hankaku.bin Makefile
 	$(BIN2OBJ) hankaku.bin hankaku.obj _hankaku
 
-chnlogo.obj : chnlogo.bmp Makefile
-	$(BIN2OBJ) chnlogo.bmp chnlogo.obj _chnlogo
-
 asmhead.bin : asmhead.nas Makefile
 	$(NASK) asmhead.nas asmhead.bin asmhead.lst
 
@@ -73,6 +70,7 @@ chnos.img : chnipl.bin chnos.sys Makefile
 		wbinimg src:chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos.sys to:@: \
 		copy from:chnipl.nas to:@: \
+		copy from:chnlogo.bmp to:@: \
 		imgout:chnos.img
 
 #ˆê”Ê‹K‘¥

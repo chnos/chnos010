@@ -119,7 +119,7 @@ void Console_MainTask(UI_Console *console)
 				debug("CMT:Receive data from FIFO(data:0x%X).\n", data);
 			#endif
 			if(data < INPUTSIGNAL_OFFSET){
-				//豎守畑蛻ｩ逕ｨ蜿ｯ閭ｽ鬆伜沺0
+				//汎用利用可能領域0
 				if(data == 1){
 					TextBox_Cursor_Blink(console->textbox);
 				}
@@ -130,10 +130,10 @@ void Console_MainTask(UI_Console *console)
 				} else if(data == INPUTSIGNAL_FOCUS_LOST){
 					TextBox_SetEnable_CursorBlink(console->textbox, False);
 				}
-				//蜈･蜉幃夂衍鬆伜沺
+				//入力通知領域
 			} else if(data < SIGNAL_KEY_OFFSET + 0xffff){
 				key_ignore = False;
-				//keyid騾夂衍
+				//keyid通知
 				data -= SIGNAL_KEY_OFFSET;
 				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
 					if((data & KEYID_MASK_ID) == KEYID_ENTER){
@@ -155,6 +155,8 @@ void Console_MainTask(UI_Console *console)
 							Console_Command_pci(console);
 						} else if(Console_CompareCommandline_n(console, "type", 4)){
 							Console_Command_type(console);
+						} else if(Console_CompareCommandline_n(console, "task", 4)){
+							Console_Command_task(console);
 						} else{
 							TextBox_Put_String(console->textbox, "Console:There is no such file or command:");
 							TextBox_Put_String(console->textbox, console->textbox->text_buf);
@@ -168,9 +170,9 @@ void Console_MainTask(UI_Console *console)
 					TextBox_Put_Key(console->textbox, data);
 				}
 			} else if(data < TCM_OFFSET){
-				//豎守畑蛻ｩ逕ｨ蜿ｯ閭ｽ鬆伜沺1
+				//汎用利用可能領域1
 			} else{
-				//TCM鬆伜沺
+				//TCM領域
 			}
 		}
 	}
@@ -269,7 +271,7 @@ uint Console_Command_pci(UI_Console *console)
 					PCI_ConfigurationRegister_SelectDevice(bus, device, function);
 					data = PCI_ConfigurationRegister_Read32(0x00);
 					if(data != 0xffffffff){
-						Console_printf(console, "Bus%3d.Device%2d.Function%2d\n", bus, device, function);
+						Console_printf(console, "%3d.%2d.%2d, ", bus, device, function);
 					}
 				}
 			}
@@ -309,4 +311,41 @@ uint Console_Command_type(UI_Console *console)
 	return 0;
 }
 
+uint Console_Command_task(UI_Console *console)
+{
+	uint i;
+	uchar *p;
+	UI_TaskControl *taskctrl;
+	UI_Task *search;
 
+	taskctrl = System_MultiTask_GetController();
+
+	TextBox_Put_String(console->textbox, "-<task>-\n");
+	if(CFunction_String_GetWord(console->textbox->text_buf, &p, 1)){
+/*
+			if(FloppyDisk_IsPathExist(console->boot_fd, p)){
+				TextBox_Put_String(console->textbox, ":");
+				TextBox_Put_String(console->textbox, p);
+				TextBox_Put_String(console->textbox, "\n");
+				file = File_Initilaize();
+				if(FloppyDisk_LoadFile(console->boot_fd, file, p) == 0){
+					for(i = 0; i < file->size; i++){
+						TextBox_Put_Character(console->textbox, ((uchar *)file->img)[i]);
+					}
+				} else{
+					TextBox_Put_String(console->textbox, "type:File load Error.\n");
+				}
+				File_Free(file);
+			} else{
+				TextBox_Put_String(console->textbox, "\ntype:The path is not exist.\n");
+			}
+*/
+	} else{
+		TextBox_Put_String(console->textbox, "Task list:\n");
+		for(search = taskctrl->start; search != Null; search = search->next){
+			Console_printf(console, "sel:%02X count:%d\n", search->selector, search->count);
+		}
+	}
+
+	return 0;
+}

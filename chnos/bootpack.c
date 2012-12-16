@@ -15,6 +15,8 @@ void CHNMain(void)
 	uint counter1, counter2, counter3;
 	UI_TextBox *textbox;
 	UI_Console *console;
+	IO_FloppyDisk *boot_fd;
+	IO_File *file;
 
 	i = 0;
 	data = 0;
@@ -23,6 +25,7 @@ void CHNMain(void)
 
 	mytask = System_MultiTask_GetNowTask();
 	disp_ctrl = System_Display_Get_Controller();
+	boot_fd = FloppyDisk_Initialize(ADR_DISKIMG);
 
 	vramsheet = disp_ctrl->vramsheet;
 
@@ -33,6 +36,7 @@ void CHNMain(void)
 		i = 0;
 		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 1, 0x000000, "Please Select the VideoMode Number.");
 		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 2, 0x000000, "(Use cursor Up or Down, Select Enter.)");
+		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 6, 0x000000, "Press Esc to boot in VGA(320x200 8bit).");
 		Sheet_Drawing_Fill_Rectangle(vramsheet, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 5 - 1);
 		snprintf(s, sizeof(s), "%d:0x%X %dx%d-%dbits", i, disp_ctrl->VBE.list_vmode[i].mode_number, disp_ctrl->VBE.list_vmode[i].xsize, disp_ctrl->VBE.list_vmode[i].ysize, disp_ctrl->VBE.list_vmode[i].bpp);
 		Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 3, 0x000000, s);
@@ -65,11 +69,13 @@ void CHNMain(void)
 							Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 3, 0x000000, s);
 						} else if((data & KEYID_MASK_ID) == KEYID_ENTER){
 							if(System_Display_VESA_Set_VideoMode(i) == 0){
-								Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 								break;
 							}
 							Sheet_Drawing_Fill_Rectangle(vramsheet, 0x00ff00, 10, 10 + 16 * 3, VGA08_VRAM_XSIZE - 10 - 1, 10 + 16 * 4 - 1);
 							Sheet_Drawing_Put_String(vramsheet, 10, 10 + 16 * 4, 0x000000, "Function Failed. Try again.");
+						} else if((data & KEYID_MASK_ID) == KEYID_ESC){
+							System_TaskControlMessage_Send_AllTask(TCM_OFFSET + TCM_INFO_DISPLAY_UPDATE_RESOLUTION);
+							break;
 						}
 					}
 				}
@@ -77,17 +83,19 @@ void CHNMain(void)
 		}
 	}
 
+	Sheet_SetBuffer(vramsheet, disp_ctrl->vram, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
+
 	sheet_desktop = Sheet_Initialize();
 	Sheet_SetBuffer(sheet_desktop, Null, disp_ctrl->xsize, disp_ctrl->ysize, disp_ctrl->bpp);
 
 	Sheet_Drawing_Fill_Rectangle(sheet_desktop, 0xffffff, 0, 0, disp_ctrl->xsize - 1, disp_ctrl->ysize - 1);
 	Sheet_Drawing_Put_String(sheet_desktop, 10, 10, 0x000000, "Welcome to CHNOSProject!");
-
-	Format_BMP_DrawPicture(sheet_desktop->vram, sheet_desktop->size.x, 10, 26, 0, 0, chnlogo);
-
-	Drawing_Fill_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0x00c600, 45);
-	for(i = 0; i < 50; i += 5){
-		Drawing_Draw_Circle(disp_ctrl->vram, disp_ctrl->xsize, 100, 250, 0xc6c6c6, i);
+	if(FloppyDisk_IsPathExist(boot_fd, "chnlogo.bmp")){
+		file = File_Initilaize();
+		if(FloppyDisk_LoadFile(boot_fd, file, "chnlogo.bmp") == 0){
+			Format_BMP_DrawPicture(sheet_desktop->vram, sheet_desktop->size.x, disp_ctrl->xsize - 128 - 4, 4, 0, 0, file->img);
+		}
+		File_Free(file);
 	}
 
 	testsheet = Sheet_Initialize();
@@ -171,7 +179,17 @@ void CHNMain(void)
 	//Timer_Run(timer3);
 
 	console = Console_Initialize();
-	Console_SetSize(console, vramsheet->size.x >> 4, vramsheet->size.y >> 5);
+	x = vramsheet->size.x >> (3 + 1);
+	y = vramsheet->size.y >> (4 + 1);
+
+	if(x < (VGA08_VRAM_XSIZE >> 3)){
+		x = (VGA08_VRAM_XSIZE >> 3);
+	}
+	if(y < (VGA08_VRAM_YSIZE >> 4)){
+		y = (VGA08_VRAM_YSIZE >> 4);
+	}
+
+	Console_SetSize(console, x, y);
 	Console_Run(console);
 	System_InputFocus_Change(console->textbox->sheet->input_fifo);
 
