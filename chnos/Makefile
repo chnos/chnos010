@@ -1,27 +1,12 @@
-
-#OBJS_BOOTPACK = naskfunc.obj hankaku.obj gdtidt.obj graphic.obj grap_08.obj grap_16.obj grap_32.obj init.obj intrpt.obj io.obj memory.obj paging.obj sheet.obj fifo.obj mtask.obj timer.obj keyboard.obj mouse.obj window.obj console.obj file.obj uuid.obj api.obj bootpack.obj
-#OBJS_BOOTPACK = nasfunc0.obj nasfunc1.obj nasfunc2.obj hankaku.obj callbios.obj cfunc.obj display.obj draw08.obj drawing.obj dsctbl.obj emu86.obj emu86asm.obj error.obj fifo.obj intrpt.obj keyboard.obj memory.obj mtask.obj serial.obj system.obj timer.obj vgatmode.obj xception.obj bootpack.obj
-#HEADS_BOOTPACK = core.h coredef0.h coredef1.h coredef2.h coredef3.h keyid.h
-
 include makeset.txt
 
-TOOLPATH = ../../z_tools/
-INCPATH  = ../../z_tools/CHNOSProject/
+TARGET   = chnos
 
-MAKE     = $(TOOLPATH)make.exe -r
-NASK     = $(TOOLPATH)nask.exe
-CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet
-BIN2OBJ  = $(TOOLPATH)bin2obj.exe
-GAS2NASK = $(TOOLPATH)gas2nask.exe -a
-OBJ2BIM  = $(TOOLPATH)obj2bim.exe
-BIM2CHN  = $(TOOLPATH)bim2chn.exe
-RULEFILE = $(INCPATH)chn010.rul
-EDIMG    = $(TOOLPATH)edimg.exe bias:9
-IMGTOL   = $(TOOLPATH)RWFD.EXE
-MAKEFONT = $(TOOLPATH)makefont.exe
-COPY     = copy
-DEL      = del
-SJISCONV = $(TOOLPATH)sjisconv.exe -s
+SRCROOT  = ../
+TOOLPATH = $(SRCROOT)../z_tools/
+INCPATH  = $(SRCROOT)../z_tools/CHNOSProject/
+
+include $(SRCROOT)tooldef.txt
 
 # デフォルト動作
 
@@ -63,7 +48,7 @@ bootpack.chn : bootpack.bim Makefile
 	$(BIM2CHN) bootpack.bim bootpack.chn 0
 
 chnos.sys : asmhead.bin bootpack.chn Makefile
-	copy /B asmhead.bin+bootpack.chn chnos.sys
+	$(HARITOL) concat chnos.sys asmhead.bin bootpack.chn
 
 chnos.img : chnipl.bin chnos.sys Makefile
 	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
@@ -87,30 +72,31 @@ chnos.img : chnipl.bin chnos.sys Makefile
 %.obj : %.nas Makefile
 	$(NASK) $*.nas $*.obj $*.lst
 
-
-
 # コマンド
 
 img :
 	$(MAKE) chnos.img
 
 run :
-	$(MAKE) img
-	$(COPY) chnos.img ..\..\z_tools\qemu\fdimage0.bin
-	$(MAKE) -C ../../z_tools/qemu
-run_b :
-	$(MAKE) img
-	$(COPY) chnos.img ..\..\z_tools\bochs\fdimage0.bin
-	$(MAKE) -C ../../z_tools/bochs
+	$(MAKE) $(TARGET).img
+	$(COPY) $(TARGET).img $(TOOLPATH)qemu/fdimage0.bin
+	$(MAKE) -C $(TOOLPATH)qemu
 
-
-run_cd :
-	$(MAKE) iso
-	$(MAKE) -C ../../z_tools/qemu_iso
+brun :
+	$(MAKE) $(TARGET).img
+	$(COPY) $(TARGET).img $(TOOLPATH)bochs/fdimage0.bin
+	$(MAKE) -C $(TOOLPATH)bochs
 
 install :
-	$(MAKE) img
-	$(IMGTOL) chnos.img a:
+	$(MAKE) $(TARGET).img
+	$(COPY) $(TARGET).img $(TOOLPATH)fdwrite/fdimage0.bin
+	$(MAKE) -C $(TOOLPATH)fdwrite
+
+iso :
+	$(MAKE) $(TARGET).img
+	$(COPY) $(TARGET).img $(TOOLPATH)makeiso/fdimage0.bin
+	$(MAKE) -C $(TOOLPATH)makeiso
+	$(COPY) $(TOOLPATH)makeiso/$(TARGET).iso $(TARGET).iso
 
 clean :
 	-$(DEL) *.bin
@@ -127,8 +113,4 @@ clean :
 src_only :
 	$(MAKE) clean
 	-$(DEL) chnos.img
-
-iso :
-	$(MAKE)
-	..\..\z_tools\mkisofs.exe -v -iso-level 1 -b chnos.img -o ..\..\z_tools\qemu_iso\chnos.iso .
 

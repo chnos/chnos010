@@ -1,0 +1,16 @@
+MAKE     = $(TOOLPATH)make -r
+NASK     = $(TOOLPATH)nask
+CC1      = $(TOOLPATH)gocc1 -I$(INCPATH) -Os -Wall -quiet
+BIN2OBJ  = $(TOOLPATH)bin2obj
+GAS2NASK = $(TOOLPATH)gas2nask -a
+OBJ2BIM  = $(TOOLPATH)obj2bim
+BIM2CHN  = $(TOOLPATH)bim2chn
+RULEFILE = $(INCPATH)chn010.rul
+EDIMG    = $(TOOLPATH)edimg bias:9
+IMGTOL   = $(TOOLPATH)RWFD.EXE
+MAKEFONT = $(TOOLPATH)makefont
+HARITOL  = $(TOOLPATH)haritol
+SJISCONV = $(TOOLPATH)sjisconv -s
+
+COPY     = $(HARITOL) copy
+DEL      = $(HARITOL) remove

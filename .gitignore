@@ -1,0 +1,13 @@
+.DS_Store
+*.ca
+*.obj
+*.lst
+*.map
+*.bim
+*.chn
+*.bin
+*.img
+*.sys
+
+chnos/bootpack.gas
+chnos/bootpack.nas

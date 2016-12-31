@@ -4,14 +4,13 @@
 # コマンド
 #  full, clan_full, src_only_full
 
+TARGET   = chnos
+
 TOOLPATH = ../z_tools/
 INCPATH  = ../z_tools/CHNOSProject/
+SRCROOT  = ./
 
-MAKE     = $(TOOLPATH)make.exe -r
-EDIMG    = $(TOOLPATH)edimg.exe
-IMGTOL   = $(TOOLPATH)RWFD.EXE
-COPY     = copy
-DEL      = del
+include $(SRCROOT)tooldef.txt
 
 # デフォルト動作
 
@@ -32,7 +31,6 @@ chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		wbinimg src:chnos/chnipl.bin len:512 from:0 to:0 \
 		copy from:chnos/chnos.sys to:@: \
 		copy from:chnos/chnipl.nas to:@: \
-		copy from:chnos/test.mid to:@: \
 		copy from:asmtest/asmtest.chn to:@: \
 		copy from:bug1/bug1.chn to:@: \
 		copy from:crack1/crack1.chn to:@: \
@@ -43,28 +41,22 @@ chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		imgout:chnos.img
 
 # コマンド
+run : $(TARGET).img
+	$(COPY) $(TARGET).img $(TOOLPATH)qemu/fdimage0.bin
+	$(MAKE) -C $(TOOLPATH)qemu
 
-run :
-	$(MAKE) chnos.img
-	$(COPY) chnos.img ..\z_tools\qemu\fdimage0.bin
-	$(MAKE) -C ../z_tools/qemu
+brun : $(TARGET).img
+	$(COPY) $(TARGET).img $(TOOLPATH)bochs/fdimage0.bin
+	$(MAKE) -C $(TOOLPATH)bochs
 
-run_b :
-	$(MAKE) chnos.img
-	$(COPY) chnos.img ..\z_tools\bochs\fdimage0.bin
-	$(MAKE) -C ../z_tools/bochs
+install : $(TARGET).img
+	$(COPY) $(TARGET).img $(TOOLPATH)fdwrite/fdimage0.bin
+	$(MAKE) -C $(TOOLPATH)fdwrite
 
-iso :
-	$(MAKE) chnos.img
-	..\z_tools\mkisofs.exe -v -iso-level 1 -b chnos.img -o ..\z_tools\qemu_iso\chnos.iso .
-
-run_cd :
-	$(MAKE) iso
-	$(MAKE) -C ../z_tools/qemu_iso
-
-install :
-	$(MAKE) chnos.img
-	$(IMGTOL) chnos.img a:
+iso : $(TARGET).img
+	$(COPY) $(TARGET).img $(TOOLPATH)makeiso/fdimage0.bin
+	$(MAKE) -C $(TOOLPATH)makeiso
+	$(COPY) $(TOOLPATH)makeiso/$(TARGET).iso $(TARGET).iso
 
 full :
 	$(MAKE) -C chnos
