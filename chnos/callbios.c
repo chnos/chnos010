@@ -11,7 +11,7 @@ IO_CallBIOSControl *Initialize_CallBIOS(void)
 
 	ctrl = System_Memory_Allocate(sizeof(IO_CallBIOSControl));
 
-	//ud2–½—ß=16bitƒR[ƒh‚Ì––’[‚ğ’T‚·
+	//ud2å‘½ä»¤=16bitã‚³ãƒ¼ãƒ‰ã®æœ«ç«¯ã‚’æ¢ã™
 	p = (uchar *)(&asm_16bit_CallBIOSTask + ADR_BOOTPACK);
 	for(i = 0; ; i++){
 		if(p[i] == 0x0f){
@@ -23,7 +23,7 @@ IO_CallBIOSControl *Initialize_CallBIOS(void)
 
 	ctrl->codesize = i + 2;
 
-	//asmhead‚Ì‚ ‚Á‚½‚Æ‚±‚ë‚ÉƒRƒs[
+	//asmheadã®ã‚ã£ãŸã¨ã“ã‚ã«ã‚³ãƒ”ãƒ¼
 	q = (uchar *)0xc200;
 	for(i = 0; i < ctrl->codesize; i++){
 		q[i] = p[i];
@@ -34,22 +34,22 @@ IO_CallBIOSControl *Initialize_CallBIOS(void)
 	Store_CR4(cr4.cr4);
 
 	ctrl->CallBIOS_Task = System_MultiTask_Task_Initialize((256 >> 3) + (65536 >> 3) + 1);
-//CallBIOS 16Bit ƒGƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ƒ^ƒXƒN‚ÍFIFO‚ğg—p‚µ‚È‚¢‚Ì‚Åƒ^ƒXƒN‚ÌFIFO‚ğ‰ğ•ú
+//CallBIOS 16Bit ã‚¨ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã‚¿ã‚¹ã‚¯ã¯FIFOã‚’ä½¿ç”¨ã—ãªã„ã®ã§ã‚¿ã‚¹ã‚¯ã®FIFOã‚’è§£æ”¾
 	FIFO32_Free(ctrl->CallBIOS_Task->fifo);
 	ctrl->CallBIOS_Task->fifo = Null;
 
 	q = (uchar *)(ctrl->CallBIOS_Task->tss + sizeof(CPU_TaskStateSegment));
 	for(i = 0; i < (256 >> 3); i++){
-		//q[i] = 0xff;	/*‘Sƒ\ƒtƒgƒEƒGƒAŠ„‚è‚İ‚Å•ÛŒìƒ‚[ƒhˆê”Ê•ÛŒì—áŠO‚ğ‹N‚±‚·*/
-		q[i] = 0x00;	/*‘Sƒ\ƒtƒgƒEƒGƒAŠ„‚è‚İ‚ğ‰¼‘z86ƒ‚[ƒh‚Åˆ—‚·‚é*/
+		//q[i] = 0xff;	/*å…¨ã‚½ãƒ•ãƒˆã‚¦ã‚¨ã‚¢å‰²ã‚Šè¾¼ã¿ã§ä¿è­·ãƒ¢ãƒ¼ãƒ‰ä¸€èˆ¬ä¿è­·ä¾‹å¤–ã‚’èµ·ã“ã™*/
+		q[i] = 0x00;	/*å…¨ã‚½ãƒ•ãƒˆã‚¦ã‚¨ã‚¢å‰²ã‚Šè¾¼ã¿ã‚’ä»®æƒ³86ãƒ¢ãƒ¼ãƒ‰ã§å‡¦ç†ã™ã‚‹*/
 	}
-	//q[1] = ~(1 << 3);	/*(8 * 1) + 3 - 1 = INT:0x10‚ğ‰¼‘z86ƒ‚[ƒh‚Åˆ—‚·‚é*/
+	//q[1] = ~(1 << 3);	/*(8 * 1) + 3 - 1 = INT:0x10ã‚’ä»®æƒ³86ãƒ¢ãƒ¼ãƒ‰ã§å‡¦ç†ã™ã‚‹*/
 
 	ctrl->CallBIOS_Task->tss->iomap_base = sizeof(CPU_TaskStateSegment) + (256 >> 3);
 
 	q = (uchar *)(ctrl->CallBIOS_Task->tss + sizeof(CPU_TaskStateSegment) + (256 >> 3));
 	for(i = 0; i < (65536 >> 3); i++){
-		q[i] = 0x00;	/*‘SIOƒ|[ƒg‚ğAIOPLˆÈ‰º‚ÌCPL‚Å‚àƒAƒNƒZƒX‰Â”\‚Æ‚·‚é*/
+		q[i] = 0x00;	/*å…¨IOãƒãƒ¼ãƒˆã‚’ã€IOPLä»¥ä¸‹ã®CPLã§ã‚‚ã‚¢ã‚¯ã‚»ã‚¹å¯èƒ½ã¨ã™ã‚‹*/
 	}
 	q[i] = 0xff;
 
@@ -60,7 +60,7 @@ IO_CallBIOSControl *Initialize_CallBIOS(void)
 	return ctrl;
 }
 
-//fifo‚É‚ÍAI—¹ó‹µ‚ğó‚¯æ‚éfifo‚ğw’è‚·‚éBendsignal‚Í³íI—¹Aendsignal+1‚ÍˆÙíI—¹‚ğ¦‚·B
+//fifoã«ã¯ã€çµ‚äº†çŠ¶æ³ã‚’å—ã‘å–ã‚‹fifoã‚’æŒ‡å®šã™ã‚‹ã€‚endsignalã¯æ­£å¸¸çµ‚äº†ã€endsignal+1ã¯ç•°å¸¸çµ‚äº†ã‚’ç¤ºã™ã€‚
 void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn, DATA_FIFO32 *fifo, uint endsignal)
 {
 	uchar *q;
@@ -99,8 +99,8 @@ void CallBIOS_Send_End_Of_Operation(IO_CallBIOSControl *ctrl, uint abort)
 
 void CallBIOS_Check_Privileged_Operation(uint *esp)
 {
-//ƒGƒ‰[ƒR[ƒh‚Ì‚ ‚é—áŠO”­¶‚ÉŒÄ‚Î‚ê‚é‚±‚Æ‚ğ‘z’è
-//ƒGƒ‰[ƒR[ƒh‚Ì‚È‚¢—áŠO‚©‚ç‚¾‚ÆAƒXƒ^ƒbƒN‚ª‚¸‚ê‚é‚Ì‚Å’ˆÓ
+//ã‚¨ãƒ©ãƒ¼ã‚³ãƒ¼ãƒ‰ã®ã‚ã‚‹ä¾‹å¤–ç™ºç”Ÿæ™‚ã«å‘¼ã°ã‚Œã‚‹ã“ã¨ã‚’æƒ³å®š
+//ã‚¨ãƒ©ãƒ¼ã‚³ãƒ¼ãƒ‰ã®ãªã„ä¾‹å¤–ã‹ã‚‰ã ã¨ã€ã‚¹ã‚¿ãƒƒã‚¯ãŒãšã‚Œã‚‹ã®ã§æ³¨æ„
 	uchar *eip;
 	ushort *userstack;
 	Emulator_x86_FarPointer *vector;
@@ -122,7 +122,7 @@ void CallBIOS_Check_Privileged_Operation(uint *esp)
 
 		eflags.eflags = esp[EXCEPTION_INFO_EFLAGS];
 		//eflags.bit.IF = False;
-		eflags.bit.IF = True;	/*Š„‚è‚İ‹Ö~‚É‚µ‚È‚¢*/
+		eflags.bit.IF = True;	/*å‰²ã‚Šè¾¼ã¿ç¦æ­¢ã«ã—ãªã„*/
 		eflags.bit.TF = False;
 		eflags.bit.AC = False;
 		CallBIOS_Push_Data_To_Stack(esp, eflags.eflags);
@@ -141,7 +141,7 @@ void CallBIOS_Check_Privileged_Operation(uint *esp)
 			debug("CallBIOS:Privileged Operation Found in v8086mode.\n");
 			debug("Opcode[0x%X]:STI\n", eip);
 		#endif
-		/*‰½‚à‚µ‚È‚¢*/
+		/*ä½•ã‚‚ã—ãªã„*/
 		//eflags.eflags = esp[EXCEPTION_INFO_EFLAGS];
 		//eflags.bit.IF = True;
 		esp[EXCEPTION_INFO_EIP]++;
@@ -188,7 +188,7 @@ uint CallBIOS_Push_Data_To_Stack(uint *esp, ushort data)
 {
 	ushort *userstack;
 
-	if(esp[EXCEPTION_INFO_USER_ESP] < 2){	/*ƒXƒ^ƒbƒN‚ª‘«‚è‚È‚¢*/
+	if(esp[EXCEPTION_INFO_USER_ESP] < 2){	/*ã‚¹ã‚¿ãƒƒã‚¯ãŒè¶³ã‚Šãªã„*/
 		#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
 			debug("PushToStack:No More Stack.\n");
 		#endif
@@ -210,7 +210,7 @@ uint CallBIOS_Pop_Data_From_Stack(uint *esp)
 {
 	ushort *userstack;
 
-	if(esp[EXCEPTION_INFO_USER_ESP] > 0x0000fffd){	/*ƒXƒ^ƒbƒN‚ª‘«‚è‚È‚¢*/
+	if(esp[EXCEPTION_INFO_USER_ESP] > 0x0000fffd){	/*ã‚¹ã‚¿ãƒƒã‚¯ãŒè¶³ã‚Šãªã„*/
 		#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
 			debug("PopFromStack:No More Stack.\n");
 		#endif

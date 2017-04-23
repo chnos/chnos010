@@ -1,13 +1,13 @@
 
 #include "core.h"
 
-//VBE‚ªg‚¦‚é‚Ì‚ÍActrl->display_mode == DISPLAYMODE_VBE_LINEAR‚Ì‚¾‚¯B
+//VBEãŒä½¿ãˆã‚‹ã®ã¯ã€ctrl->display_mode == DISPLAYMODE_VBE_LINEARã®æ™‚ã ã‘ã€‚
 
 #define SIGNAL_BIOS_OPERATION_END	0xff
 
 IO_DisplayControl *Initialize_Display(void)
 {
-	//Å‰‚ÉŒ»İ‚Ì‰æ–Êƒ‚[ƒh‚ğVGA320*200-8bit‚Éİ’è‚·‚éB(BIOS)
+	//æœ€åˆã«ç¾åœ¨ã®ç”»é¢ãƒ¢ãƒ¼ãƒ‰ã‚’VGA320*200-8bitã«è¨­å®šã™ã‚‹ã€‚(BIOS)
 
 	IO_CallBIOSControl *callbiosctrl;
 	INFO_VBE_BIOS *info_vbe_bios;
@@ -49,7 +49,7 @@ IO_DisplayControl *Initialize_Display(void)
 	ctrl->vramsheet = Sheet_Initialize();
 	Sheet_SetBuffer(ctrl->vramsheet, ctrl->vram, ctrl->xsize, ctrl->ysize, ctrl->bpp);
 
-	//Ÿ‚ÉAVBE‚ÌBIOSî•ñ‚ğ“¾‚éB
+	//æ¬¡ã«ã€VBEã®BIOSæƒ…å ±ã‚’å¾—ã‚‹ã€‚
 
 	callbiosctrl->CallBIOS_Task->tss->eax = 0x4f00;
 	callbiosctrl->CallBIOS_Task->tss->es = 0x0000;
@@ -176,13 +176,13 @@ IO_DisplayControl *Initialize_Display(void)
 
 uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index)
 {
-	//retvalue:0 = Ø‚è‘Ö‚¦¬Œ÷
-	//retvalue:1 = Ø‚è‘Ö‚¦¸”s(BIOS Call Error)
-	//retvalue:2 = Ø‚è‘Ö‚¦¸”s(VBE–³Œø version < 2.0)
-	//retvalue:3 = Ø‚è‘Ö‚¦¸”s(Invalid VideoMode Index)
-	//retvalue:4 = Ø‚è‘Ö‚¦¸”s(Linear Mode Not Supported)
-	//retvalue:5 = Ø‚è‘Ö‚¦¸”s(ƒVƒXƒeƒ€(CHNOSProject)ã‚Å–¢‘Î‰‚Ìƒrƒbƒg”‚Ì‚½‚ß)
-	//retvalue:6 = Ø‚è‘Ö‚¦¸”s(ƒVƒXƒeƒ€(CHNOSProject)ã‚Å–³Œø‚Æƒ}[ƒN‚³‚ê‚Ä‚¢‚é(vram == null)‚½‚ß)
+	//retvalue:0 = åˆ‡ã‚Šæ›¿ãˆæˆåŠŸ
+	//retvalue:1 = åˆ‡ã‚Šæ›¿ãˆå¤±æ•—(BIOS Call Error)
+	//retvalue:2 = åˆ‡ã‚Šæ›¿ãˆå¤±æ•—(VBEç„¡åŠ¹ version < 2.0)
+	//retvalue:3 = åˆ‡ã‚Šæ›¿ãˆå¤±æ•—(Invalid VideoMode Index)
+	//retvalue:4 = åˆ‡ã‚Šæ›¿ãˆå¤±æ•—(Linear Mode Not Supported)
+	//retvalue:5 = åˆ‡ã‚Šæ›¿ãˆå¤±æ•—(ã‚·ã‚¹ãƒ†ãƒ (CHNOSProject)ä¸Šã§æœªå¯¾å¿œã®ãƒ“ãƒƒãƒˆæ•°ã®ãŸã‚)
+	//retvalue:6 = åˆ‡ã‚Šæ›¿ãˆå¤±æ•—(ã‚·ã‚¹ãƒ†ãƒ (CHNOSProject)ä¸Šã§ç„¡åŠ¹ã¨ãƒãƒ¼ã‚¯ã•ã‚Œã¦ã„ã‚‹(vram == null)ãŸã‚)
 
 	IO_CallBIOSControl *callbiosctrl;
 	uint data;

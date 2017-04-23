@@ -119,7 +119,7 @@ void Console_MainTask(UI_Console *console)
 				debug("CMT:Receive data from FIFO(data:0x%X).\n", data);
 			#endif
 			if(data < INPUTSIGNAL_OFFSET){
-				//汎用利用可能領域0
+				//豎守畑蛻ｩ逕ｨ蜿ｯ閭ｽ鬆伜沺0
 				if(data == 1){
 					TextBox_Cursor_Blink(console->textbox);
 				}
@@ -130,10 +130,10 @@ void Console_MainTask(UI_Console *console)
 				} else if(data == INPUTSIGNAL_FOCUS_LOST){
 					TextBox_SetEnable_CursorBlink(console->textbox, False);
 				}
-				//入力通知領域
+				//蜈･蜉幃夂衍鬆伜沺
 			} else if(data < SIGNAL_KEY_OFFSET + 0xffff){
 				key_ignore = False;
-				//keyid通知
+				//keyid騾夂衍
 				data -= SIGNAL_KEY_OFFSET;
 				if(!(data & KEYID_MASK_BREAK) && (data & KEYID_MASK_EXTENDED)){
 					if((data & KEYID_MASK_ID) == KEYID_ENTER){
@@ -170,9 +170,9 @@ void Console_MainTask(UI_Console *console)
 					TextBox_Put_Key(console->textbox, data);
 				}
 			} else if(data < TCM_OFFSET){
-				//汎用利用可能領域1
+				//豎守畑蛻ｩ逕ｨ蜿ｯ閭ｽ鬆伜沺1
 			} else{
-				//TCM領域
+				//TCM鬆伜沺
 			}
 		}
 	}
@@ -313,7 +313,7 @@ uint Console_Command_type(UI_Console *console)
 
 uint Console_Command_task(UI_Console *console)
 {
-	uint i;
+	//uint i;
 	uchar *p;
 	UI_TaskControl *taskctrl;
 	UI_Task *search;

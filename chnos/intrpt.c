@@ -4,33 +4,33 @@
 void Initialize_ProgrammableInterruptController(void)
 {
 	/*
-	IRR�F�C���^���v�g���N�G�X�g���W�X�^ 
-		.IRQ�s���̏�Ԃ�\���B�|�[�g��ǂ񂾂Ƃ��ɁAIRR�ɂȂ邩ISR�ɂȂ邩�́AOCW3�őI������B
-		.1�ɂȂ��Ă���r�b�g�́A���ݗv�������Ă���i�������͏������́j���荞�݁B
-	ISR�F�C���T�[�r�X���W�X�^ 
-		.���ݏ������̊��荞�݂��ǂ�ł��邩�������B�|�[�g��ǂ񂾂Ƃ��ɁAIRR�ɂȂ邩ISR�ɂȂ邩�́AOCW3�őI������B
-		.1�ɂȂ��Ă���r�b�g�́A���ݏ������̊��荞�݁B�������Ƃ����̂́ACPU�ɑ΂���INT���߂𔭍s�������AEOI�i���荞�ݏI�����߁j���󂯎���Ă��Ȃ����荞�݁B
-	IMR�F�C���^���v�g�}�X�N���W�X�^ 
-		.���ꂪ1�ɂȂ��Ă��銄�荞�݂́AIRR��1�ɂȂ��Ă��Ă��A�������Ȃ��B 
+	IRR：インタラプトリクエストレジスタ 
+		.IRQピンの状態を表す。ポートを読んだときに、IRRになるかISRになるかは、OCW3で選択する。
+		.1になっているビットは、現在要求が来ている（もしくは処理中の）割り込み。
+	ISR：インサービスレジスタ 
+		.現在処理中の割り込みがどれであるかを示す。ポートを読んだときに、IRRになるかISRになるかは、OCW3で選択する。
+		.1になっているビットは、現在処理中の割り込み。処理中というのは、CPUに対してINT命令を発行したが、EOI（割り込み終了命令）を受け取っていない割り込み。
+	IMR：インタラプトマスクレジスタ 
+		.これが1になっている割り込みは、IRRが1になっていても、反応しない。 
 	*/
 
-	IO_Out8(PIC0_IMR, 0xff);	/*���荞�ݑS�������i�}�X�^�j*/
-	IO_Out8(PIC1_IMR, 0xff);	/*���荞�ݑS�������i�X���[�u�j*/
+	IO_Out8(PIC0_IMR, 0xff);	/*割り込み全部無視（マスタ）*/
+	IO_Out8(PIC1_IMR, 0xff);	/*割り込み全部無視（スレーブ）*/
 
-	IO_Out8(PIC0_ICW1, 0x11);	/*�G�b�W�g���K���[�h�ɐݒ�i�}�X�^�j*/
-	IO_Out8(PIC0_ICW2, 0x20);	/*���荞�ݔԍ����A20~27�ɐݒ�B�i�}�X�^�j*/
-	IO_Out8(PIC0_ICW3, 1 << 2);	/*00000100 �܂�A�X���[�u��IRQ2�ɂȂ����Ă܂���Ƃ������ƁB*/
-	IO_Out8(PIC0_ICW4, 0x01);	/*�m���o�b�t�@���[�h�i�}�X�^�j*/
+	IO_Out8(PIC0_ICW1, 0x11);	/*エッジトリガモードに設定（マスタ）*/
+	IO_Out8(PIC0_ICW2, 0x20);	/*割り込み番号を、20~27に設定。（マスタ）*/
+	IO_Out8(PIC0_ICW3, 1 << 2);	/*00000100 つまり、スレーブはIRQ2につながってますよということ。*/
+	IO_Out8(PIC0_ICW4, 0x01);	/*ノンバッファモード（マスタ）*/
 
-	IO_Out8(PIC1_ICW1, 0x11);	/*�G�b�W�g���K���[�h�ɐݒ�i�X���[�u�j*/
-	IO_Out8(PIC1_ICW2, 0x28);	/*���荞�ݔԍ����A28~2f�ɐݒ�B�i�X���[�u�j*/
-	IO_Out8(PIC1_ICW3, 2);		/*�����̓}�X�^��IRQ2�ԂɂȂ����Ă܂��Ƃ������ƁB*/
-	IO_Out8(PIC1_ICW4, 0x01);	/*�m���o�b�t�@���[�h�i�X���[�u�j*/
+	IO_Out8(PIC1_ICW1, 0x11);	/*エッジトリガモードに設定（スレーブ）*/
+	IO_Out8(PIC1_ICW2, 0x28);	/*割り込み番号を、28~2fに設定。（スレーブ）*/
+	IO_Out8(PIC1_ICW3, 2);		/*自分はマスタのIRQ2番につながってますということ。*/
+	IO_Out8(PIC1_ICW4, 0x01);	/*ノンバッファモード（スレーブ）*/
 
-	IO_Out8(PIC0_IMR, 0xff);	/*���荞�ݑS�������i�}�X�^�j*/
-	IO_Out8(PIC1_IMR, 0xff);	/*���荞�ݑS�������i�X���[�u�j*/
+	IO_Out8(PIC0_IMR, 0xff);	/*割り込み全部無視（マスタ）*/
+	IO_Out8(PIC1_IMR, 0xff);	/*割り込み全部無視（スレーブ）*/
 
-	System_GateDescriptor_Set(0x27, (uint)asm_InterruptHandler27, 0x02, AR_INTGATE32);	/*IRQ-07�΍�*/
+	System_GateDescriptor_Set(0x27, (uint)asm_InterruptHandler27, 0x02, AR_INTGATE32);	/*IRQ-07対策*/
 	ProgrammableInterruptController_InterruptMask_Clear(0x07);
 
 	return;

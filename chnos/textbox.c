@@ -14,7 +14,7 @@ UI_TextBox *TextBox_Initialize(void)
 	return textbox;
 }
 
-//bpp==0:Ž©“®‘I‘ð(Œ»Ý‚ÌƒVƒXƒeƒ€ƒV[ƒg‚ÌÝ’è‚É‡‚í‚¹‚é)
+//bpp==0:è‡ªå‹•é¸æŠž(ç¾åœ¨ã®ã‚·ã‚¹ãƒ†ãƒ ã‚·ãƒ¼ãƒˆã®è¨­å®šã«åˆã‚ã›ã‚‹)
 uint TextBox_SetBuffer(UI_TextBox *textbox, uint xchars, uint ychars, uint bpp, UI_Sheet *parent)
 {
 	if(textbox == Null){
@@ -68,9 +68,9 @@ uint TextBox_Show(UI_TextBox *textbox, uint height, int px, int py)
 	return Sheet_Show(textbox->sheet, height, px, py);
 }
 
-//char‚ð“n‚·‚±‚Æ‚à‰Â”\B
-//BreakŽž‚ÌƒL[ƒR[ƒh‚Í–³Ž‹‚µ‚Ä‰½‚à“ü—Í‚µ‚È‚¢ikeyid‚ð’¼Ú“n‚·‚¾‚¯‚Å“ü—Í‚ª‚Å‚«‚é‚æ‚¤‚É‚·‚é‚½‚ßjB
-//ƒ^ƒu•¶Žš‚ÍA‹L˜^‚ªƒIƒt‚ÌŽž‚Ì‚Ý“ü—Í‰Â”\B
+//charã‚’æ¸¡ã™ã“ã¨ã‚‚å¯èƒ½ã€‚
+//Breakæ™‚ã®ã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰ã¯ç„¡è¦–ã—ã¦ä½•ã‚‚å…¥åŠ›ã—ãªã„ï¼ˆkeyidã‚’ç›´æŽ¥æ¸¡ã™ã ã‘ã§å…¥åŠ›ãŒã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹ãŸã‚ï¼‰ã€‚
+//ã‚¿ãƒ–æ–‡å­—ã¯ã€è¨˜éŒ²ãŒã‚ªãƒ•ã®æ™‚ã®ã¿å…¥åŠ›å¯èƒ½ã€‚
 uint TextBox_Put_Key(UI_TextBox *textbox, ushort keyid)
 {
 	if(textbox == Null){
@@ -88,7 +88,7 @@ uint TextBox_Put_Key(UI_TextBox *textbox, ushort keyid)
 	}
 
 	if(!(keyid & KEYID_MASK_BREAK)){
-		if(keyid & KEYID_MASK_EXTENDED){	/*§Œä•¶Žš*/
+		if(keyid & KEYID_MASK_EXTENDED){	/*åˆ¶å¾¡æ–‡å­—*/
 			switch(keyid & KEYID_MASK_ID){
 				case KEYID_ENTER:
 					TextBox_Internal_Put_Character(textbox, '\n');
@@ -101,7 +101,7 @@ uint TextBox_Put_Key(UI_TextBox *textbox, ushort keyid)
 					break;
 			}
 			return 0;
-		} else{	/*ASCII•¶Žš*/
+		} else{	/*ASCIIæ–‡å­—*/
 			TextBox_Internal_Put_Character(textbox, keyid & KEYID_MASK_ID);
 		}
 	}
@@ -152,7 +152,7 @@ uint TextBox_Put_Character(UI_TextBox *textbox, uchar c)
 	return TextBox_Internal_Put_Character(textbox, c);
 }
 
-//False->True‚Åƒoƒbƒtƒ@ƒŠƒZƒbƒgB
+//False->Trueã§ãƒãƒƒãƒ•ã‚¡ãƒªã‚»ãƒƒãƒˆã€‚
 bool TextBox_SetEnable_RecordInputText(UI_TextBox *textbox, bool enable)
 {
 	bool old;
@@ -245,7 +245,7 @@ uint TextBox_Internal_Put_Character(UI_TextBox *textbox, uchar c)
 		Sheet_Drawing_Fill_Rectangle(textbox->sheet, textbox->backcol, textbox->location_cursor.x, textbox->location_cursor.y, textbox->location_cursor.x + 8 - 1, textbox->location_cursor.y + 16 - 1);
 		Sheet_RefreshSheet(textbox->sheet, textbox->location_cursor.x, textbox->location_cursor.y, textbox->location_cursor.x + 8 - 1, textbox->location_cursor.y + 16 - 1);
 	}
-	/*ASCII•¶Žš*/
+	/*ASCIIæ–‡å­—*/
 	if(c == '\n'){
 		if(TextBox_Internal_Put_Character_TextBuffer(textbox, '\n')){
 			textbox->location_cursor.x = 0;

@@ -1,8 +1,8 @@
 
 #include "core.h"
 
-//�w��T�C�Y�́A�o�C�g�P�ʁB4�o�C�g�؂�̂āB
-//�����T�C�Y�́A�G���g��(uint=4byte)�P�ʁB
+//指定サイズは、バイト単位。4バイト切り捨て。
+//内部サイズは、エントリ(uint=4byte)単位。
 
 DATA_FIFO32 *FIFO32_Initialize(IO_MemoryControl memctrl, uint size)
 {
@@ -130,15 +130,15 @@ uint FIFO32_Get(DATA_FIFO32 *fifo)
 		return 0;
 	}
 
-	if (fifo->free == fifo->size) {	/*�o�b�t�@����̎��́A�Ō�ɓǂ݂Ƃ�ꂽ�f�[�^���J��Ԃ��Ԃ�*/
-		if(fifo->q == 0){	/*�ǂ݂����|�C���g���ŏ��̂Ƃ��́A�Ō�ɓǂ݂Ƃ�ꂽ�f�[�^�͏I�[�ɂ���*/
+	if (fifo->free == fifo->size) {	/*バッファが空の時は、最後に読みとられたデータを繰り返し返す*/
+		if(fifo->q == 0){	/*読みだしポイントが最初のときは、最後に読みとられたデータは終端にある*/
 			return fifo->buf[fifo->size];
 		}
 		return fifo->buf[fifo->q - 1];
 	}
 	data = fifo->buf[fifo->q];
 	fifo->q++;
-	if (fifo->q == fifo->size) {	/*�ǂݏo���|�C���g���I�[�܂ōs�����̂ŁA�擪�ɖ߂�*/
+	if (fifo->q == fifo->size) {	/*読み出しポイントが終端まで行ったので、先頭に戻す*/
 		fifo->q = 0;
 	}
 	fifo->free++;
@@ -155,7 +155,7 @@ uint FIFO32_Status(DATA_FIFO32 *fifo)
 		return 0;
 	}
 
-	return fifo->size - fifo->free;	/*�o�b�t�@�ɑ��݂���f�[�^�̃G���g����(�G���g����=uint�̌�->�G���g����*4=�g���Ă���o�C�g��)*/
+	return fifo->size - fifo->free;	/*バッファに存在するデータのエントリ数(エントリ数=uintの個数->エントリ数*4=使われているバイト数)*/
 }
 
 void FIFO32_Free(DATA_FIFO32 *fifo)

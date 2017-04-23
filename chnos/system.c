@@ -481,8 +481,8 @@ void System_Check_Memory(void)
 	return;
 }
 
-uint System_CPUID(void *addr, uint id)	//addr”Ô’n‚Ìuint[4]‚ÉACPU‚Ì¯•Êî•ñid”Ô‚ğEAXEEBXEEDXEECX‚Ì‡”Ô‚ÅŠi”[‚·‚éB
-{					//CPUID‚ª—˜—p•s‰Â‚Ìê‡‚ÍA–ß‚è’l‚Í0xffffffffA—˜—p‰Â”\‚È‚çAÅ‘å“ü—Í’liŠî–{î•ñ‚Ìê‡j‚ğ•Ô‚·B
+uint System_CPUID(void *addr, uint id)	//addrç•ªåœ°ã®uint[4]ã«ã€CPUã®è­˜åˆ¥æƒ…å ±idç•ªã‚’EAXãƒ»EBXãƒ»EDXãƒ»ECXã®é †ç•ªã§æ ¼ç´ã™ã‚‹ã€‚
+{					//CPUIDãŒåˆ©ç”¨ä¸å¯ã®å ´åˆã¯ã€æˆ»ã‚Šå€¤ã¯0xffffffffã€åˆ©ç”¨å¯èƒ½ãªã‚‰ã€æœ€å¤§å…¥åŠ›å€¤ï¼ˆåŸºæœ¬æƒ…å ±ã®å ´åˆï¼‰ã‚’è¿”ã™ã€‚
 	if(System.Environment.CPUID.max_id == 0xffffffff){
 		return 0;
 	}

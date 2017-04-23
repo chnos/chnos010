@@ -38,7 +38,7 @@ uint Memory_Test(uint start, uint end)
 //Memory Control System
 //ctrl[0].addr = 0;
 //ctrl[0].size = tags;
-//Memory Control�z��́A�Ǘ��Ώۂ̃������̏I�[�ɔz�u�����B
+//Memory Control配列は、管理対象のメモリの終端に配置される。
 
 IO_MemoryControl Memory_Initialize_Control(void *start, uint size, uint tags)
 {
@@ -47,17 +47,17 @@ IO_MemoryControl Memory_Initialize_Control(void *start, uint size, uint tags)
 	start = (void *)(((uint)start + 7) & ~7);
 	size = (size + 7) & ~7;
 
-//Memory Control�z�񂪓��镪��葽���A�Ǘ��Ώۂ̃�������^�����Ă��邩�`�F�b�N�B
+//Memory Control配列が入る分より多く、管理対象のメモリを与えられているかチェック。
 	if((tags * sizeof(IO_MemoryControlTag)) > size){
 		return 0;
 	}
 
-//�Ǘ��̓s����A3�^�O�ȏ�Ȃ��ƊǗ����������Ȃ��̂ŁA���̃`�F�b�N�B
+//管理の都合上、3タグ以上ないと管理が成立しないので、そのチェック。
 	if(tags < 3){
 		return 0;
 	}
 
-//�Ǘ��Ώۃ������͈͂̍Ōォ��AMemory Control�z��̑傫�������������̂ڂ����n�_��MemoryControl�z��̐擪�Ƃ���B
+//管理対象メモリ範囲の最後から、Memory Control配列の大きさ分だけさかのぼった地点をMemoryControl配列の先頭とする。
 	ctrl = (IO_MemoryControl)(start + (size - (tags * sizeof(IO_MemoryControlTag))));
 	ctrl[0].addr = 0;
 	ctrl[0].size = tags;
@@ -94,13 +94,13 @@ void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size)
 	k = 0;
 	minsize = 0xffffffff;
 	for(i = 1; i < ctrl[0].size; i++){
-		if(ctrl[i].size == 0xffffffff){	/*�I�[*/
+		if(ctrl[i].size == 0xffffffff){	/*終端*/
 			break;
 		}
-		if(ctrl[i].size < minsize){	/*�ŏ��󂫃������̌���*/
+		if(ctrl[i].size < minsize){	/*最小空きメモリの検索*/
 			k = i;
 		}
-		if(addr + size <= ctrl[i].addr){	/*������悤�Ƃ��Ă���󂫃������̎��ɗ���ׂ��󂫃�����*/
+		if(addr + size <= ctrl[i].addr){	/*解放しようとしている空きメモリの次に来るべき空きメモリ*/
 #ifdef CHNOSPROJECT_DEBUG_MEMORY
 	debug("DEBUG:MemoryFree:Found NextTagIndex:%d\n", i);
 #endif
@@ -109,35 +109,35 @@ void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size)
 		}
 	}
 	for(i--; i < ctrl[0].size; i++){
-		if(ctrl[i].size == 0xffffffff){	/*�I�[*/
+		if(ctrl[i].size == 0xffffffff){	/*終端*/
 			break;
 		}
-		if(ctrl[i].size < minsize){	/*�ŏ��󂫃������̌���*/
+		if(ctrl[i].size < minsize){	/*最小空きメモリの検索*/
 			k = i;
 		}
 	}
 #ifdef CHNOSPROJECT_DEBUG_MEMORY
 	debug("DEBUG:MemoryFree:Loop EndTagIndex:%d\n", i);
 #endif
-	if(j == 0){	/*���������A�h���X�̏����ȋ󂫏�񂪌�����Ȃ�����*/
+	if(j == 0){	/*自分よりもアドレスの小さな空き情報が見つからなかった*/
 		j = i;
 	}
-	if(i == ctrl[0].size){	/*�󂫃������z�񂪖��t*/
-		Error_Report(ERROR_NO_MORE_FREE_TAG, ctrl);	/*�{���͂����ŁActrl[0].addr�𗘗p���āA�Е������X�g�ɓo�^���Ȃ���΂����Ȃ��B*/
-		if(ctrl[k].size >= size){	/*�ŏ��̋󂫃������́A������悤�Ƃ��Ă���󂫃������������̂ŁA�o�^���~*/
+	if(i == ctrl[0].size){	/*空きメモリ配列が満杯*/
+		Error_Report(ERROR_NO_MORE_FREE_TAG, ctrl);	/*本当はここで、ctrl[0].addrを利用して、片方向リストに登録しなければいけない。*/
+		if(ctrl[k].size >= size){	/*最小の空きメモリは、解放しようとしている空きメモリだったので、登録中止*/
 			IO_Store_EFlags(eflags);
 			return;
-		} else if(j <= k){	/*�ŏ��̋󂫃������́A������悤�Ƃ��Ă���󂫃������̑}���ʒu������ɂ���*/
+		} else if(j <= k){	/*最小の空きメモリは、解放しようとしている空きメモリの挿入位置よりも後にある*/
 			for(; k > j; k--){
 				ctrl[k] = ctrl[k - 1];
 			}
-		} else if(j > k){	/*�ŏ��̋󂫃������́A������悤�Ƃ��Ă���󂫃������̑}���ʒu�����O�ɂ���*/
+		} else if(j > k){	/*最小の空きメモリは、解放しようとしている空きメモリの挿入位置よりも前にある*/
 			for(; k < j - 1; k++){
 				ctrl[k] = ctrl[k + 1];
 			}
 			j--;
 		}
-	} else{	/*�󂫂͏\������̂ł��炷*/
+	} else{	/*空きは十分あるのでずらす*/
 		if(i + 1 != ctrl[0].size - 1){
 			ctrl[i + 1].addr = 0;
 			ctrl[i + 1].size = 0xffffffff;
@@ -185,8 +185,8 @@ void Memory_Free_Sub(IO_MemoryControl ctrl, uint tagno)
 	}
 
 	for(; i < j; i++){
-		if(ctrl[i].addr + ctrl[i].size >= ctrl[i + 1].addr){	/*ctrl[i]�̌��ɁActrl[i + 1]���Ȃ���*/
-			if(ctrl[i].addr + ctrl[i].size > ctrl[i + 1].addr){	/*�͈͂��d�Ȃ��Ă���*/
+		if(ctrl[i].addr + ctrl[i].size >= ctrl[i + 1].addr){	/*ctrl[i]の後ろに、ctrl[i + 1]がつながる*/
+			if(ctrl[i].addr + ctrl[i].size > ctrl[i + 1].addr){	/*範囲が重なっている*/
 				Error_Report(ERROR_MEMORY_FREE_RANGE_OVERLAPPED, ctrl, i);
 				ctrl[i].size = (uint)ctrl[i + 1].addr - (uint)ctrl[i].addr;
 			}
@@ -226,34 +226,34 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size)
 	IO_CLI();
 
 	for(i = 1; i < ctrl[0].size; i++){
-		if(ctrl[i].size == 0xffffffff){	/*�I�[*/
+		if(ctrl[i].size == 0xffffffff){	/*終端*/
 			break;
 		}
-		if(ctrl[i].size >= size){	/*�\���ȋ󂫂𔭌�*/
+		if(ctrl[i].size >= size){	/*十分な空きを発見*/
 #ifdef CHNOSPROJECT_DEBUG_MEMORY
 	debug("DEBUG:MemoryAllocate:Found index:%d\n", i);
 #endif
 			addr = ctrl[i].addr;
-			if(ctrl[i].size == size){	/*�҂����肾�����̂ŋ󂫏���j��*/
+			if(ctrl[i].size == size){	/*ぴったりだったので空き情報を破棄*/
 				for(; i < ctrl[0].size - 1; i++){
-					//�I�[�𔭌�������Break.
+					//終端を発見したらBreak.
 					if(ctrl[i].size == 0xffffffff){
 						break;
 					}
-					//�^�O���R�s�[���đO�ɋl�߂�B
+					//タグをコピーして前に詰める。
 					ctrl[i] = ctrl[i + 1];
 				}
-				//�l�߂����ʁA�I�[�^�O���K�v��������ǉ�����i����Ȃ��ƂȂ��͂�����ˁH�c�j
+				//詰めた結果、終端タグが必要だったら追加する（そんなことないはずだよね？…）
 				//if(i != ctrl[0].size){
 				//	ctrl[i].addr = 0;
 				//	ctrl[i].size = 0xffffffff;
 				//}
-			} else{	/*�܂��c���Ă���̂ŋ󂫏��𒲐�*/
+			} else{	/*まだ残っているので空き情報を調整*/
 				ctrl[i].addr += size;
 				ctrl[i].size -= size;
 			}
 			IO_Store_EFlags(eflags);
-			//���������[���N���A�B
+			//メモリをゼロクリア。
 			MOVSD_ZeroFill(addr, size);
 
 			#ifdef CHNOSPROJECT_DEBUG_MEMORY_ALLOCATE_AND_FREE
@@ -272,7 +272,7 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size)
 }
 
 void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align)
-/*align��2�̙p��{�Ƃ��ĉ��߂���B2�̙p��{�łȂ��ꍇ�́A�ő�̃Z�b�g����Ă���r�b�g�ɑΉ�����l�ŃA���C�������*/
+/*alignは2の冪乗倍として解釈する。2の冪乗倍でない場合は、最大のセットされているビットに対応する値でアラインされる*/
 {
 	uint i;
 	void *notaligned;

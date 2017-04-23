@@ -4,7 +4,7 @@ TARGET   = chnos
 
 SRCROOT  = ../
 TOOLPATH = $(SRCROOT)../z_tools/
-INCPATH  = $(SRCROOT)../z_tools/CHNOSProject/
+INCPATH  = $(SRCROOT)include/
 
 include $(SRCROOT)tooldef.txt
 
@@ -27,8 +27,8 @@ hankaku.obj : hankaku.bin Makefile
 asmhead.bin : asmhead.nas Makefile
 	$(NASK) asmhead.nas asmhead.bin asmhead.lst
 
-bootpack.gas : bootpack.ca $(HEADS_BOOTPACK) Makefile
-	$(CC1) -o bootpack.gas bootpack.ca
+bootpack.gas : bootpack.c $(HEADS_BOOTPACK) Makefile
+	$(CC1) -o bootpack.gas bootpack.c
 
 bootpack.nas : bootpack.gas Makefile
 	$(GAS2NASK) bootpack.gas bootpack.nas
@@ -60,11 +60,11 @@ chnos.img : chnipl.bin chnos.sys Makefile
 
 #ˆê”Ê‹K‘¥
 
-%.ca : %.c Makefile
-	$(SJISCONV) $*.c $*.ca
+# %.ca : %.c Makefile
+# 	$(SJISCONV) $*.c $*.ca
 
-%.gas : %.ca $(HEADS_BOOTPACK) Makefile
-	$(CC1) -o $*.gas $*.ca
+%.gas : %.c $(HEADS_BOOTPACK) Makefile
+	$(CC1) -o $*.gas $*.c
 
 %.nas : %.gas Makefile
 	$(GAS2NASK) $*.gas $*.nas

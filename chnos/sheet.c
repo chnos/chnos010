@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-//ŠeƒV[ƒg‚Ì¶ã‚ðPA¶‰º‚ðQA‰E‰º‚ðRA‰Eã‚ðSi‚·‚×‚Ä‘‚«ž‚ß‚éÀ•Wj‚Æ‚·‚éB
+//å„ã‚·ãƒ¼ãƒˆã®å·¦ä¸Šã‚’Pã€å·¦ä¸‹ã‚’Qã€å³ä¸‹ã‚’Rã€å³ä¸Šã‚’Sï¼ˆã™ã¹ã¦æ›¸ãè¾¼ã‚ã‚‹åº§æ¨™ï¼‰ã¨ã™ã‚‹ã€‚
 
 UI_Sheet *Sheet_Initialize(void)
 {
@@ -43,7 +43,7 @@ uint Sheet_Free(UI_Sheet *sheet)
 		return 1;
 	}
 
-//e‚ÌŽq“o˜^‚ðíœ‚·‚é
+//è¦ªã®å­ç™»éŒ²ã‚’å‰Šé™¤ã™ã‚‹
 	if(sheet->parent != Null){
 		search = &sheet->parent->child;
 		for(i = 0; i < SHEET_MAX_CHILDREN; i++){
@@ -62,7 +62,7 @@ uint Sheet_Free(UI_Sheet *sheet)
 		}
 	}
 
-//Žq‚Ìe“o˜^‚ðíœ‚·‚é
+//å­ã®è¦ªç™»éŒ²ã‚’å‰Šé™¤ã™ã‚‹
 	if(sheet->child != Null){
 		search = &sheet->child;
 		for(i = 0; i < SHEET_MAX_CHILDREN; i++){

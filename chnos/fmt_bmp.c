@@ -1,7 +1,7 @@
 
 #include "core.h"
 
-//ƒpƒfƒBƒ“ƒO‚ΜΦW‚Ε‚±‚ρ‚Θ‚±‚Ζ‚Ι‚Θ‚Α‚Δ‚ι
+//γƒ‘γƒ‡γ‚£γƒ³γ‚°γ®ι–ΆδΏ‚γ§γ“γ‚“γªγ“γ¨γ«γªγ£γ¦γ‚‹
 typedef struct DATA_FORMAT_BMP_FILE_HEADER {
 	uchar sign[2];
 	uchar filesize[4];

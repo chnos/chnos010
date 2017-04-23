@@ -1,37 +1,23 @@
-# .chnƒAƒvƒŠ—p‹¤’ÊMakefile
+# .chnã‚¢ãƒ—ãƒªç”¨å…±é€šMakefile
 
-# APP      = ƒAƒvƒŠ–¼
+# APP      = ã‚¢ãƒ—ãƒªå
 
-# OBJS_APP = ƒAƒvƒŠ‚É•K—v‚ÈƒIƒuƒWƒFƒNƒg.obj
+# OBJS_APP = ã‚¢ãƒ—ãƒªã«å¿…è¦ãªã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ.obj
 
+SRCROOT = ../
 TOOLPATH = ../../z_tools/
-INCPATH  = ../../z_tools/CHNOSProject/
+INCPATH  = $(SRCROOT)include/
 
 include ../chnapi/apilist.txt
 
-MAKE     = $(TOOLPATH)make -r
-NASK     = $(TOOLPATH)nask
-CC1      = $(TOOLPATH)gocc1 -I$(INCPATH) -Os -Wall -quiet
-BIN2OBJ  = $(TOOLPATH)bin2obj
-GAS2NASK = $(TOOLPATH)gas2nask -a
-OBJ2BIM  = $(TOOLPATH)obj2bim
-BIM2CHN  = $(TOOLPATH)bim2chn
-RULEFILE = $(INCPATH)chn010.rul
-EDIMG    = $(TOOLPATH)edimg bias:9
-IMGTOL   = $(TOOLPATH)RWFD.EXE
-MAKEFONT = $(TOOLPATH)makefont
-HARITOL  = $(TOOLPATH)haritol
-SJISCONV = $(TOOLPATH)sjisconv -s
+include ../tooldef.txt
 
-COPY     = $(HARITOL) copy
-DEL      = $(HARITOL) remove
-
-# ƒfƒtƒHƒ‹ƒg“®ì
+# ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå‹•ä½œ
 
 default :
 	$(MAKE) $(APP).chn
 
-# ƒtƒ@ƒCƒ‹¶¬‹K‘¥
+# ãƒ•ã‚¡ã‚¤ãƒ«ç”Ÿæˆè¦å‰‡
 
 $(APP).bim : $(OBJS_APP) $(OBJS_API) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:$(APP).bim map:$(APP).map $(OBJS_APP) $(OBJS_API)
@@ -39,13 +25,13 @@ $(APP).bim : $(OBJS_APP) $(OBJS_API) Makefile
 $(APP).chn : $(APP).bim Makefile
 	$(BIM2CHN) $(APP).bim $(APP).chn 0
 
-#ˆê”Ê‹K‘¥
+#ä¸€èˆ¬è¦å‰‡
 
-%.ca : %.c Makefile
-	$(SJISCONV) $*.c $*.ca
+#%.ca : %.c Makefile
+#	$(SJISCONV) $*.c $*.ca
 
-%.gas : %.ca Makefile
-	$(CC1) -o $*.gas $*.ca
+%.gas : %.c Makefile
+	$(CC1) -o $*.gas $*.c
 
 %.nas : %.gas Makefile
 	$(GAS2NASK) $*.gas $*.nas
@@ -55,7 +41,7 @@ $(APP).chn : $(APP).bim Makefile
 
 
 
-# ƒRƒ}ƒ“ƒh
+# ã‚³ãƒãƒ³ãƒ‰
 
 clean :
 	-$(DEL) *.bin

@@ -1,5 +1,5 @@
 
-/*ƒVƒXƒeƒ€ƒf[ƒ^Œ^éŒ¾*/
+/*ã‚·ã‚¹ãƒ†ãƒ ãƒ‡ãƒ¼ã‚¿å‹å®£è¨€*/
 
 /*new object types*/
 //typedef enum _bool { false, true} bool;
@@ -157,7 +157,7 @@ typedef union CPU_EFLAGS {
 	uint eflags;
 	struct CPU_EFLAGS_BIT {
 		unsigned CF : 1;
-		unsigned bit1 : 1;	//í‚ÉTrueA‚±‚êˆÈŠO‚Ì—\–ñÏ‚İƒrƒbƒg‚Íí‚ÉFalse
+		unsigned bit1 : 1;	//å¸¸ã«Trueã€ã“ã‚Œä»¥å¤–ã®äºˆç´„æ¸ˆã¿ãƒ“ãƒƒãƒˆã¯å¸¸ã«False
 		unsigned PF : 1;
 		unsigned bit3 : 1;
 		unsigned AF : 1;
@@ -292,27 +292,27 @@ typedef struct CALL_BIOS_CONTROL {
 
 /*cfunction*/
 typedef struct CFUNCTION_VSNPRINTF_WORKAREA {
-	uchar *destination_buf;		/*‘‚«‚İæ•¶š—ñ‚ÌŠJnƒAƒhƒŒƒX*/
-	uint length_destination_buf;	/*‘‚«‚İæ•¶š—ñ‚ÌÅ‘åƒTƒCƒY*/
-	uint index_destination_buf;	/*‘‚«‚İæ•¶š—ñ‚ÌƒCƒ“ƒfƒbƒNƒX*/
+	uchar *destination_buf;		/*æ›¸ãè¾¼ã¿å…ˆæ–‡å­—åˆ—ã®é–‹å§‹ã‚¢ãƒ‰ãƒ¬ã‚¹*/
+	uint length_destination_buf;	/*æ›¸ãè¾¼ã¿å…ˆæ–‡å­—åˆ—ã®æœ€å¤§ã‚µã‚¤ã‚º*/
+	uint index_destination_buf;	/*æ›¸ãè¾¼ã¿å…ˆæ–‡å­—åˆ—ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹*/
 
-	const uchar *format_buf;	/*‘®w’è•¶š—ñ‚ÌŠJnƒAƒhƒŒƒX*/
-	uint index_format_buf;		/*‘®w’è•¶š—ñ‚ÌƒCƒ“ƒfƒbƒNƒX*/
+	const uchar *format_buf;	/*æ›¸å¼æŒ‡å®šæ–‡å­—åˆ—ã®é–‹å§‹ã‚¢ãƒ‰ãƒ¬ã‚¹*/
+	uint index_format_buf;		/*æ›¸å¼æŒ‡å®šæ–‡å­—åˆ—ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹*/
 
-	uchar temporary_data[16];	/*ˆêƒf[ƒ^‚Ì”z—ñ*/
-	uchar temporary_data_double[8];	/*64ƒrƒbƒg•‚“®¬”“_—pƒoƒbƒtƒ@*/
+	uchar temporary_data[16];	/*ä¸€æ™‚ãƒ‡ãƒ¼ã‚¿ã®é…åˆ—*/
+	uchar temporary_data_double[8];	/*64ãƒ“ãƒƒãƒˆæµ®å‹•å°æ•°ç‚¹ç”¨ãƒãƒƒãƒ•ã‚¡*/
 
-	uint *vargs;			/*‰Â•Ï’·ˆø”‚ÌŠJnƒAƒhƒŒƒX*/
-	uint index_vargs;		/*‰Â•Ï’·ˆø”‚ÌŒ»İ‚ÌêŠ*/
+	uint *vargs;			/*å¯å¤‰é•·å¼•æ•°ã®é–‹å§‹ã‚¢ãƒ‰ãƒ¬ã‚¹*/
+	uint index_vargs;		/*å¯å¤‰é•·å¼•æ•°ã®ç¾åœ¨ã®å ´æ‰€*/
 
-	uint format_phase;		/*ƒtƒH[ƒ}ƒbƒg‚Ì’iŠK‚ğ¦‚·B*/
-						/*”’l	:ˆÓ–¡*/
-						/*0	:ƒtƒH[ƒ}ƒbƒgw’è’†‚Å‚Í‚È‚¢*/
-						/*1	:ƒtƒ‰ƒOˆÈ~‚Ì‘®‚ğ—v‹*/
-						/*2	:ƒtƒB[ƒ‹ƒh•ˆÈ~‚Ì‘®‚ğ—v‹B*/
-						/*3	:¸“xˆÈ~‚Ì‘®‚ğ—v‹B*/
-						/*4	:•ÏŠ·CüqˆÈ~‚Ì‘®‚ğ—v‹B*/
-						/*5	:ƒtƒH[ƒ}ƒbƒgw’èq‚ğ—v‹*/
+	uint format_phase;		/*ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã®æ®µéšã‚’ç¤ºã™ã€‚*/
+						/*æ•°å€¤	:æ„å‘³*/
+						/*0	:ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆæŒ‡å®šä¸­ã§ã¯ãªã„*/
+						/*1	:ãƒ•ãƒ©ã‚°ä»¥é™ã®æ›¸å¼ã‚’è¦æ±‚*/
+						/*2	:ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰å¹…ä»¥é™ã®æ›¸å¼ã‚’è¦æ±‚ã€‚*/
+						/*3	:ç²¾åº¦ä»¥é™ã®æ›¸å¼ã‚’è¦æ±‚ã€‚*/
+						/*4	:å¤‰æ›ä¿®é£¾å­ä»¥é™ã®æ›¸å¼ã‚’è¦æ±‚ã€‚*/
+						/*5	:ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆæŒ‡å®šå­ã‚’è¦æ±‚*/
 } CFunction_vsnprintf_WorkArea;
 
 /*emu86*/
@@ -385,7 +385,7 @@ typedef struct _INFO_VBE_BIOS {
 	uchar ver_major;
 	ushort oem_string_offset;
 	ushort oem_string_segment;
-	ushort flags[2];	//ƒpƒfƒBƒ“ƒO‚ÌŠÖŒW‚ÅA–{“–‚Íuint‚¾‚ªushort*2‚É‚µ‚Ä‚¢‚éB
+	ushort flags[2];	//ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã®é–¢ä¿‚ã§ã€æœ¬å½“ã¯uintã ãŒushort*2ã«ã—ã¦ã„ã‚‹ã€‚
 	ushort vmode_args_offset;
 	ushort vmode_args_segment;
 	ushort vram_supported_size_kb;

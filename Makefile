@@ -1,7 +1,7 @@
 
-#ƒAƒvƒŠ’Ç‰Á‚É‘‚«‘«‚·‚×‚«‰ÓŠ	
-# ƒtƒ@ƒCƒ‹¶¬‹K‘¥ 2‰ÓŠ
-# ƒRƒ}ƒ“ƒh
+#ã‚¢ãƒ—ãƒªè¿½åŠ æ™‚ã«æ›¸ãè¶³ã™ã¹ãç®‡æ‰€	
+# ãƒ•ã‚¡ã‚¤ãƒ«ç”Ÿæˆè¦å‰‡ 2ç®‡æ‰€
+# ã‚³ãƒãƒ³ãƒ‰
 #  full, clan_full, src_only_full
 
 TARGET   = chnos
@@ -12,12 +12,13 @@ SRCROOT  = ./
 
 include $(SRCROOT)tooldef.txt
 
-# ƒfƒtƒHƒ‹ƒg“®ì
+# ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå‹•ä½œ
 
 default :
+	$(MAKE) full
 	$(MAKE) chnos.img
 
-# ƒtƒ@ƒCƒ‹¶¬‹K‘¥
+# ãƒ•ã‚¡ã‚¤ãƒ«ç”Ÿæˆè¦å‰‡
 
 chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		asmtest/asmtest.chn \
@@ -40,7 +41,7 @@ chnos.img : chnos/chnipl.bin chnos/chnos.sys chnos/chnipl.nas \
 		copy from:ctest/ctest.chn to:@: \
 		imgout:chnos.img
 
-# ƒRƒ}ƒ“ƒh
+# ã‚³ãƒãƒ³ãƒ‰
 run : $(TARGET).img
 	$(COPY) $(TARGET).img $(TOOLPATH)qemu/fdimage0.bin
 	$(MAKE) -C $(TOOLPATH)qemu
@@ -83,7 +84,7 @@ run_os :
 	$(MAKE) run
 
 clean :
-# ‰½‚à‚µ‚È‚¢
+# ä½•ã‚‚ã—ãªã„
 
 src_only :
 	$(MAKE) clean

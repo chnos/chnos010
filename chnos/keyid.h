@@ -1,23 +1,23 @@
 
-/*KeyIdentifier �L�[ID�錾*/
+/*KeyIdentifier キーID宣言*/
 
-//16bit���g�p�B�܂�A0-65535,0x0000-0xffff
-//bit00-06	:ASCII�R�[�h(�g���t���O��0�̂Ƃ�)
-//		:�g���L�[ID(�g���t���O��1�̂Ƃ�)		
-//bit07		:Make,Break���(0:Make,1:Break)(0:��ʂȂ�)
-//bit08		:�e���L�[���(0:�t���L�[,1:�e���L�[)(0:��ʂȂ�)
-//bit09		:Shift�L�[���(0:�I�t,1:�I��)
-//bit10		:Ctrl�L�[���(0:�I�t,1:�I��)
-//bit11		:Alt�L�[���(0:�I�t,1:�I��)
-//bit12		:ScrollLock���(0:�I�t,1:�I��)
-//bit13		:NumLock���(0:�I�t,1:�I��)
-//bit14		:CapsLock���(0:�I�t,1:�I��)
-//bit15		:�g���t���O(0:ASCII,1:�g���L�[�R�[�h)
+//16bitを使用。つまり、0-65535,0x0000-0xffff
+//bit00-06	:ASCIIコード(拡張フラグが0のとき)
+//		:拡張キーID(拡張フラグが1のとき)		
+//bit07		:Make,Break種別(0:Make,1:Break)(0:種別なし)
+//bit08		:テンキー種別(0:フルキー,1:テンキー)(0:種別なし)
+//bit09		:Shiftキー状態(0:オフ,1:オン)
+//bit10		:Ctrlキー状態(0:オフ,1:オン)
+//bit11		:Altキー状態(0:オフ,1:オン)
+//bit12		:ScrollLock状態(0:オフ,1:オン)
+//bit13		:NumLock状態(0:オフ,1:オン)
+//bit14		:CapsLock状態(0:オフ,1:オン)
+//bit15		:拡張フラグ(0:ASCII,1:拡張キーコード)
 
-//�܂�AFIFO�Ŏ󂯎���āA�o�C�A�X����������AKEYID_EXTENDED�t���O�𒲂ׂ�B
-//���ɁABREAK�t���O�𒲂ׂ�B
-//�����āA����7�r�b�g�݂̂��Q�Ƃ���B
-//KEYID==0x0000�́AID�������ł��邱�Ƃ������A�ǂ̕�����\�����Ƃ��Ȃ��B
+//つまり、FIFOで受け取って、バイアスを引いたら、KEYID_EXTENDEDフラグを調べる。
+//次に、BREAKフラグを調べる。
+//そして、下位7ビットのみを参照する。
+//KEYID==0x0000は、ID未処理であることを示し、どの文字を表すこともない。
 
 #define KEYID_MASK_ID			0x007f
 #define KEYID_MASK_BREAK		0x0080

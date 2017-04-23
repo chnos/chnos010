@@ -1,16 +1,16 @@
 
-/*TaskControlMessage�錾*/
+/*TaskControlMessage宣言*/
 
-//�^�X�N�ɕW���t����FIFO�ɑ��M�����A�V�X�e������̒ʒm�B
-//0x80000000����n�܂�B=31�r�b�g�ڂ�True���^�X�N��FIFO�ł���΁ATCM�ł���B
-//�^�X�N���s�����N���ɂȂ��^�X�N�ɂ͑��M����Ȃ����A�X���[�v���̃^�X�N�ɂ͑��M�����B
+//タスクに標準付属のFIFOに送信される、システムからの通知。
+//0x80000000から始まる。=31ビット目がTrueかつタスクのFIFOであれば、TCMである。
+//タスク実行リンク中にないタスクには送信されないが、スリープ中のタスクには送信される。
 
 #define TCM_OFFSET							0x80000000
 #define TCM_NULL							0x80000000
 #define TCM_INFO_DISPLAY_UPDATE_RESOLUTION	0x00000001
 
-//���̑��A���͂Ɏg����input�o�b�t�@�ł́A
-//INPUTSIGNAL_OFFSET����SIGNAL_KEY_OFFSET-1�́A�e����̓`�B�Ɏg�����߂ɃV�X�e���ŗ\�񂳂�Ă���B
+//その他、入力に使われるinputバッファでは、
+//INPUTSIGNAL_OFFSETからSIGNAL_KEY_OFFSET-1は、各種情報の伝達に使うためにシステムで予約されている。
 #define INPUTSIGNAL_OFFSET		0x08000
 
 #define INPUTSIGNAL_NULL		0x00000
@@ -18,7 +18,7 @@
 #define INPUTSIGNAL_FOCUS_LOST	0x00002
 #define INPUTSIGNAL_MAX			0x07fff
 
-//�܂��ASIGNAL_KEY_OFFSET����SIGNAL_KEY_OFFSET+0xffff�́Akeyid�̒ʒm�Ɏg����B
-//�ڍׂ́Akeyid.h���Q�ƁB
+//また、SIGNAL_KEY_OFFSETからSIGNAL_KEY_OFFSET+0xffffは、keyidの通知に使われる。
+//詳細は、keyid.hを参照。
 #define SIGNAL_KEY_OFFSET 0x10000
 

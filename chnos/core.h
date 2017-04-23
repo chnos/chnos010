@@ -1,18 +1,18 @@
 
 /*includes*/
-#include "coredef0.h"	/*ƒVƒXƒeƒ€’è”éŒ¾*/
-#include "coredef1.h"	/*ƒVƒXƒeƒ€ƒf[ƒ^Œ^éŒ¾*/
-#include "coredef2.h"	/*ƒVƒXƒeƒ€ŠO•”ƒŠƒ\[ƒXéŒ¾*/
-#include "coredef3.h"	/*TaskControlMessageéŒ¾*/
-#include "keyid.h"		/*KeyIdentifier ƒL[IDéŒ¾*/
-#include "structid.h"	/*SystemCommonStructIDéŒ¾*/
+#include "coredef0.h"	/*ã‚·ã‚¹ãƒ†ãƒ å®šæ•°å®£è¨€*/
+#include "coredef1.h"	/*ã‚·ã‚¹ãƒ†ãƒ ãƒ‡ãƒ¼ã‚¿å‹å®£è¨€*/
+#include "coredef2.h"	/*ã‚·ã‚¹ãƒ†ãƒ å¤–éƒ¨ãƒªã‚½ãƒ¼ã‚¹å®£è¨€*/
+#include "coredef3.h"	/*TaskControlMessageå®£è¨€*/
+#include "keyid.h"		/*KeyIdentifier ã‚­ãƒ¼IDå®£è¨€*/
+#include "structid.h"	/*SystemCommonStructIDå®£è¨€*/
 
 /*functions*/
-/*bootpack.c ŠîŠ²•”•ª*/
+/*bootpack.c åŸºå¹¹éƒ¨åˆ†*/
 void KeyboardControlTask(DATA_FIFO32 **InputFocus);
 void MouseControlTask(DATA_FIFO32 **InputFocus, UI_MouseCursor *mcursor);
 
-/*callbios.c 32bit‚©‚çBIOS‚ğƒR[ƒ‹‚·‚é‚½‚ß‚ÌŠÖ”ŒQ*/
+/*callbios.c 32bitã‹ã‚‰BIOSã‚’ã‚³ãƒ¼ãƒ«ã™ã‚‹ãŸã‚ã®é–¢æ•°ç¾¤*/
 
 IO_CallBIOSControl *Initialize_CallBIOS(void);
 void CallBIOS_Execute(IO_CallBIOSControl *ctrl, uchar intn, DATA_FIFO32 *fifo, uint endsignal);
@@ -21,7 +21,7 @@ void CallBIOS_Check_Privileged_Operation(uint *esp);
 uint CallBIOS_Push_Data_To_Stack(uint *esp, ushort data);
 uint CallBIOS_Pop_Data_From_Stack(uint *esp);
 
-/*cfunc.c vsnprintf‚Ì“Æ©À‘•“™*/
+/*cfunc.c vsnprintfã®ç‹¬è‡ªå®Ÿè£…ç­‰*/
 void srand(uint seed);
 uint rand(void);
 uint isqrt(uint n);
@@ -46,7 +46,7 @@ void CFunction_vsnprintf_To_String_From_Hex_Upper(CFunction_vsnprintf_WorkArea *
 void CFunction_vsnprintf_To_String_From_Hex_Lower(CFunction_vsnprintf_WorkArea *work, uint hex);
 void CFunction_vsnprintf_To_String_From_Decimal_Unsigned(CFunction_vsnprintf_WorkArea *work, uint d);
 
-/*color.c FŠÖ˜A*/
+/*color.c è‰²é–¢é€£*/
 extern uint RGB_Table_08[16];
 ushort RGB_08_To_16(uchar c8);
 uint RGB_08_To_32(uchar c8);
@@ -56,7 +56,7 @@ uchar RGB_32_To_08(uint c32);
 uchar RGB_32_To_08_xy(uint c32, int x, int y);
 ushort RGB_32_To_16(uint c32);
 
-/*console.c ƒRƒ“ƒ\[ƒ‹ŠÖ˜A*/
+/*console.c ã‚³ãƒ³ã‚½ãƒ¼ãƒ«é–¢é€£*/
 UI_Console *Console_Initialize(void);
 uint Console_SetSize(UI_Console *console, uint xchars, uint ychars);
 uint Console_Run(UI_Console *console);
@@ -69,7 +69,7 @@ uint Console_Command_pci(UI_Console *console);
 uint Console_Command_type(UI_Console *console);
 uint Console_Command_task(UI_Console *console);
 
-/*debug.c ƒfƒoƒbƒOx‰‡*/
+/*debug.c ãƒ‡ãƒãƒƒã‚°æ”¯æ´*/
 #ifdef CHNOSPROJECT_DEBUG
 void debug(const uchar format[], ...);
 void Debug_PhysicalMemoryDump(void *addr, uint bytes);
@@ -77,11 +77,11 @@ void Debug_Set_Breakpoint(uint reg, void *addr, uint rw, uint len);
 void Debug_ExceptionHandler(uint *esp);
 #endif
 
-/*display.c ƒfƒBƒXƒvƒŒƒC§ŒäŠÖ˜A*/
+/*display.c ãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤åˆ¶å¾¡é–¢é€£*/
 IO_DisplayControl *Initialize_Display(void);
 uint Display_VESA_Set_VideoMode(IO_DisplayControl *ctrl, uint index);
 
-/*draw08.c 8bit•`‰æŠÖ˜A*/
+/*draw08.c 8bitæç”»é–¢é€£*/
 void Drawing08_Initialize_Palette(void);
 void Drawing08_Set_Palette(uint start, uint end, uchar *rgb);
 void Drawing08_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
@@ -89,19 +89,19 @@ void Drawing08_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uc
 void Drawing08_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing08_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 
-/*draw16.c 16bit•`‰æŠÖ˜A*/
+/*draw16.c 16bitæç”»é–¢é€£*/
 void Drawing16_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing16_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing16_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing16_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 
-/*draw32.c 32bit•`‰æŠÖ˜A*/
+/*draw32.c 32bitæç”»é–¢é€£*/
 void Drawing32_Fill_Rectangle(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void Drawing32_Put_Font(void *vram, uint xsize, uint x, uint y, uint c, const uchar *font);
 void Drawing32_Put_String(void *vram, uint xsize, uint x, uint y, uint c, const uchar s[]);
 void Drawing32_Draw_Point(void *vram, uint xsize, uint x, uint y, uint c);
 
-/*drawing.c •`‰æŠÖ˜A*/
+/*drawing.c æç”»é–¢é€£*/
 extern void (*Drawing_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 extern void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 extern void (*Drawing_Draw_Point)(void *vram, uint xsize, uint x, uint y, uint c);
@@ -114,7 +114,7 @@ void Drawing_Draw_Line_PQ(void *vram, uint xsize, uint c, uint x0, uint y0, uint
 void Drawing_Draw_Circle(void *vram, uint xsize, uint x, uint y, uint c, uint r);
 void Drawing_Fill_Circle(void *vram, uint xsize, uint x, uint y, uint c, uint r);
 
-/*dsctbl.c ƒZƒOƒƒ“ƒgEƒQ[ƒgƒfƒBƒXƒNƒŠƒvƒ^ŠÖ˜A*/
+/*dsctbl.c ã‚»ã‚°ãƒ¡ãƒ³ãƒˆãƒ»ã‚²ãƒ¼ãƒˆãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿é–¢é€£*/
 void Initialize_GlobalDescriptorTable(void);
 void Initialize_InterruptDescriptorTable(void);
 void SegmentDescriptor_Set(IO_SegmentDescriptor *seg_desc, uint limit, uint base, uint ar);
@@ -123,7 +123,7 @@ uint SegmentDescriptor_Get_Limit(IO_SegmentDescriptor *seg_desc);
 uint SegmentDescriptor_Get_AccessRight(IO_SegmentDescriptor *seg_desc);
 void GateDescriptor_Set(IO_GateDescriptor *gate_desc, uint offset, uint selector, uint ar);
 
-/*emu86.c x86ƒGƒ~ƒ…ƒŒ[ƒ^[ŠÖ˜A*/
+/*emu86.c x86ã‚¨ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚¿ãƒ¼é–¢é€£*/
 void Emulator_x86_Initialize(Emulator_x86_Environment *env);
 uint Emulator_x86_Execute(Emulator_x86_Environment *env);
 uint Emulator_x86_Execute_Auto(Emulator_x86_Environment *env);
@@ -175,14 +175,14 @@ void Emulator_x86_Operation_MOV_Ev_Gv(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_PUSH_Ib(Emulator_x86_Environment *env);
 void Emulator_x86_Operation_CLD(Emulator_x86_Environment *env);
 
-/*emu86asm.nas x86ƒGƒ~ƒ…ƒŒ[ƒ^[ŠÖ˜AƒAƒZƒ“ƒuƒ‰ŠÖ”*/
-uint asm_Emulator_x86_Get_EFlags_Compare(uint first_op, uint second_op);	//eflags‚ğ•Ô‚·
+/*emu86asm.nas x86ã‚¨ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚¿ãƒ¼é–¢é€£ã‚¢ã‚»ãƒ³ãƒ–ãƒ©é–¢æ•°*/
+uint asm_Emulator_x86_Get_EFlags_Compare(uint first_op, uint second_op);	//eflagsã‚’è¿”ã™
 uint asm_Emulator_x86_Get_EFlags_Increment(uint first_op);
 uint asm_Emulator_x86_Get_EFlags_XOR(uint first_op, uint second_op);
 uint asm_Emulator_x86_Get_EFlags_Decrement(uint first_op);
 uint asm_Emulator_x86_Get_EFlags_Subtract_with_Borrow(uint *first_op, uint second_op, uint borrow);
 
-/*error.c ƒGƒ‰[ŠÖ˜A*/
+/*error.c ã‚¨ãƒ©ãƒ¼é–¢é€£*/
 uint Error_Report(uint error_no, ...);
 void Error_Abort(void);
 void Error_Set_Enable_SerialPort(bool serial);
@@ -192,7 +192,7 @@ int Error_Put_String(const uchar format[], ...);
 void Error_CPU_Exception_Put_Registers_With_ErrorCode(uint *esp);
 void Error_CPU_Exception_Put_Registers_Without_ErrorCode(uint *esp);
 
-/*fifo.c FIFOƒoƒbƒtƒ@ŠÖ˜A*/
+/*fifo.c FIFOãƒãƒƒãƒ•ã‚¡é–¢é€£*/
 DATA_FIFO32 *FIFO32_Initialize(IO_MemoryControl memctrl, uint size);
 int FIFO32_Put(DATA_FIFO32 *fifo, uint data);
 int FIFO32_Put_Arguments(DATA_FIFO32 *fifo, uint args, ...);
@@ -203,27 +203,27 @@ void FIFO32_Free(DATA_FIFO32 *fifo);
 uint FIFO32_MyTaskFIFO_Status(void);
 uint FIFO32_MyTaskFIFO_Get(void);
 
-/*file.c ƒtƒ@ƒCƒ‹ŠÖ˜A*/
+/*file.c ãƒ•ã‚¡ã‚¤ãƒ«é–¢é€£*/
 IO_File *File_Initilaize(void);
 uint File_Free(IO_File *file);
 
-/*floppy.c ƒtƒƒbƒs[ƒfƒBƒXƒNŠÖ˜A*/
+/*floppy.c ãƒ•ãƒ­ãƒƒãƒ”ãƒ¼ãƒ‡ã‚£ã‚¹ã‚¯é–¢é€£*/
 IO_FloppyDisk *FloppyDisk_Initialize(void *img);
 uint FloppyDisk_Decode_FAT16(IO_FloppyDisk *fd, bool backup);
 bool FloppyDisk_IsPathExist(IO_FloppyDisk *fd, const uchar path[]);
 uint FloppyDisk_LoadFile(IO_FloppyDisk *fd, IO_File *file, const uchar path[]);
 IO_FloppyDisk_DirectoryEntry *FloppyDisk_Internal_GetDirectoryEntryFromPath(IO_FloppyDisk *fd, const uchar path[]);
 
-/*fmt_bmp.c ƒrƒbƒgƒ}ƒbƒv•`‰æŠÖ˜A*/
+/*fmt_bmp.c ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—æç”»é–¢é€£*/
 uint Format_BMP_DrawPicture(void *vram, uint xsize, uint x, uint y, uint pxsize, uint pysize, void *bmp);
 
-/*intrpt.c Š„‚è‚İŠÖ˜A*/
+/*intrpt.c å‰²ã‚Šè¾¼ã¿é–¢é€£*/
 void Initialize_ProgrammableInterruptController(void);
 void ProgrammableInterruptController_InterruptMask_Clear(uint irq);
 void ProgrammableInterruptController_InterruptRequest_Complete(uint irq);
 void InterruptHandler27(uint *esp);
 
-/*keyboard.c ƒL[ƒ{[ƒhŠÖ˜A*/
+/*keyboard.c ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰é–¢é€£*/
 void Initialize_Keyboard(void);
 void InterruptHandler21(uint *esp);
 void Keyboard_Set_ReceiveFIFO(DATA_FIFO32 *fifo, uint data0);
@@ -233,7 +233,7 @@ void KeyboardController_Wait_SendReady(void);
 void KeyboardController_SendData(uchar data);
 void KeyboardController_SendCommand(uchar cmd);
 
-/*memory.c ƒƒ‚ƒŠŠÖ˜A*/
+/*memory.c ãƒ¡ãƒ¢ãƒªé–¢é€£*/
 uint Memory_Test(uint start, uint end);
 IO_MemoryControl Memory_Initialize_Control(void *start, uint size, uint tags);
 void Memory_Free(IO_MemoryControl ctrl, void *addr, uint size);
@@ -242,7 +242,7 @@ void *Memory_Allocate(IO_MemoryControl ctrl, uint size);
 void *Memory_Allocate_Aligned(IO_MemoryControl ctrl, uint size, uint align);
 uint Memory_Get_FreeSize(IO_MemoryControl ctrl);
 
-/*mouse.c ƒ}ƒEƒXŠÖ˜A*/
+/*mouse.c ãƒã‚¦ã‚¹é–¢é€£*/
 IO_MouseControl *Initialize_Mouse(void);
 void InterruptHandler2c(uint *esp);
 void Mouse_Set_ReceiveFIFO(DATA_FIFO32 *fifo, uint data0);
@@ -253,7 +253,7 @@ uint MouseCursor_Move_Relative(UI_MouseCursor *mcursor, int rpx, int rpy);
 uint MouseCursor_Move_Absolute(UI_MouseCursor *mcursor, int apx, int apy);
 bool Mouse_Decode(IO_MouseControl *mctrl, uint data);
 
-/*mtask.c ƒ}ƒ‹ƒ`ƒ^ƒXƒNŠÖ˜A*/
+/*mtask.c ãƒãƒ«ãƒã‚¿ã‚¹ã‚¯é–¢é€£*/
 UI_TaskControl *Initialize_MultiTask_Control(IO_MemoryControl sysmemctrl);
 UI_Task *MultiTask_Task_Initialize(UI_TaskControl *ctrl, uint tss_additional_size);
 uint MultiTask_Internal_Task_SetLink(UI_TaskControl *ctrl, UI_Task *task);
@@ -265,7 +265,7 @@ void MultiTask_Task_Kill(UI_TaskControl *ctrl, UI_Task *task);
 UI_Task *MultiTask_GetNowTask(UI_TaskControl *ctrl);
 uint MultiTask_Push_Arguments(UI_Task *task, uint args, ...);
 
-/*pci.c PCIŠÖ˜A*/
+/*pci.c PCIé–¢é€£*/
 void Initialize_PCI(void);
 void PCI_ConfigurationRegister_SelectDevice(uint bus, uint device, uint function);
 uint PCI_ConfigurationRegister_Read32(uint addr);
@@ -273,11 +273,11 @@ uchar *PCI_GetDeviceVendor(uint id);
 uchar *PCI_GetDeviceClass(uint id);
 uchar *PCI_GetDeviceType(uint id);
 
-/*serial.c ƒVƒŠƒAƒ‹’ÊMŠÖ˜A*/
+/*serial.c ã‚·ãƒªã‚¢ãƒ«é€šä¿¡é–¢é€£*/
 void Initialize_SerialPort(void);
 void SerialPort_Send(const uchar s[]);
 
-/*sheet.c ƒV[ƒgŠÖ˜A*/
+/*sheet.c ã‚·ãƒ¼ãƒˆé–¢é€£*/
 UI_Sheet *Sheet_Initialize(void);
 uint Sheet_Free(UI_Sheet *sheet);
 uint Sheet_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
@@ -298,7 +298,7 @@ UI_Sheet *Sheet_GetSheetFromLocation(UI_Sheet *parent, int px, int py);
 uint Sheet_SetMovable(UI_Sheet *sheet, bool movable);
 uint Sheet_SetInputFIFO(UI_Sheet *sheet, DATA_FIFO32 *fifo);
 
-/*sht08.c 8bitƒJƒ‰[ ƒV[ƒgŠÖ˜A*/
+/*sht08.c 8bitã‚«ãƒ©ãƒ¼ ã‚·ãƒ¼ãƒˆé–¢é€£*/
 uint Sheet08_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
 uint Sheet08_Config_Functions(UI_Sheet *sheet);
 uint Sheet08_Internal_RefreshSheet_To_08(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
@@ -306,7 +306,7 @@ uint Sheet08_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int 
 uint Sheet08_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 bool Sheet08_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py);
 
-/*sht16.c 16bitƒJƒ‰[ ƒV[ƒgŠÖ˜A*/
+/*sht16.c 16bitã‚«ãƒ©ãƒ¼ ã‚·ãƒ¼ãƒˆé–¢é€£*/
 uint Sheet16_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
 uint Sheet16_Config_Functions(UI_Sheet *sheet);
 uint Sheet16_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
@@ -314,7 +314,7 @@ uint Sheet16_Internal_RefreshSheet_To_08(UI_Sheet *sheet, int px0, int py0, int 
 uint Sheet16_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 bool Sheet16_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py);
 
-/*sht32.c 32bitƒJƒ‰[ ƒV[ƒgŠÖ˜A*/
+/*sht32.c 32bitã‚«ãƒ©ãƒ¼ ã‚·ãƒ¼ãƒˆé–¢é€£*/
 uint Sheet32_Internal_SetBuffer(UI_Sheet *sheet, void *vram, uint xsize, uint ysize, uint bpp);
 uint Sheet32_Config_Functions(UI_Sheet *sheet);
 uint Sheet32_Internal_RefreshSheet_To_32(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
@@ -322,7 +322,7 @@ uint Sheet32_Internal_RefreshSheet_To_16(UI_Sheet *sheet, int px0, int py0, int 
 uint Sheet32_Internal_RefreshSheet_To_08_xy(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
 bool Sheet32_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py);
 
-/*shtdraw ƒV[ƒg•`‰æŠÖ”*/
+/*shtdraw ã‚·ãƒ¼ãƒˆæç”»é–¢æ•°*/
 uint Sheet_Drawing_Fill_Rectangle(UI_Sheet *sheet, uint c, int px0, int py0, int px1, int py1);
 uint Sheet_Drawing_Put_String(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
 uint Sheet_Drawing_Draw_Point(UI_Sheet *sheet, int x, int y, uint c);
@@ -344,7 +344,7 @@ uint Sheet32_Drawing_Fill_Rectangle(UI_Sheet *sheet, uint c, int px0, int py0, i
 uint Sheet32_Drawing_Put_String(UI_Sheet *sheet, int x, int y, uint fc, const uchar s[]);
 uint Sheet32_Drawing_Draw_Point(UI_Sheet *sheet, int x, int y, uint c);
 
-/*shtfunc.c ƒV[ƒg“à•”ŠÖ”*/
+/*shtfunc.c ã‚·ãƒ¼ãƒˆå†…éƒ¨é–¢æ•°*/
 uint Sheet_Internal_GetLocationP(UI_Sheet *sheet, DATA_Location2D *dest);
 uint Sheet_Internal_GetLocationQ(UI_Sheet *sheet, DATA_Location2D *dest);
 uint Sheet_Internal_GetLocationR(UI_Sheet *sheet, DATA_Location2D *dest);
@@ -362,12 +362,12 @@ uint Sheet_Internal_ChangeHeight(UI_Sheet *sheet, uint height);
 bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py);
 uint Sheet_Internal_RefreshSheet_Invalid(struct UI_SHEET *sheet, int px0, int py0, int px1, int py1);
 
-/*struct.c ƒVƒXƒeƒ€\‘¢‘Ì‹¤’ÊŠÇ—ƒ‹[ƒ`ƒ“*/
+/*struct.c ã‚·ã‚¹ãƒ†ãƒ æ§‹é€ ä½“å…±é€šç®¡ç†ãƒ«ãƒ¼ãƒãƒ³*/
 System_CommonStruct *System_CommonStruct_Allocate(uint structid);
 uint System_CommonStruct_Free(System_CommonStruct *str);
 
 
-/*system.c ƒVƒXƒeƒ€ƒf[ƒ^E‰Šú‰»ŠÖ˜A*/
+/*system.c ã‚·ã‚¹ãƒ†ãƒ ãƒ‡ãƒ¼ã‚¿ãƒ»åˆæœŸåŒ–é–¢é€£*/
 void Initialize_System(void);
 void System_Set_RunningPhase(uint phase);
 uint System_Get_RunningPhase(void);
@@ -398,7 +398,7 @@ uint System_Sheet_SetParentToVRAM(UI_Sheet *sheet);
 uint System_InputFocus_Change(DATA_FIFO32 *fifo);
 UI_TaskControl *System_MultiTask_GetController(void);
 
-/*textbox.c ƒeƒLƒXƒg“ü—ÍUIŠÖ˜A*/
+/*textbox.c ãƒ†ã‚­ã‚¹ãƒˆå…¥åŠ›UIé–¢é€£*/
 UI_TextBox *TextBox_Initialize(void);
 uint TextBox_SetBuffer(UI_TextBox *textbox, uint xchars, uint ychars, uint bpp, UI_Sheet *parent);
 uint TextBox_Show(UI_TextBox *textbox, uint height, int px, int py);
@@ -412,7 +412,7 @@ uint TextBox_Internal_Put_Character(UI_TextBox *textbox, uchar c);
 bool TextBox_Internal_Put_Character_TextBuffer(UI_TextBox *textbox, uchar c);
 uint TextBox_Internal_DrawCursor(UI_TextBox *textbox, bool cursor);
 
-/*timer.c ƒ^ƒCƒ}[ŠÖ˜A*/
+/*timer.c ã‚¿ã‚¤ãƒãƒ¼é–¢é€£*/
 UI_TimerControl *Initialize_ProgrammableIntervalTimer(void);
 void InterruptHandler20(uint *esp);
 void Timer_Set_TaskSwitch(void (*TaskSwitchFunction)(void));
@@ -423,7 +423,7 @@ uint Timer_Run(UI_Timer *timer);
 uint Timer_TimeOut(void);
 uint Timer_GetTick(void);
 
-/*vgatmode.c VGAƒeƒLƒXƒgƒ‚[ƒhŠÖ˜A*/
+/*vgatmode.c VGAãƒ†ã‚­ã‚¹ãƒˆãƒ¢ãƒ¼ãƒ‰é–¢é€£*/
 uchar VGA_CRTController_ReadRegister(uchar regno);
 void VGA_CRTController_WriteRegister(uchar regno, uchar data);
 void TextMode_Write_TextRAM(ushort index, uchar data);
@@ -436,7 +436,7 @@ void TextMode_Put_Character(uchar c, col_text col);
 void TextMode_Newline(void);
 void TextMode_Put_String(const uchar s[], col_text col);
 
-/*xception.c —áŠOŠÖ˜A*/
+/*xception.c ä¾‹å¤–é–¢é€£*/
 void CPU_ExceptionHandler00(uint *esp);
 void CPU_ExceptionHandler01(uint *esp);
 void CPU_ExceptionHandler02(uint *esp);
@@ -470,27 +470,27 @@ void CPU_ExceptionHandler1d(uint *esp);
 void CPU_ExceptionHandler1e(uint *esp);
 void CPU_ExceptionHandler1f(uint *esp);
 
-/*nasfunc0.nas ‘¼‚ÌŠÖ”‚É‘S‚­ˆË‘¶‚µ‚È‚¢ƒAƒZƒ“ƒuƒ‰ŠÖ”ŒQ*/
-void IO_HLT(void);			//CPU‚ğ’â~‚³‚¹‚éBŠ„‚è‚İ‚ª‚ ‚é‚ÆÄŠJ‚·‚éB“ÁŒ –½—ßB
-void IO_CLI(void);			//CPU‚Ö‚ÌŠO•”Š„‚è‚İ‚ğ’â~‚³‚¹‚éB“ÁŒ –½—ßBNMI‚Æ—áŠO‚É‚ÍŒø‚©‚È‚¢B
-void IO_STI(void);			//CPU‚Ö‚ÌŠO•”Š„‚è‚İ‚ğÄŠJ‚³‚¹‚éB“ÁŒ –½—ßB
-void IO_STIHLT(void);			//CPU‚Ö‚ÌŠO•”Š„‚è‚İ‚ğÄŠJ‚³‚¹‚½ŒãACPU‚ğ’â~‚³‚¹‚éBsti‚Æhlt‚ÌŠÔ‚É”­¶‚·‚éŠ„‚è‚İ‚Ö‚Ì‘ÎôBB
-uint IO_In8(uint port);			//port”Ô‚ÌI/Oƒ|[ƒg‚©‚çƒf[ƒ^‚ğƒoƒCƒg’PˆÊ‚Åó‚¯æ‚éB–ß‚è’l‚Íó‚¯æ‚Á‚½ƒf[ƒ^BI/O“ÁŒ –½—ßB
-void IO_Out8(uint port, uint data);	//port”Ô‚ÌI/Oƒ|[ƒg‚Édata‚ğƒoƒCƒg’PˆÊ‚Åo—Í‚·‚éBI/O“ÁŒ –½—ßB
-uint IO_In16(uint port);		//port”Ô‚ÌI/Oƒ|[ƒg‚©‚çƒf[ƒ^‚ğƒ[ƒh’PˆÊ‚Åó‚¯æ‚éB–ß‚è’l‚Íó‚¯æ‚Á‚½ƒf[ƒ^BI/O“ÁŒ –½—ßB
-void IO_Out16(uint port, uint data);	//port”Ô‚ÌI/Oƒ|[ƒg‚Édata‚ğƒ[ƒh’PˆÊ‚Åo—Í‚·‚éBI/O“ÁŒ –½—ßB
-uint IO_In32(uint port);		//port”Ô‚ÌI/Oƒ|[ƒg‚©‚çƒf[ƒ^‚ğƒ_ƒuƒ‹ƒ[ƒh’PˆÊ‚Åó‚¯æ‚éB–ß‚è’l‚Íó‚¯æ‚Á‚½ƒf[ƒ^BI/O“ÁŒ –½—ßB
-void IO_Out32(uint port, uint data);	//port”Ô‚ÌI/Oƒ|[ƒg‚Édata‚ğƒ_ƒuƒ‹ƒ[ƒh’PˆÊ‚Åo—Í‚·‚éBI/O“ÁŒ –½—ßB
-uint IO_Load_EFlags(void);		//EFLAGSƒŒƒWƒXƒ^‚ğ“Ç‚İ‚ŞB
-void IO_Store_EFlags(uint eflags);	//EFLAGSƒŒƒWƒXƒ^‚ğeflags‚É•ÏX‚·‚éB
-uint Load_CR0(void);			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^0‚ğ“Ç‚İ‚ŞB“ÁŒ –½—ßB
-void Store_CR0(uint cr0);		//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^0‚ğcr0‚É•ÏX‚·‚éB“ÁŒ –½—ßB
-uint Load_CR2(void);			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^2‚ğ“Ç‚İ‚ŞB“ÁŒ –½—ßB
-void Store_CR2(uint cr2);		//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^2‚ğcr2‚É•ÏX‚·‚éB“ÁŒ –½—ßB
-uint Load_CR3(void);			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^3‚ğ“Ç‚İ‚ŞB“ÁŒ –½—ßB
-void Store_CR3(uint cr3);		//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^3‚ğcr3‚É•ÏX‚·‚éB“ÁŒ –½—ßB
-uint Load_CR4(void);			//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^4‚ğ“Ç‚İ‚ŞB“ÁŒ –½—ßB
-void Store_CR4(uint cr4);		//ƒRƒ“ƒgƒ[ƒ‹ƒŒƒWƒXƒ^4‚ğcr4‚É•ÏX‚·‚éB“ÁŒ –½—ßB
+/*nasfunc0.nas ä»–ã®é–¢æ•°ã«å…¨ãä¾å­˜ã—ãªã„ã‚¢ã‚»ãƒ³ãƒ–ãƒ©é–¢æ•°ç¾¤*/
+void IO_HLT(void);			//CPUã‚’åœæ­¢ã•ã›ã‚‹ã€‚å‰²ã‚Šè¾¼ã¿ãŒã‚ã‚‹ã¨å†é–‹ã™ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void IO_CLI(void);			//CPUã¸ã®å¤–éƒ¨å‰²ã‚Šè¾¼ã¿ã‚’åœæ­¢ã•ã›ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚NMIã¨ä¾‹å¤–ã«ã¯åŠ¹ã‹ãªã„ã€‚
+void IO_STI(void);			//CPUã¸ã®å¤–éƒ¨å‰²ã‚Šè¾¼ã¿ã‚’å†é–‹ã•ã›ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void IO_STIHLT(void);			//CPUã¸ã®å¤–éƒ¨å‰²ã‚Šè¾¼ã¿ã‚’å†é–‹ã•ã›ãŸå¾Œã€CPUã‚’åœæ­¢ã•ã›ã‚‹ã€‚stiã¨hltã®é–“ã«ç™ºç”Ÿã™ã‚‹å‰²ã‚Šè¾¼ã¿ã¸ã®å¯¾ç­–ã€‚ã€‚
+uint IO_In8(uint port);			//portç•ªã®I/Oãƒãƒ¼ãƒˆã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’ãƒã‚¤ãƒˆå˜ä½ã§å—ã‘å–ã‚‹ã€‚æˆ»ã‚Šå€¤ã¯å—ã‘å–ã£ãŸãƒ‡ãƒ¼ã‚¿ã€‚I/Oç‰¹æ¨©å‘½ä»¤ã€‚
+void IO_Out8(uint port, uint data);	//portç•ªã®I/Oãƒãƒ¼ãƒˆã«dataã‚’ãƒã‚¤ãƒˆå˜ä½ã§å‡ºåŠ›ã™ã‚‹ã€‚I/Oç‰¹æ¨©å‘½ä»¤ã€‚
+uint IO_In16(uint port);		//portç•ªã®I/Oãƒãƒ¼ãƒˆã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ¯ãƒ¼ãƒ‰å˜ä½ã§å—ã‘å–ã‚‹ã€‚æˆ»ã‚Šå€¤ã¯å—ã‘å–ã£ãŸãƒ‡ãƒ¼ã‚¿ã€‚I/Oç‰¹æ¨©å‘½ä»¤ã€‚
+void IO_Out16(uint port, uint data);	//portç•ªã®I/Oãƒãƒ¼ãƒˆã«dataã‚’ãƒ¯ãƒ¼ãƒ‰å˜ä½ã§å‡ºåŠ›ã™ã‚‹ã€‚I/Oç‰¹æ¨©å‘½ä»¤ã€‚
+uint IO_In32(uint port);		//portç•ªã®I/Oãƒãƒ¼ãƒˆã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ€ãƒ–ãƒ«ãƒ¯ãƒ¼ãƒ‰å˜ä½ã§å—ã‘å–ã‚‹ã€‚æˆ»ã‚Šå€¤ã¯å—ã‘å–ã£ãŸãƒ‡ãƒ¼ã‚¿ã€‚I/Oç‰¹æ¨©å‘½ä»¤ã€‚
+void IO_Out32(uint port, uint data);	//portç•ªã®I/Oãƒãƒ¼ãƒˆã«dataã‚’ãƒ€ãƒ–ãƒ«ãƒ¯ãƒ¼ãƒ‰å˜ä½ã§å‡ºåŠ›ã™ã‚‹ã€‚I/Oç‰¹æ¨©å‘½ä»¤ã€‚
+uint IO_Load_EFlags(void);		//EFLAGSãƒ¬ã‚¸ã‚¹ã‚¿ã‚’èª­ã¿è¾¼ã‚€ã€‚
+void IO_Store_EFlags(uint eflags);	//EFLAGSãƒ¬ã‚¸ã‚¹ã‚¿ã‚’eflagsã«å¤‰æ›´ã™ã‚‹ã€‚
+uint Load_CR0(void);			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿0ã‚’èª­ã¿è¾¼ã‚€ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void Store_CR0(uint cr0);		//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿0ã‚’cr0ã«å¤‰æ›´ã™ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+uint Load_CR2(void);			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿2ã‚’èª­ã¿è¾¼ã‚€ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void Store_CR2(uint cr2);		//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿2ã‚’cr2ã«å¤‰æ›´ã™ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+uint Load_CR3(void);			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿3ã‚’èª­ã¿è¾¼ã‚€ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void Store_CR3(uint cr3);		//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿3ã‚’cr3ã«å¤‰æ›´ã™ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+uint Load_CR4(void);			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿4ã‚’èª­ã¿è¾¼ã‚€ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void Store_CR4(uint cr4);		//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ¬ã‚¸ã‚¹ã‚¿4ã‚’cr4ã«å¤‰æ›´ã™ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
 uint Load_DR0(void);
 void Store_DR0(uint dr0);
 uint Load_DR1(void);
@@ -503,32 +503,32 @@ uint Load_DR6(void);
 void Store_DR6(uint dr6);
 uint Load_DR7(void);
 void Store_DR7(uint dr7);
-void Load_GDTR(uint limit, uint addr);	//ƒOƒ[ƒoƒ‹EƒfƒBƒXƒNƒŠƒvƒ^Eƒe[ƒuƒ‹EƒŒƒWƒXƒ^(GDTR)‚ÉAaddr‚©‚çlimit‚Ì”ÍˆÍ‚ğGDT‚Æ‚µ‚Äƒ[ƒh‚³‚¹‚éB“ÁŒ –½—ßB
-void Load_IDTR(uint limit, uint addr);	//ƒCƒ“ƒ^ƒ‰ƒvƒgEƒfƒBƒXƒNƒŠƒvƒ^Eƒe[ƒuƒ‹EƒŒƒWƒXƒ^(IDTR)‚ÉAaddr‚©‚çlimit‚Ì”ÍˆÍ‚ğIDT‚Æ‚µ‚Äƒ[ƒh‚³‚¹‚éB“ÁŒ –½—ßB
-void Load_TR(uint tr);			//ƒZƒOƒƒ“ƒgEƒZƒŒƒNƒ^tr‚ğAƒ^ƒXƒNƒŒƒWƒXƒ^‚ÉŒ»İ‚Ìƒ^ƒXƒN‚Æ‚µ‚Äƒ[ƒh‚³‚¹‚éB“ÁŒ –½—ßB
-void FarJMP(uint eip, uint cs);		//Œ»İ‚ÌƒZƒOƒƒ“ƒg‚Æ‚ÍˆÙ‚È‚éƒZƒOƒƒ“ƒgcs‚ÌƒIƒtƒZƒbƒgeip‚ÉƒvƒƒOƒ‰ƒ€‚Ì§Œä‚ğˆÚ‚·B
-void FarCall(uint eip, uint cs);	//Œ»İ‚ÌƒZƒOƒƒ“ƒg‚Æ‚ÍˆÙ‚È‚éƒZƒOƒƒ“ƒgcs‚ÌƒIƒtƒZƒbƒgeip‚ÉƒvƒƒOƒ‰ƒ€‚Ì§Œä‚ğ•ªŠò‚³‚¹‚éB
-void CLTS(void);			//ƒRƒ“ƒgƒ[ƒ‹EƒŒƒWƒXƒ^0“à‚É‚ ‚éATask-Switchedƒtƒ‰ƒO‚ğƒNƒŠƒA‚·‚éBFPU‚Ì§Œä‚É—˜—pB“ÁŒ –½—ßB
-void FNSave(uint *addr);		//FPU“®ìŠÂ‹«‚ğaddr‚©‚çn‚Ü‚é108ƒoƒCƒg‚ÉŠi”[‚µAFPU‚ğ‰Šú‰»‚·‚éBÚ×‚Èƒ`ƒFƒbƒN‚Ís‚í‚È‚¢B
-void FRStore(uint *addr);		//FPU“®ìŠÂ‹«‚ğaddr‚©‚çn‚Ü‚é108ƒoƒCƒg‚©‚ç•œŒ³‚·‚éB
-void PIT_Beep_On(void);			//ƒr[ƒv‰¹‚ğŠJn‚·‚éB
-void PIT_Beep_Off(void);		//ƒr[ƒv‰¹‚ğ’â~‚·‚éB
-void PIT_Beep_Set(uint fq);		//ƒr[ƒv‰¹‚Ìü”g”‚ğAfqHz‚É•ÏX‚·‚éB
-					//fq‚Ì’l
+void Load_GDTR(uint limit, uint addr);	//ã‚°ãƒ­ãƒ¼ãƒãƒ«ãƒ»ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ»ãƒ†ãƒ¼ãƒ–ãƒ«ãƒ»ãƒ¬ã‚¸ã‚¹ã‚¿(GDTR)ã«ã€addrã‹ã‚‰limitã®ç¯„å›²ã‚’GDTã¨ã—ã¦ãƒ­ãƒ¼ãƒ‰ã•ã›ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void Load_IDTR(uint limit, uint addr);	//ã‚¤ãƒ³ã‚¿ãƒ©ãƒ—ãƒˆãƒ»ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ãƒ»ãƒ†ãƒ¼ãƒ–ãƒ«ãƒ»ãƒ¬ã‚¸ã‚¹ã‚¿(IDTR)ã«ã€addrã‹ã‚‰limitã®ç¯„å›²ã‚’IDTã¨ã—ã¦ãƒ­ãƒ¼ãƒ‰ã•ã›ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void Load_TR(uint tr);			//ã‚»ã‚°ãƒ¡ãƒ³ãƒˆãƒ»ã‚»ãƒ¬ã‚¯ã‚¿trã‚’ã€ã‚¿ã‚¹ã‚¯ãƒ¬ã‚¸ã‚¹ã‚¿ã«ç¾åœ¨ã®ã‚¿ã‚¹ã‚¯ã¨ã—ã¦ãƒ­ãƒ¼ãƒ‰ã•ã›ã‚‹ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void FarJMP(uint eip, uint cs);		//ç¾åœ¨ã®ã‚»ã‚°ãƒ¡ãƒ³ãƒˆã¨ã¯ç•°ãªã‚‹ã‚»ã‚°ãƒ¡ãƒ³ãƒˆcsã®ã‚ªãƒ•ã‚»ãƒƒãƒˆeipã«ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®åˆ¶å¾¡ã‚’ç§»ã™ã€‚
+void FarCall(uint eip, uint cs);	//ç¾åœ¨ã®ã‚»ã‚°ãƒ¡ãƒ³ãƒˆã¨ã¯ç•°ãªã‚‹ã‚»ã‚°ãƒ¡ãƒ³ãƒˆcsã®ã‚ªãƒ•ã‚»ãƒƒãƒˆeipã«ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®åˆ¶å¾¡ã‚’åˆ†å²ã•ã›ã‚‹ã€‚
+void CLTS(void);			//ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ»ãƒ¬ã‚¸ã‚¹ã‚¿0å†…ã«ã‚ã‚‹ã€Task-Switchedãƒ•ãƒ©ã‚°ã‚’ã‚¯ãƒªã‚¢ã™ã‚‹ã€‚FPUã®åˆ¶å¾¡ã«åˆ©ç”¨ã€‚ç‰¹æ¨©å‘½ä»¤ã€‚
+void FNSave(uint *addr);		//FPUå‹•ä½œç’°å¢ƒã‚’addrã‹ã‚‰å§‹ã¾ã‚‹108ãƒã‚¤ãƒˆã«æ ¼ç´ã—ã€FPUã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚è©³ç´°ãªãƒã‚§ãƒƒã‚¯ã¯è¡Œã‚ãªã„ã€‚
+void FRStore(uint *addr);		//FPUå‹•ä½œç’°å¢ƒã‚’addrã‹ã‚‰å§‹ã¾ã‚‹108ãƒã‚¤ãƒˆã‹ã‚‰å¾©å…ƒã™ã‚‹ã€‚
+void PIT_Beep_On(void);			//ãƒ“ãƒ¼ãƒ—éŸ³ã‚’é–‹å§‹ã™ã‚‹ã€‚
+void PIT_Beep_Off(void);		//ãƒ“ãƒ¼ãƒ—éŸ³ã‚’åœæ­¢ã™ã‚‹ã€‚
+void PIT_Beep_Set(uint fq);		//ãƒ“ãƒ¼ãƒ—éŸ³ã®å‘¨æ³¢æ•°ã‚’ã€fqHzã«å¤‰æ›´ã™ã‚‹ã€‚
+					//fqã®å€¤
 					//C:262 C#:277 D:294 D#:311 E:330 F:349 F#:370 G:392 G#:415 A:440 A#:466 B:494 C:523
-void CPUID(void *addr, uint id);	//addr”Ô’n‚Ìuint[4]‚ÉACPU‚Ì¯•Êî•ñid”Ô‚ğEAXEEBXEEDXEECX‚Ì‡”Ô‚ÅŠi”[‚·‚éB
-void CPUID2(void *addr, uint id);	//addr”Ô’n‚Ìuint[4]‚ÉACPU‚Ì¯•Êî•ñid”Ô‚ğEAXEEBXEECXEEDX‚Ì‡”Ô‚ÅŠi”[‚·‚éB
-					//ã‹L“ñ‚Â‚ÌŠÖ”‚ÍAEFLAGS“à‚ÌIDƒtƒ‰ƒO(ƒrƒbƒg21)‚ª•ÏX‰Â”\‚Èê‡‚Ì‚İÀs‚Å‚«‚éB
-void TSC_Read(uint *addr);		//addr”Ô’n‚Ìuint[2]‚ÉAƒ}ƒVƒ“ŒÅ—LƒŒƒWƒXƒ^(MSR)“à‚É‚ ‚éAƒ^ƒCƒ€EƒXƒ^ƒ“ƒvEƒJƒEƒ“ƒ^‚ÌãˆÊE‰ºˆÊ‚»‚ê‚¼‚ê32ƒrƒbƒg‚ğ“Ç‚İ‚ŞB
-					//‚±‚ÌŠÖ”‚ÍAcpuid‚ÌTSCƒrƒbƒg‚ª—LŒø‚Å‚È‚¯‚ê‚Îg—p‚Å‚«‚È‚¢B
+void CPUID(void *addr, uint id);	//addrç•ªåœ°ã®uint[4]ã«ã€CPUã®è­˜åˆ¥æƒ…å ±idç•ªã‚’EAXãƒ»EBXãƒ»EDXãƒ»ECXã®é †ç•ªã§æ ¼ç´ã™ã‚‹ã€‚
+void CPUID2(void *addr, uint id);	//addrç•ªåœ°ã®uint[4]ã«ã€CPUã®è­˜åˆ¥æƒ…å ±idç•ªã‚’EAXãƒ»EBXãƒ»ECXãƒ»EDXã®é †ç•ªã§æ ¼ç´ã™ã‚‹ã€‚
+					//ä¸Šè¨˜äºŒã¤ã®é–¢æ•°ã¯ã€EFLAGSå†…ã®IDãƒ•ãƒ©ã‚°(ãƒ“ãƒƒãƒˆ21)ãŒå¤‰æ›´å¯èƒ½ãªå ´åˆã®ã¿å®Ÿè¡Œã§ãã‚‹ã€‚
+void TSC_Read(uint *addr);		//addrç•ªåœ°ã®uint[2]ã«ã€ãƒã‚·ãƒ³å›ºæœ‰ãƒ¬ã‚¸ã‚¹ã‚¿(MSR)å†…ã«ã‚ã‚‹ã€ã‚¿ã‚¤ãƒ ãƒ»ã‚¹ã‚¿ãƒ³ãƒ—ãƒ»ã‚«ã‚¦ãƒ³ã‚¿ã®ä¸Šä½ãƒ»ä¸‹ä½ãã‚Œãã‚Œ32ãƒ“ãƒƒãƒˆã‚’èª­ã¿è¾¼ã‚€ã€‚
+					//ã“ã®é–¢æ•°ã¯ã€cpuidã®TSCãƒ“ãƒƒãƒˆãŒæœ‰åŠ¹ã§ãªã‘ã‚Œã°ä½¿ç”¨ã§ããªã„ã€‚
 uint Memory_Test_Sub(uint start, uint end);
-void INT_3(void);			//ƒuƒŒ[ƒNƒ|ƒCƒ“ƒg—áŠO‚ğ”­¶‚³‚¹‚éB
+void INT_3(void);			//ãƒ–ãƒ¬ãƒ¼ã‚¯ãƒã‚¤ãƒ³ãƒˆä¾‹å¤–ã‚’ç™ºç”Ÿã•ã›ã‚‹ã€‚
 uint DIV_64_32(uint dividend_low, uint dividend_high, uint divisor);
 					//=((dividend_high << 32) | dividend_low) / divisor
 uint MOD_64_32(uint dividend_low, uint dividend_high, uint divisor);
 					//=((dividend_high << 32) | dividend_low) % divisor
-void MOVSD_ZeroFill(void *addr, uint bytes);	//4Byte’PˆÊ‚Åƒ[ƒƒtƒBƒ‹‚·‚éB
-/*nasfunc1.nas ‘¼‚ÌŠÖ”‚ÉˆË‘¶‚·‚éƒAƒZƒ“ƒuƒ‰ŠÖ”ŒQ*/
+void MOVSD_ZeroFill(void *addr, uint bytes);	//4Byteå˜ä½ã§ã‚¼ãƒ­ãƒ•ã‚£ãƒ«ã™ã‚‹ã€‚
+/*nasfunc1.nas ä»–ã®é–¢æ•°ã«ä¾å­˜ã™ã‚‹ã‚¢ã‚»ãƒ³ãƒ–ãƒ©é–¢æ•°ç¾¤*/
 void asm_CPU_ExceptionHandler00(void);
 void asm_CPU_ExceptionHandler01(void);
 void asm_CPU_ExceptionHandler02(void);
@@ -567,5 +567,5 @@ void asm_InterruptHandler21(void);
 void asm_InterruptHandler27(void);
 void asm_InterruptHandler2c(void);
 
-/*nasfunc2.nas 16bitƒR[ƒh*/
+/*nasfunc2.nas 16bitã‚³ãƒ¼ãƒ‰*/
 void asm_16bit_CallBIOSTask(void);

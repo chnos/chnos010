@@ -1,8 +1,8 @@
 
-/*�V�X�e���萔�錾*/
+/*システム定数宣言*/
 
 /*debug option*/
-#define CHNOSPROJECT_DEBUG		/*��`����ƃf�o�b�O���[�h�Ŏ��s�B���ꂼ��̃f�o�b�O�I�v�V�������L���ɂ���K�v������*/
+#define CHNOSPROJECT_DEBUG		/*定義するとデバッグモードで実行。それぞれのデバッグオプションも有効にする必要がある*/
 
 #ifdef CHNOSPROJECT_DEBUG
 	//#define CHNOSPROJECT_DEBUG_CALLLINK
@@ -40,7 +40,7 @@
 #define AR_TSS32	0x0089	//AR_PRESENT+AR_SYSTEM_DESCRIPTOR+AR_TYPE_TSS32_READY
 #define AR_INTGATE32	0x008e	//AR_PRESENT+AR_SYSTEM_DESCRIPTOR+AR_TYPE_INTGATE32
 
-#define AR_GRANULARITY_BYTE	0x0000	//G=0	�֐��Ŏ����ݒ肷��̂ł��̃r�b�g�͏��0
+#define AR_GRANULARITY_BYTE	0x0000	//G=0	関数で自動設定するのでこのビットは常に0
 #define AR_GRANULARITY_4KB	0x8000	//G=1
 #define AR_16			0x0000	//D/B=0
 #define AR_32			0x4000	//D/B=1
@@ -64,7 +64,7 @@
 #define AR_TYPE_INTGATE32	0x000e
 #define AR_TYPE_TRAPGATE32	0x000f
 
-#define AR_TYPE_ACCESSED	0x0001	//�֐��ݒ莞�ɂ̓N���A�A�ǂݏo�����̓A�N�Z�X�ς݂Ȃ�Z�b�g
+#define AR_TYPE_ACCESSED	0x0001	//関数設定時にはクリア、読み出し時はアクセス済みならセット
 
 #define AR_TYPE_DATA_R			0x0000
 #define AR_TYPE_DATA_RW			0x0002

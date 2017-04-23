@@ -37,7 +37,7 @@ void CPU_ExceptionHandler06(uint *esp)
 
 	callbios = System_CallBIOS_Get_Controller();
 /*Invalid Opcode Exception*/
-	if(System_MultiTask_GetNowTask() == callbios->CallBIOS_Task){	/*もし、例外を起こしたタスクがCallBIOSだったら*/
+	if(System_MultiTask_GetNowTask() == callbios->CallBIOS_Task){	/*繧ゅ＠縲∽ｾ句､悶ｒ襍ｷ縺薙＠縺溘ち繧ｹ繧ｯ縺靴allBIOS縺縺｣縺溘ｉ*/
 		#ifdef CHNOSPROJECT_DEBUG_CALLBIOS
 			debug("Exception_0x06:UD2 Opcode Found in v8086mode.\n");
 		#endif
@@ -96,7 +96,7 @@ void CPU_ExceptionHandler0c(uint *esp)
 void CPU_ExceptionHandler0d(uint *esp)
 {
 /*General Protection Exception*/
-	if(System_MultiTask_GetNowTask() != System_CallBIOS_Get_Controller()->CallBIOS_Task){	/*もし、例外を起こしたタスクがCallBIOSだったら*/
+	if(System_MultiTask_GetNowTask() != System_CallBIOS_Get_Controller()->CallBIOS_Task){	/*繧ゅ＠縲∽ｾ句､悶ｒ襍ｷ縺薙＠縺溘ち繧ｹ繧ｯ縺靴allBIOS縺縺｣縺溘ｉ*/
 		Error_Report(ERROR_CPU_EXCEPTION_0D, esp);
 	}
 	CallBIOS_Check_Privileged_Operation(esp);

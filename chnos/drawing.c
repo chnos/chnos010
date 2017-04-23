@@ -4,9 +4,9 @@
 void (*Drawing_Fill_Rectangle)(void *vram, uint xsize, uint c, uint x0, uint y0, uint x1, uint y1);
 void (*Drawing_Put_String)(void *vram, uint xsize, uint x, uint y, uint c, const uchar *s);
 void (*Drawing_Draw_Point)(void *vram, uint xsize, uint x, uint y, uint c);
-//Drawing�Ɋ܂܂��჌�x���`��֐��͑S�āA���W�͕����Ȃ������ł���Avram�̍���̍��W�����_(0, 0)�Ƃ��āAx�͉E�����Ay�͉������ɑ�������B
-//�܂��A��_�̍��W���Ƃ�֐��́A�i��{�I�Ɂj�S�Ĉ���������x�����̏��������i���_�ɋ߂��j�łȂ���΂Ȃ�Ȃ��B
-//�����x���`��֐��ł́A��������肭���b�v���ׂ��ł���B
+//Drawingに含まれる低レベル描画関数は全て、座標は符号なし整数であり、vramの左上の座標を原点(0, 0)として、xは右方向、yは下方向に増加する。
+//また、二点の座標をとる関数は、（基本的に）全て引数左側がx成分の小さい側（原点に近い）でなければならない。
+//高レベル描画関数では、それらを上手くラップすべきである。
 
 void Initialize_Drawing(void)
 {

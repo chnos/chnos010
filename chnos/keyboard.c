@@ -43,7 +43,7 @@ uint key_decode_phase;
 uchar key_decode_buf[4];
 uchar kbc_retv;
 
-/*ƒL[ƒR[ƒh•ÏŠ·ƒe[ƒuƒ‹*/
+/*ã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰å¤‰æ›ãƒ†ãƒ¼ãƒ–ãƒ«*/
 ushort Keyboard_KeyCodeTable[0x80] = {
 	KEYID_MASK_EXTENDED | KEYID_KBD_ERROR,
 	KEYID_MASK_EXTENDED | KEYID_ESC,
@@ -183,7 +183,7 @@ ushort Keyboard_KeyCodeTable[0x80] = {
 	0x0000
 };
 
-//ƒ[ƒ‚ÌŠ‚ÍƒVƒtƒg•¶š‚ª–³‚¢‚Ì‚ÅAƒe[ƒuƒ‹0‚ğQÆ
+//ã‚¼ãƒ­ã®æ‰€ã¯ã‚·ãƒ•ãƒˆæ–‡å­—ãŒç„¡ã„ã®ã§ã€ãƒ†ãƒ¼ãƒ–ãƒ«0ã‚’å‚ç…§
 uchar Keyboard_KeyCodeTable_Shift[0x80] = {
 	0x00,
 	0x00,
@@ -477,7 +477,7 @@ ushort Keyboard_Decode_KeyCode(uchar keycode)
 			}
 			key_decode_phase = 0;
 			break;
-		case 1:	//E0Šg’£ƒL[ƒR[ƒh
+		case 1:	//E0æ‹¡å¼µã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰
 			if((key_decode_buf[1] & KEYID_MASK_ID) == 0x1c){
 				keyid |= KEYID_MASK_TENKEY | KEYID_ENTER;
 			} else if((key_decode_buf[1] & KEYID_MASK_ID) == 0x1d){
@@ -534,10 +534,10 @@ ushort Keyboard_Decode_KeyCode(uchar keycode)
 
 			key_decode_phase = 0;
 			break;
-		case 2:	//E1Šg’£ƒL[ƒR[ƒhƒtƒF[ƒY0
+		case 2:	//E1æ‹¡å¼µã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰ãƒ•ã‚§ãƒ¼ã‚º0
 			key_decode_phase = 3;
 			break;
-		case 3:	//E1Šg’£ƒL[ƒR[ƒhƒtƒF[ƒY1
+		case 3:	//E1æ‹¡å¼µã‚­ãƒ¼ã‚³ãƒ¼ãƒ‰ãƒ•ã‚§ãƒ¼ã‚º1
 			if((key_decode_buf[1] == 0x1d) && (key_decode_buf[2] == 0x45)){	//Pause-Key Make
 				keyid = KEYID_MASK_EXTENDED | KEYID_PAUSE;
 			} else if((key_decode_buf[1] == 0x9d) && (key_decode_buf[2] == 0xc5)){	//Pause-Key Break

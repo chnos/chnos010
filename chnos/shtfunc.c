@@ -1,14 +1,14 @@
 
 #include "core.h"
 
-//ƒV[ƒg§Œä—p“à•”ŠÖ”Bsheet.cˆÈŠO‚©‚ç‚ÍŒÄ‚Ño‚µ‹Ö~B
-//‚»‚Ì‘ã‚í‚èAƒV[ƒg—LŒø«ƒ`ƒFƒbƒN‚Í‚ ‚é’ö“xÈ‚­B
-//ŒÄ‚Ño‚µ‘¤‚ÌŠÖ”‚ÅAƒV[ƒg‚ª—LŒø‚Å‚ ‚é‚±‚Æ‚ğŠm”F‚µ‚Ä‚©‚ç“n‚·‚±‚ÆB
+//ã‚·ãƒ¼ãƒˆåˆ¶å¾¡ç”¨å†…éƒ¨é–¢æ•°ã€‚sheet.cä»¥å¤–ã‹ã‚‰ã¯å‘¼ã³å‡ºã—ç¦æ­¢ã€‚
+//ãã®ä»£ã‚ã‚Šã€ã‚·ãƒ¼ãƒˆæœ‰åŠ¹æ€§ãƒã‚§ãƒƒã‚¯ã¯ã‚ã‚‹ç¨‹åº¦çœãã€‚
+//å‘¼ã³å‡ºã—å´ã®é–¢æ•°ã§ã€ã‚·ãƒ¼ãƒˆãŒæœ‰åŠ¹ã§ã‚ã‚‹ã“ã¨ã‚’ç¢ºèªã—ã¦ã‹ã‚‰æ¸¡ã™ã“ã¨ã€‚
 
 //uint Sheet_Internal_GetLocation[P,Q,R,S](UI_Sheet *sheet, DATA_Location2D *dest);
-//‘‚«‚İ‰Â”\‚È‚à‚Á‚Æ‚à’[‚ÌŠeÀ•W‚ğeƒV[ƒg‚Å‚ÌÀ•W‚Å‹‚ß‚éBdest‚ÉÀ•W‚ğŠi”[B
-//e‚ª‚È‚¢ƒV[ƒg‚Ìê‡‚ÍA–ß‚è’l‚ª1‚É‚È‚èAlocation‚ª(0,0)‚Å‚ ‚é‚Æ‰¼’è‚³‚ê‚éB
-//e‚Ì‚ ‚éƒV[ƒg‚Ìê‡‚ÍA–ß‚è’l‚ª0‚É‚È‚èAŠeÀ•W‚ªŠi”[‚³‚ê‚éB
+//æ›¸ãè¾¼ã¿å¯èƒ½ãªã‚‚ã£ã¨ã‚‚ç«¯ã®å„åº§æ¨™ã‚’è¦ªã‚·ãƒ¼ãƒˆã§ã®åº§æ¨™ã§æ±‚ã‚ã‚‹ã€‚destã«åº§æ¨™ã‚’æ ¼ç´ã€‚
+//è¦ªãŒãªã„ã‚·ãƒ¼ãƒˆã®å ´åˆã¯ã€æˆ»ã‚Šå€¤ãŒ1ã«ãªã‚Šã€locationãŒ(0,0)ã§ã‚ã‚‹ã¨ä»®å®šã•ã‚Œã‚‹ã€‚
+//è¦ªã®ã‚ã‚‹ã‚·ãƒ¼ãƒˆã®å ´åˆã¯ã€æˆ»ã‚Šå€¤ãŒ0ã«ãªã‚Šã€å„åº§æ¨™ãŒæ ¼ç´ã•ã‚Œã‚‹ã€‚
 
 uint Sheet_Internal_GetLocationP(UI_Sheet *sheet, DATA_Location2D *dest)
 {
@@ -63,9 +63,9 @@ uint Sheet_Internal_GetLocationS(UI_Sheet *sheet, DATA_Location2D *dest)
 }
 
 //uint Sheet_Internal_MapInitialize(UI_Sheet *parent);
-//map‚ğ‰Šú‰»‚·‚éB
-//‚·‚Å‚Éƒ}ƒbƒv‚ªŠm•Û‚³‚ê‚Ä‚¢‚½ê‡‚ÍA‰ğ•ú‚µ‚½Œã‚ÉÄŠm•Û‚·‚éB
-//ƒ}ƒbƒv‚ÌÄ\¬‚à©“®‚Ås‚¤B
+//mapã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
+//ã™ã§ã«ãƒãƒƒãƒ—ãŒç¢ºä¿ã•ã‚Œã¦ã„ãŸå ´åˆã¯ã€è§£æ”¾ã—ãŸå¾Œã«å†ç¢ºä¿ã™ã‚‹ã€‚
+//ãƒãƒƒãƒ—ã®å†æ§‹æˆã‚‚è‡ªå‹•ã§è¡Œã†ã€‚
 
 uint Sheet_Internal_MapInitialize(UI_Sheet *parent)
 {
@@ -88,9 +88,9 @@ uint Sheet_Internal_MapInitialize(UI_Sheet *parent)
 }
 
 //uint Sheet_Internal_Map[Write, Clear]FromSheet(UI_Sheet *sheet, bool force);
-//ŠeƒV[ƒg‚Ì”ÍˆÍ“à‚Ìƒ}ƒbƒv‚ğ¶¬‚·‚éB
-//force‚ªFalse‚Ì‚ÍAmap‚ÌNull‚Ü‚½‚Í©•ª‚ÌƒAƒhƒŒƒX‚Ì•”•ª‚µ‚©‚¢‚¶‚ç‚È‚¢B
-//force‚ªTrue‚Ì‚ÍAmap‚Ì”ÍˆÍ“à‚É‹­§“I‚É‘‚«‚ŞB
+//å„ã‚·ãƒ¼ãƒˆã®ç¯„å›²å†…ã®ãƒãƒƒãƒ—ã‚’ç”Ÿæˆã™ã‚‹ã€‚
+//forceãŒFalseã®æ™‚ã¯ã€mapã®Nullã¾ãŸã¯è‡ªåˆ†ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã®éƒ¨åˆ†ã—ã‹ã„ã˜ã‚‰ãªã„ã€‚
+//forceãŒTrueã®æ™‚ã¯ã€mapã®ç¯„å›²å†…ã«å¼·åˆ¶çš„ã«æ›¸ãè¾¼ã‚€ã€‚
 
 uint Sheet_Internal_MapWriteFromSheet(UI_Sheet *sheet, bool force, int px0, int py0, int px1, int py1)
 {
@@ -251,9 +251,9 @@ uint Sheet_Internal_MapClearFromSheet(UI_Sheet *sheet, bool force, int px0, int 
 }
 
 //bool Sheet_Internal_IsLocationInRangeOfSheet(UI_Sheet *sheet, int px, int py);
-//‚»‚ÌƒV[ƒg‚ªA‚»‚ÌƒV[ƒg‚Ìe“à•”‚Å‚ÌÀ•W‚Å‚ ‚é(px, py)‚ğŠÜ‚Ş‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-//ƒV[ƒg‚ª–³Œø‚Å‚àAFalse‚ğ•Ô‚·‚¾‚¯‚Å‚ ‚éB
-//e‚ª‚¢‚È‚¢ƒV[ƒg‚Å‚±‚ÌŠÖ”‚ğÀs‚µ‚Ä‚à–³ˆÓ–¡‚¾‚Æv‚í‚ê‚é‚Ì‚ÅAFalse‚ğ•Ô‚·‚¾‚¯‚Å‚ ‚éB
+//ãã®ã‚·ãƒ¼ãƒˆãŒã€ãã®ã‚·ãƒ¼ãƒˆã®è¦ªå†…éƒ¨ã§ã®åº§æ¨™ã§ã‚ã‚‹(px, py)ã‚’å«ã‚€ã‹ã©ã†ã‹ã‚’è¿”ã™ã€‚
+//ã‚·ãƒ¼ãƒˆãŒç„¡åŠ¹ã§ã‚‚ã€Falseã‚’è¿”ã™ã ã‘ã§ã‚ã‚‹ã€‚
+//è¦ªãŒã„ãªã„ã‚·ãƒ¼ãƒˆã§ã“ã®é–¢æ•°ã‚’å®Ÿè¡Œã—ã¦ã‚‚ç„¡æ„å‘³ã ã¨æ€ã‚ã‚Œã‚‹ã®ã§ã€Falseã‚’è¿”ã™ã ã‘ã§ã‚ã‚‹ã€‚
 
 bool Sheet_Internal_IsLocationInRangeOfSheet(UI_Sheet *sheet, int px, int py)
 {
@@ -275,7 +275,7 @@ bool Sheet_Internal_IsLocationInRangeOfSheet(UI_Sheet *sheet, int px, int py)
 }
 
 //bool Sheet_Internal_IsRangeOverlappedWithSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
-//w’è‚³‚ê‚½ƒV[ƒg‚ªˆø”‚ÌÀ•W”ÍˆÍ“à‚Éd‚È‚é‚©‚Ç‚¤‚©‚ğ•Ô‚·B
+//æŒ‡å®šã•ã‚ŒãŸã‚·ãƒ¼ãƒˆãŒå¼•æ•°ã®åº§æ¨™ç¯„å›²å†…ã«é‡ãªã‚‹ã‹ã©ã†ã‹ã‚’è¿”ã™ã€‚
 
 bool Sheet_Internal_IsRangeOverlappedWithSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
@@ -306,9 +306,9 @@ bool Sheet_Internal_IsRangeOverlappedWithSheet(UI_Sheet *sheet, int px0, int py0
 }
 
 //UI_Sheet *Sheet_Internal_GetSheetFromLocation(UI_Sheet *parent, int px, int py)
-//e“à•”‚Å‚Ì(px, py)‚É‚¨‚¯‚éA‰Â‹ó‘Ô‚Ì‚à‚Á‚Æ‚à‚‚¢‚‚³‚ÌƒV[ƒg‚ğ•Ô‚·B
-//‚±‚ÌŠÖ”‚Í‚«‚Á‚Æ’x‚¢‚Ì‚ÅAmap‚ª—˜—p‚Å‚«‚È‚¢‚Ì‚İAg—p‚·‚é‚×‚«‚Å‚ ‚éB
-//ƒGƒ‰[‚ª”­¶‚µ‚½‚ÍANull‚ğ•Ô‚·‚¾‚¯‚Å‚ ‚éB
+//è¦ªå†…éƒ¨ã§ã®(px, py)ã«ãŠã‘ã‚‹ã€å¯è¦–çŠ¶æ…‹ã®ã‚‚ã£ã¨ã‚‚é«˜ã„é«˜ã•ã®ã‚·ãƒ¼ãƒˆã‚’è¿”ã™ã€‚
+//ã“ã®é–¢æ•°ã¯ãã£ã¨é…ã„ã®ã§ã€mapãŒåˆ©ç”¨ã§ããªã„æ™‚ã®ã¿ã€ä½¿ç”¨ã™ã‚‹ã¹ãã§ã‚ã‚‹ã€‚
+//ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ãŸæ™‚ã¯ã€Nullã‚’è¿”ã™ã ã‘ã§ã‚ã‚‹ã€‚
 
 UI_Sheet *Sheet_Internal_GetSheetFromLocation(UI_Sheet *parent, int px, int py)
 {
@@ -332,7 +332,7 @@ UI_Sheet *Sheet_Internal_GetSheetFromLocation(UI_Sheet *parent, int px, int py)
 }
 
 //uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int py1);
-//‚»‚Ì”ÍˆÍ“à‚Ìƒ}ƒbƒv‚ğŠ®‘S‚ÉÄ\¬‚·‚éB
+//ãã®ç¯„å›²å†…ã®ãƒãƒƒãƒ—ã‚’å®Œå…¨ã«å†æ§‹æˆã™ã‚‹ã€‚
 uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int py1)
 {
 	uint i;
@@ -353,10 +353,10 @@ uint Sheet_Internal_MapRebuild(UI_Sheet *parent, int px0, int py0, int px1, int 
 }
 
 //uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
-//‚»‚Ì”ÍˆÍ“à‚Ìƒ}ƒbƒv‚ğAsheet‚É•ÏX‚ª‚ ‚Á‚½‚Æ‚µ‚ÄAÅ¬ŒÀ‚ÅÄ\¬‚·‚éB
-//À•W‚Ímap(parent)‚È‚Ì‚Å’ˆÓB
-//sheet‚Ì‚‚³‚Ü‚Å‚Í‚·‚×‚ÄÄ\¬‚·‚éB
-//“¯‚ÉAXV‚µ‚½ƒV[ƒg‚É‘Î‚µ‚ÄÄ•`‰æ‚ğ‚©‚¯‚éB
+//ãã®ç¯„å›²å†…ã®ãƒãƒƒãƒ—ã‚’ã€sheetã«å¤‰æ›´ãŒã‚ã£ãŸã¨ã—ã¦ã€æœ€å°é™ã§å†æ§‹æˆã™ã‚‹ã€‚
+//åº§æ¨™ã¯map(parent)ãªã®ã§æ³¨æ„ã€‚
+//sheetã®é«˜ã•ã¾ã§ã¯ã™ã¹ã¦å†æ§‹æˆã™ã‚‹ã€‚
+//åŒæ™‚ã«ã€æ›´æ–°ã—ãŸã‚·ãƒ¼ãƒˆã«å¯¾ã—ã¦å†æç”»ã‚’ã‹ã‘ã‚‹ã€‚
 uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	UI_Sheet *search;
@@ -424,7 +424,7 @@ uint Sheet_Internal_MapRefresh(UI_Sheet *sheet, int px0, int py0, int px1, int p
 }
 
 //uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1);
-//eƒOƒ[ƒoƒ‹À•W‚Å‚ÌƒV[ƒgvramƒŠƒtƒŒƒbƒVƒ…B
+//è¦ªã‚°ãƒ­ãƒ¼ãƒãƒ«åº§æ¨™ã§ã®ã‚·ãƒ¼ãƒˆvramãƒªãƒ•ãƒ¬ãƒƒã‚·ãƒ¥ã€‚
 uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int py1)
 {
 	uint retv;
@@ -461,7 +461,7 @@ uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int
 	retv = sheet->RefreshSheet(sheet, px0, py0, px1, py1);
 
 	if(sheet->flags.bit.autorefresh_upperlevel && sheet->parent->parent != Null){
-		//–³ŒÀÄ‹A‚ğ–h‚®‚½‚ßAˆê“I‚ÉãˆÊŠK‘wƒI[ƒgƒŠƒtƒŒƒbƒVƒ…‚ğ–³Œø‚É‚·‚é
+		//ç„¡é™å†å¸°ã‚’é˜²ããŸã‚ã€ä¸€æ™‚çš„ã«ä¸Šä½éšå±¤ã‚ªãƒ¼ãƒˆãƒªãƒ•ãƒ¬ãƒƒã‚·ãƒ¥ã‚’ç„¡åŠ¹ã«ã™ã‚‹
 		sheet->flags.bit.autorefresh_upperlevel = False;
 		Sheet_RefreshSheet(sheet->parent, px0, py0, px1, py1);
 		sheet->flags.bit.autorefresh_upperlevel = True;
@@ -475,7 +475,7 @@ uint Sheet_Internal_RefreshSheet(UI_Sheet *sheet, int px0, int py0, int px1, int
 }
 
 //uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy);
-//slide‚‘¬‰»ƒTƒuŠÖ”BƒV[ƒg‚ÌÀ•W‚à•ÏX‚·‚éBˆø”‚ÍAˆÚ“®—Ê‚ğ¦‚·•„†‚ ‚è®”B
+//slideé«˜é€ŸåŒ–ã‚µãƒ–é–¢æ•°ã€‚ã‚·ãƒ¼ãƒˆã®åº§æ¨™ã‚‚å¤‰æ›´ã™ã‚‹ã€‚å¼•æ•°ã¯ã€ç§»å‹•é‡ã‚’ç¤ºã™ç¬¦å·ã‚ã‚Šæ•´æ•°ã€‚
 uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 {
 	int xsize, ysize;
@@ -515,9 +515,9 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 	}
 
 	if(rpx == 0){
-		//x•ûŒü‚ÉˆÚ“®‚µ‚È‚¢
+		//xæ–¹å‘ã«ç§»å‹•ã—ãªã„
 		if(rpy < 0){
-			//y‚Ì•‰‚Ì•ûŒü‚ÉˆÚ“®=ã•ûŒü
+			//yã®è² ã®æ–¹å‘ã«ç§»å‹•=ä¸Šæ–¹å‘
 			A.x = sheet->location.x;
 			A.y = sheet->location.y + ysize - apy;
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
@@ -527,7 +527,7 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			A.y -= ysize;
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 		} else if(rpy > 0){
-			//y‚Ì³‚Ì•ûŒü‚ÉˆÚ“®=‰º•ûŒü
+			//yã®æ­£ã®æ–¹å‘ã«ç§»å‹•=ä¸‹æ–¹å‘
 			A.x = sheet->location.x;
 			A.y = sheet->location.y;
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
@@ -537,13 +537,13 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			A.y += ysize;
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 		} else{
-			//y•ûŒü‚É‚àˆÚ“®‚µ‚È‚¢=‚»‚Ì‚Ü‚Ü
+			//yæ–¹å‘ã«ã‚‚ç§»å‹•ã—ãªã„=ãã®ã¾ã¾
 			sheet->flags.bit.visible = True;
 		}
 	} else if(rpx < 0){
-		//x‚Ì•‰‚Ì•ûŒü‚ÉˆÚ“®
+		//xã®è² ã®æ–¹å‘ã«ç§»å‹•
 		if(rpy < 0){
-			//y‚Ì•‰‚Ì•ûŒü‚ÉˆÚ“®=¶ã•ûŒü
+			//yã®è² ã®æ–¹å‘ã«ç§»å‹•=å·¦ä¸Šæ–¹å‘
 			A.x = sheet->location.x;
 			A.y = sheet->location.y + ysize - apy;
 			B.x = sheet->location.x + xsize - apx;
@@ -559,7 +559,7 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 		} else if(rpy > 0){
-			//y‚Ì³‚Ì•ûŒü‚ÉˆÚ“®=¶‰º•ûŒü
+			//yã®æ­£ã®æ–¹å‘ã«ç§»å‹•=å·¦ä¸‹æ–¹å‘
 			A.x = sheet->location.x;
 			A.y = sheet->location.y;
 			B.x = sheet->location.x + xsize - apx;
@@ -575,7 +575,7 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 		} else{
-			//y•ûŒü‚ÉˆÚ“®‚µ‚È‚¢=¶•ûŒü
+			//yæ–¹å‘ã«ç§»å‹•ã—ãªã„=å·¦æ–¹å‘
 			A.x = sheet->location.x + xsize - apx;
 			A.y = sheet->location.y;
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
@@ -586,9 +586,9 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
 		}
 	} else{
-		//x‚Ì³‚Ì•ûŒü‚ÉˆÚ“®
+		//xã®æ­£ã®æ–¹å‘ã«ç§»å‹•
 		if(rpy < 0){
-			//y‚Ì•‰‚Ì•ûŒü‚ÉˆÚ“®=‰Eã•ûŒü
+			//yã®è² ã®æ–¹å‘ã«ç§»å‹•=å³ä¸Šæ–¹å‘
 			A.x = sheet->location.x;
 			A.y = sheet->location.y + ysize - apy;
 			B.x = sheet->location.x;
@@ -604,7 +604,7 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 		} else if(rpy > 0){
-			//y‚Ì³‚Ì•ûŒü‚ÉˆÚ“®=‰E‰º•ûŒü
+			//yã®æ­£ã®æ–¹å‘ã«ç§»å‹•=å³ä¸‹æ–¹å‘
 			A.x = sheet->location.x;
 			A.y = sheet->location.y;
 			B.x = sheet->location.x;
@@ -620,7 +620,7 @@ uint Sheet_Internal_SlideSub(UI_Sheet *sheet, int rpx, int rpy)
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + xsize - 1, A.y + apy - 1);
 			Sheet_Internal_MapRefresh(sheet, B.x, B.y, B.x + apx - 1, B.y + ysize - apy);
 		} else{
-			//y•ûŒü‚ÉˆÚ“®‚µ‚È‚¢=‰E•ûŒü
+			//yæ–¹å‘ã«ç§»å‹•ã—ãªã„=å³æ–¹å‘
 			A.x = sheet->location.x;
 			A.y = sheet->location.y;
 			Sheet_Internal_MapRefresh(sheet, A.x, A.y, A.x + apx - 1, A.y + ysize - 1);
@@ -700,10 +700,10 @@ uint Sheet_Internal_ChangeHeight(UI_Sheet *sheet, uint height)
 }
 
 //SheetXX_Internal_IsVisiblePixel(UI_Sheet *sheet, int px, int py)
-//eƒV[ƒg“àÀ•W‚É‚¨‚¯‚éAw’è‚³‚ê‚½ƒV[ƒg‚ÌƒsƒNƒZƒ‹(px, py)‚ª‰Â‹ó‘Ô‚Å‚ ‚é‚©‚Ç‚¤‚©‚ğ•Ô‚·B
-//ˆø”ƒ`ƒFƒbƒN‚Í‚·‚×‚ÄÈ—ª‚µ‚Ä‚¢‚é‚Ì‚ÅAŒÄ‚Ño‚µŒ³‚ÅŒµ–§‚Éƒ`ƒFƒbƒN‚·‚é•K—v‚ª‚ ‚éB
+//è¦ªã‚·ãƒ¼ãƒˆå†…åº§æ¨™ã«ãŠã‘ã‚‹ã€æŒ‡å®šã•ã‚ŒãŸã‚·ãƒ¼ãƒˆã®ãƒ”ã‚¯ã‚»ãƒ«(px, py)ãŒå¯è¦–çŠ¶æ…‹ã§ã‚ã‚‹ã‹ã©ã†ã‹ã‚’è¿”ã™ã€‚
+//å¼•æ•°ãƒã‚§ãƒƒã‚¯ã¯ã™ã¹ã¦çœç•¥ã—ã¦ã„ã‚‹ã®ã§ã€å‘¼ã³å‡ºã—å…ƒã§å³å¯†ã«ãƒã‚§ãƒƒã‚¯ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã€‚
 
-//‰º‚ÌŠÖ”‚ÍA“§–¾Fƒ‚[ƒhƒIƒt‚Éw’è‚³‚ê‚éAƒ_ƒ~[ŠÖ”‚Å‚ ‚éB
+//ä¸‹ã®é–¢æ•°ã¯ã€é€æ˜è‰²ãƒ¢ãƒ¼ãƒ‰ã‚ªãƒ•æ™‚ã«æŒ‡å®šã•ã‚Œã‚‹ã€ãƒ€ãƒŸãƒ¼é–¢æ•°ã§ã‚ã‚‹ã€‚
 bool Sheet_Internal_IsVisiblePixel_Invalid(UI_Sheet *sheet, int px, int py)
 {
 	return True;

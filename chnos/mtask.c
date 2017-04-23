@@ -1,8 +1,8 @@
 
 #include "core.h"
 
-//FIFO‚É‚æ‚éƒ^ƒXƒN‚Ì©“®‹N“®‚ÍŠù’è‚Å—LŒø‚Å‚·‚ªAƒ^ƒXƒN‚ª–¾¦“I‚ÉÀs‚³‚ê‚é‚Ü‚Å‚Í–³Œø‚É‚È‚Á‚Ä‚¢‚Ü‚·B
-//ƒ^ƒXƒN‚ÍSTI‰º‚ÅŠJn‚³‚ê‚Ü‚·iŠO•”Š„‚è‚İ—LŒøjB
+//FIFOã«ã‚ˆã‚‹ã‚¿ã‚¹ã‚¯ã®è‡ªå‹•èµ·å‹•ã¯æ—¢å®šã§æœ‰åŠ¹ã§ã™ãŒã€ã‚¿ã‚¹ã‚¯ãŒæ˜ç¤ºçš„ã«å®Ÿè¡Œã•ã‚Œã‚‹ã¾ã§ã¯ç„¡åŠ¹ã«ãªã£ã¦ã„ã¾ã™ã€‚
+//ã‚¿ã‚¹ã‚¯ã¯STIä¸‹ã§é–‹å§‹ã•ã‚Œã¾ã™ï¼ˆå¤–éƒ¨å‰²ã‚Šè¾¼ã¿æœ‰åŠ¹ï¼‰ã€‚
 
 UI_TaskControl *Initialize_MultiTask_Control(IO_MemoryControl sysmemctrl)
 {
@@ -78,7 +78,7 @@ UI_Task *MultiTask_Task_Initialize(UI_TaskControl *ctrl, uint tss_additional_siz
 
 	task->tss->ldtr			= 0;
 	task->tss->flag_trap		= False;
-	task->tss->iomap_base		= 0x00004000;	//TSSƒŠƒ~ƒbƒgˆÈã‚È‚ç–³Œø
+	task->tss->iomap_base		= 0x00004000;	//TSSãƒªãƒŸãƒƒãƒˆä»¥ä¸Šãªã‚‰ç„¡åŠ¹
 
 	task->selector = System_SegmentDescriptor_Set(sizeof(CPU_TaskStateSegment) + tss_additional_size - 1, (uint)task->tss, AR_TSS32);
 
@@ -196,13 +196,13 @@ void MultiTask_TaskSwitch(UI_TaskControl *ctrl)
 	IO_CLI();
 
 	for(nexttask = ctrl->now->next; ; nexttask = nexttask->next){
-		if(nexttask == Null){	//ƒŠƒ“ƒNI’[‚É—ˆ‚½‚çæ“ª‚ÖŠª‚«–ß‚·
+		if(nexttask == Null){	//ãƒªãƒ³ã‚¯çµ‚ç«¯ã«æ¥ãŸã‚‰å…ˆé ­ã¸å·»ãæˆ»ã™
 			nexttask = ctrl->start;
 		}
-		if(nexttask == ctrl->now){	//Às’†ó‘Ô‚Ìƒ^ƒXƒN‚ÍŒ»İÀs’†‚Ì‚±‚Ìƒ^ƒXƒN‚µ‚©‚È‚¢‚Ì‚Åƒ^ƒXƒNƒXƒCƒbƒ`‚È‚µ
+		if(nexttask == ctrl->now){	//å®Ÿè¡Œä¸­çŠ¶æ…‹ã®ã‚¿ã‚¹ã‚¯ã¯ç¾åœ¨å®Ÿè¡Œä¸­ã®ã“ã®ã‚¿ã‚¹ã‚¯ã—ã‹ãªã„ã®ã§ã‚¿ã‚¹ã‚¯ã‚¹ã‚¤ãƒƒãƒãªã—
 			return;
 		}
-		if(nexttask->flags.running){	//Às’†ó‘Ô‚Ì‚Ù‚©‚Ìƒ^ƒXƒN‚ªŒ©‚Â‚©‚Á‚½‚Ì‚Åƒ^ƒXƒNƒXƒCƒbƒ`
+		if(nexttask->flags.running){	//å®Ÿè¡Œä¸­çŠ¶æ…‹ã®ã»ã‹ã®ã‚¿ã‚¹ã‚¯ãŒè¦‹ã¤ã‹ã£ãŸã®ã§ã‚¿ã‚¹ã‚¯ã‚¹ã‚¤ãƒƒãƒ
 			ctrl->now = nexttask;
 			ctrl->now->count++;
 			FarJMP(0, ctrl->now->selector << 3);
@@ -217,11 +217,11 @@ void MultiTask_TaskSwitch(UI_TaskControl *ctrl)
 
 void MultiTask_Task_Sleep(UI_TaskControl *ctrl, UI_Task *task)
 {
-	//CPL=0‰º‚ğ‘z’è
+	//CPL=0ä¸‹ã‚’æƒ³å®š
 
 	uint eflags;
 
-	if(task == ctrl->now && task == ctrl->start){	//©•ª‚ª—Bˆê–³“ñ‚Ìƒ^ƒXƒN‚¾‚Á‚½ê‡AƒXƒŠ[ƒv‚ÍÀs‚Å‚«‚È‚¢‚Ì‚ÅHLT‚·‚é
+	if(task == ctrl->now && task == ctrl->start){	//è‡ªåˆ†ãŒå”¯ä¸€ç„¡äºŒã®ã‚¿ã‚¹ã‚¯ã ã£ãŸå ´åˆã€ã‚¹ãƒªãƒ¼ãƒ—ã¯å®Ÿè¡Œã§ããªã„ã®ã§HLTã™ã‚‹
 		eflags = IO_Load_EFlags();
 		IO_STIHLT();
 		IO_Store_EFlags(eflags);
@@ -239,9 +239,9 @@ void MultiTask_Task_Sleep(UI_TaskControl *ctrl, UI_Task *task)
 
 void MultiTask_Task_Kill(UI_TaskControl *ctrl, UI_Task *task)
 {
-	//CPL=0‰º‚ğ‘z’è
+	//CPL=0ä¸‹ã‚’æƒ³å®š
 
-	if(task == ctrl->now && task == ctrl->start){	//©•ª‚ª—Bˆê–³“ñ‚Ìƒ^ƒXƒN‚¾‚Á‚½ê‡Akill‚ÍOS©‘Ì‚ÌI—¹‚ğˆÓ–¡‚·‚é‚Ì‚ÅAƒAƒ{[ƒg
+	if(task == ctrl->now && task == ctrl->start){	//è‡ªåˆ†ãŒå”¯ä¸€ç„¡äºŒã®ã‚¿ã‚¹ã‚¯ã ã£ãŸå ´åˆã€killã¯OSè‡ªä½“ã®çµ‚äº†ã‚’æ„å‘³ã™ã‚‹ã®ã§ã€ã‚¢ãƒœãƒ¼ãƒˆ
 		#ifdef CHNOSPROJECT_DEBUG_MULTITASK
 			debug("MultiTask_Task_Stop:Attempted to stop last task. Abort.\n");
 		#endif

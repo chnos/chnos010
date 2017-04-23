@@ -13,48 +13,48 @@ typedef union PCI_CONFIG_ADDRESS_REGISTER {
 		unsigned device_num : 5;
 		unsigned bus_num : 8;
 		unsigned reserved1 : 7;	//0
-		unsigned enable : 1;	//PCI_CDRn‚ÉƒAƒNƒZƒX‚·‚é‚Æ‚«‚É1‚É‚·‚éB
+		unsigned enable : 1;	//PCI_CDRnã«ã‚¢ã‚¯ã‚»ã‚¹ã™ã‚‹ã¨ãã«1ã«ã™ã‚‹ã€‚
 	} bit;
 } PCI_ConfigurationAddressRegister;
 
-//‘SƒfƒoƒCƒX‹¤’Ê‚ÌƒRƒ“ƒtƒBƒMƒ…ƒŒ[ƒVƒ‡ƒ“ƒŒƒWƒXƒ^:
-//0x00:00-15:ƒxƒ“ƒ_ID(ReadOnly)
-//0x00:16-31:ƒfƒoƒCƒXID(ReadOnly)
-//0x04:00-15:ƒRƒ}ƒ“ƒhƒŒƒWƒXƒ^(R/W)
-//	00:I/O‹óŠÔƒCƒl[ƒuƒ‹
-//	01:ƒƒ‚ƒŠ‹óŠÔƒCƒl[ƒuƒ‹
-//	02:ƒoƒXƒ}ƒXƒ^[
-//	03:ƒXƒyƒVƒƒƒ‹ƒTƒCƒNƒ‹
-//	04:ƒƒ‚ƒŠƒ‰ƒCƒgEƒCƒ“ƒoƒŠƒf[ƒgƒCƒl[ƒuƒ‹
-//	05:VGAƒpƒŒƒbƒgƒXƒk[ƒv
-//	06:ƒpƒŠƒeƒBƒGƒ‰[‰ž“š(0‚Å•ñ‚È‚µ)
-//	07:ƒEƒFƒCƒgƒTƒCƒNƒ‹§Œä
-//	08:SERR#ƒCƒl[ƒuƒ‹
-//	09:‚‘¬ƒoƒbƒNƒc[ƒoƒbƒNƒCƒl[ƒuƒ‹
-//	10-15:ƒŠƒU[ƒu
-//0x04:16-31:ƒXƒe[ƒ^ƒXƒŒƒWƒXƒ^(R/W WriteŽžTrue‚Ìƒrƒbƒg‚ªƒNƒŠƒA‚³‚ê‚é)
-//	16-20:ƒŠƒU[ƒu
-//	21:66MHz‘Î‰ž‰Â”\
-//	22:ƒ†[ƒU[’è‹`‹@”\‚ ‚è
-//	23:‚‘¬ƒoƒbƒNƒc[ƒoƒbƒN‰Â”\
-//	24:ƒf[ƒ^ƒpƒŠƒeƒBƒGƒ‰[ŒŸ’m(ƒoƒXƒ}ƒXƒ^[Žž‚ÌƒGƒ‰[)
-//	25-26:DEVSEL#ƒ^ƒCƒ~ƒ“ƒO(0:‚‘¬ 1:’†‘¬ 2:’á‘¬ 3:—\–ñ)
-//	27:ƒ^[ƒQƒbƒgƒAƒ{[ƒg’Ê’m
-//	28:ƒ^[ƒQƒbƒgƒAƒ{[ƒgŽóM
-//	29:ƒ}ƒXƒ^[ƒAƒ{[ƒgŽóM
-//	30:ƒVƒXƒeƒ€ƒGƒ‰[’Ê’m
-//	31:ƒpƒŠƒeƒBƒGƒ‰[ŒŸ’m
-//0x08:00-07:ƒŠƒrƒWƒ‡ƒ“ID(ReadOnly)
-//0x08:08-31:ƒNƒ‰ƒXƒR[ƒh(ReadOnly)
-//	08-15:ƒvƒƒOƒ‰ƒ€ƒCƒ“ƒ^[ƒtƒF[ƒX
-//	16-23:ƒTƒuƒNƒ‰ƒX
-//	24-31:ƒx[ƒXƒNƒ‰ƒX
-//0x0c:00-07:ƒLƒƒƒbƒVƒ…ƒ‰ƒCƒ“ƒTƒCƒY
-//0x0c:08-15:ƒ}ƒXƒ^ƒŒƒCƒeƒ“ƒVƒ^ƒCƒ}
-//0x0c:16-23:ƒwƒbƒ_ƒ^ƒCƒv(ReadOnly)
-//	16-22:ƒfƒoƒCƒXƒ^ƒCƒv(0:’Êí‚ÌPCIƒfƒoƒCƒX 1:PCI-PCIƒuƒŠƒbƒW 2:CardBusƒuƒŠƒbƒW)
-//	23:ƒ}ƒ‹ƒ`ƒtƒ@ƒ“ƒNƒVƒ‡ƒ“ƒfƒoƒCƒX
-//0x0c:24-31:BISTƒŒƒWƒXƒ^
+//å…¨ãƒ‡ãƒã‚¤ã‚¹å…±é€šã®ã‚³ãƒ³ãƒ•ã‚£ã‚®ãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ãƒ¬ã‚¸ã‚¹ã‚¿:
+//0x00:00-15:ãƒ™ãƒ³ãƒ€ID(ReadOnly)
+//0x00:16-31:ãƒ‡ãƒã‚¤ã‚¹ID(ReadOnly)
+//0x04:00-15:ã‚³ãƒžãƒ³ãƒ‰ãƒ¬ã‚¸ã‚¹ã‚¿(R/W)
+//	00:I/Oç©ºé–“ã‚¤ãƒãƒ¼ãƒ–ãƒ«
+//	01:ãƒ¡ãƒ¢ãƒªç©ºé–“ã‚¤ãƒãƒ¼ãƒ–ãƒ«
+//	02:ãƒã‚¹ãƒžã‚¹ã‚¿ãƒ¼
+//	03:ã‚¹ãƒšã‚·ãƒ£ãƒ«ã‚µã‚¤ã‚¯ãƒ«
+//	04:ãƒ¡ãƒ¢ãƒªãƒ©ã‚¤ãƒˆãƒ»ã‚¤ãƒ³ãƒãƒªãƒ‡ãƒ¼ãƒˆã‚¤ãƒãƒ¼ãƒ–ãƒ«
+//	05:VGAãƒ‘ãƒ¬ãƒƒãƒˆã‚¹ãƒŒãƒ¼ãƒ—
+//	06:ãƒ‘ãƒªãƒ†ã‚£ã‚¨ãƒ©ãƒ¼å¿œç­”(0ã§å ±å‘Šãªã—)
+//	07:ã‚¦ã‚§ã‚¤ãƒˆã‚µã‚¤ã‚¯ãƒ«åˆ¶å¾¡
+//	08:SERR#ã‚¤ãƒãƒ¼ãƒ–ãƒ«
+//	09:é«˜é€Ÿãƒãƒƒã‚¯ãƒ„ãƒ¼ãƒãƒƒã‚¯ã‚¤ãƒãƒ¼ãƒ–ãƒ«
+//	10-15:ãƒªã‚¶ãƒ¼ãƒ–
+//0x04:16-31:ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ãƒ¬ã‚¸ã‚¹ã‚¿(R/W Writeæ™‚Trueã®ãƒ“ãƒƒãƒˆãŒã‚¯ãƒªã‚¢ã•ã‚Œã‚‹)
+//	16-20:ãƒªã‚¶ãƒ¼ãƒ–
+//	21:66MHzå¯¾å¿œå¯èƒ½
+//	22:ãƒ¦ãƒ¼ã‚¶ãƒ¼å®šç¾©æ©Ÿèƒ½ã‚ã‚Š
+//	23:é«˜é€Ÿãƒãƒƒã‚¯ãƒ„ãƒ¼ãƒãƒƒã‚¯å¯èƒ½
+//	24:ãƒ‡ãƒ¼ã‚¿ãƒ‘ãƒªãƒ†ã‚£ã‚¨ãƒ©ãƒ¼æ¤œçŸ¥(ãƒã‚¹ãƒžã‚¹ã‚¿ãƒ¼æ™‚ã®ã‚¨ãƒ©ãƒ¼)
+//	25-26:DEVSEL#ã‚¿ã‚¤ãƒŸãƒ³ã‚°(0:é«˜é€Ÿ 1:ä¸­é€Ÿ 2:ä½Žé€Ÿ 3:äºˆç´„)
+//	27:ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚¢ãƒœãƒ¼ãƒˆé€šçŸ¥
+//	28:ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚¢ãƒœãƒ¼ãƒˆå—ä¿¡
+//	29:ãƒžã‚¹ã‚¿ãƒ¼ã‚¢ãƒœãƒ¼ãƒˆå—ä¿¡
+//	30:ã‚·ã‚¹ãƒ†ãƒ ã‚¨ãƒ©ãƒ¼é€šçŸ¥
+//	31:ãƒ‘ãƒªãƒ†ã‚£ã‚¨ãƒ©ãƒ¼æ¤œçŸ¥
+//0x08:00-07:ãƒªãƒ“ã‚¸ãƒ§ãƒ³ID(ReadOnly)
+//0x08:08-31:ã‚¯ãƒ©ã‚¹ã‚³ãƒ¼ãƒ‰(ReadOnly)
+//	08-15:ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚¤ãƒ³ã‚¿ãƒ¼ãƒ•ã‚§ãƒ¼ã‚¹
+//	16-23:ã‚µãƒ–ã‚¯ãƒ©ã‚¹
+//	24-31:ãƒ™ãƒ¼ã‚¹ã‚¯ãƒ©ã‚¹
+//0x0c:00-07:ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ©ã‚¤ãƒ³ã‚µã‚¤ã‚º
+//0x0c:08-15:ãƒžã‚¹ã‚¿ãƒ¬ã‚¤ãƒ†ãƒ³ã‚·ã‚¿ã‚¤ãƒž
+//0x0c:16-23:ãƒ˜ãƒƒãƒ€ã‚¿ã‚¤ãƒ—(ReadOnly)
+//	16-22:ãƒ‡ãƒã‚¤ã‚¹ã‚¿ã‚¤ãƒ—(0:é€šå¸¸ã®PCIãƒ‡ãƒã‚¤ã‚¹ 1:PCI-PCIãƒ–ãƒªãƒƒã‚¸ 2:CardBusãƒ–ãƒªãƒƒã‚¸)
+//	23:ãƒžãƒ«ãƒãƒ•ã‚¡ãƒ³ã‚¯ã‚·ãƒ§ãƒ³ãƒ‡ãƒã‚¤ã‚¹
+//0x0c:24-31:BISTãƒ¬ã‚¸ã‚¹ã‚¿
 
 typedef struct PCI_DEVICE_VENDOR {
 	uint id;
@@ -103,7 +103,7 @@ void Initialize_PCI(void)
 		uint data, bus, device, function;
 	#endif
 
-//PCICAR‰Šú‰»
+//PCICARåˆæœŸåŒ–
 	IO_Out32(PORT_PCI_CONFIG_ADDRESS, 0x00000000);
 
 	#ifdef CHNOSPROJECT_DEBUG_PCI
